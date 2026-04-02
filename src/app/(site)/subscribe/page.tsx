@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getSubscriptionPlans } from "@/lib/api/subscriptions";
+import SubscriptionCard from "@/components/site/SubscriptionCard";
 
-import { getSubscriptionPlans } from "@/lib/api/articles";
-import { formatCurrencyUsd } from "@/lib/format";
+export const revalidate = 600;
 
 export const metadata: Metadata = {
-  title: "Subscribe",
+  title: "Subscribe — The Granite Post",
   description:
     "Support independent Zimbabwean journalism. Subscribe to The Granite Post for unlimited access to premium reporting.",
 };
@@ -13,137 +14,100 @@ export const metadata: Metadata = {
 export default async function SubscribePage() {
   const plans = await getSubscriptionPlans();
 
-  const BENEFITS = [
-    "Unlimited access to all articles, including premium reporting",
-    "Breaking news alerts and morning briefing newsletter",
-    "Full archive access — every story ever published",
-    "Support independent, accountable Zimbabwean journalism",
-    "Ad-free reading experience on all devices",
-  ];
+  // Mark the highest-priced paid plan as featured
+  const featuredSlug = plans
+    .filter((p) => parseFloat(p.price_usd) > 0)
+    .sort((a, b) => parseFloat(b.price_usd) - parseFloat(a.price_usd))[0]?.slug ?? null;
 
   return (
-    <main className="container" id="main-content">
-      {/* Header */}
-      <header className="page-header" style={{ textAlign: "center", borderBottom: "none", paddingBottom: "0.5rem" }}>
-        <p className="page-header-eyebrow">Subscribe</p>
-        <h1
-          className="page-header-title"
-          style={{ maxWidth: "20ch", margin: "0 auto 0.5rem" }}
-        >
+    <main className="min-h-screen bg-[var(--bg)]">
+
+      {/* Hero */}
+      <section className="border-b border-[var(--line)] py-14 sm:py-20 px-4 text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-3">
+          Subscribe
+        </p>
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[var(--ink)] max-w-xl mx-auto leading-tight">
           Quality journalism worth paying for.
         </h1>
-        <p
-          className="page-header-desc"
-          style={{ maxWidth: "50ch", margin: "0 auto" }}
-        >
-          The Granite Post is an independent newsroom. Your subscription funds
-          original reporting, not algorithms.
+        <p className="mt-4 text-[var(--muted)] text-base max-w-lg mx-auto leading-relaxed">
+          The Granite Post is an independent Zimbabwean newsroom. Your subscription
+          funds original reporting — not algorithms.
         </p>
-      </header>
+      </section>
 
-      {/* Plans */}
-      {plans.length === 0 ? (
-        <div style={{ margin: "2rem 0" }}>
-          <p className="copy" style={{ textAlign: "center" }}>
-            Subscription plans are being configured. Check back shortly or{" "}
-            <Link className="story-cat-link" href="/contact">
-              contact us
-            </Link>
-            .
-          </p>
-        </div>
-      ) : (
-        <div className="plans-grid" style={{ margin: "2rem 0" }}>
-          {plans.map((plan) => {
-            const features: string[] = Array.isArray(plan.features)
-              ? (plan.features as string[]).filter(Boolean)
-              : typeof plan.features === "string"
-              ? plan.features.split("\n").filter(Boolean)
-              : [];
+      {/* Plans grid */}
+      <section className="max-w-5xl mx-auto px-4 py-12 sm:py-16">
+        {plans.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-[var(--muted)] text-sm">
+              Subscription plans are being configured. Check back shortly or{" "}
+              <Link href="/contact" className="text-[var(--accent)] font-semibold hover:underline">
+                contact us
+              </Link>
+              .
+            </p>
+          </div>
+        ) : (
+          <div className={`grid gap-6 ${plans.length === 3 ? "sm:grid-cols-3" : plans.length === 2 ? "sm:grid-cols-2 max-w-2xl mx-auto" : "max-w-sm mx-auto"}`}>
+            {plans.map((plan) => (
+              <SubscriptionCard
+                key={plan.slug}
+                plan={plan}
+                featured={plan.slug === featuredSlug}
+              />
+            ))}
+          </div>
+        )}
+      </section>
 
-            return (
-              <div className="plan-card" key={plan.slug}>
-                <div>
-                  <p className="plan-card-name">{plan.name}</p>
-                  <div className="plan-card-price">
-                    <span className="plan-price-amount">
-                      {formatCurrencyUsd(plan.price_usd)}
-                    </span>
-                    <span className="plan-price-period">
-                      / {plan.billing_period_label || plan.billing_period}
-                    </span>
-                  </div>
-                  {plan.description && (
-                    <p className="plan-description">{plan.description}</p>
-                  )}
-                </div>
-
-                {features.length > 0 && (
-                  <ul className="plan-features-list" aria-label="Plan features">
-                    {features.map((f, i) => (
-                      <li key={i}>{f}</li>
-                    ))}
-                  </ul>
-                )}
-
-                {plan.article_access_label && (
-                  <p
-                    className="meta"
-                    style={{ fontSize: "0.78rem", fontStyle: "italic" }}
-                  >
-                    {plan.article_access_label}
-                  </p>
-                )}
-
-                <Link
-                  className="btn-primary"
-                  href={`/account?subscribe=${plan.slug}`}
-                  style={{ textAlign: "center" }}
+      {/* Trust strip */}
+      <section className="border-t border-[var(--line)] bg-[var(--surface)] px-4 py-10">
+        <div className="max-w-2xl mx-auto flex flex-col gap-6 items-center text-center">
+          <h2 className="font-serif text-xl font-bold text-[var(--ink)]">
+            Why subscribe?
+          </h2>
+          <ul className="grid sm:grid-cols-2 gap-3 text-left w-full">
+            {[
+              "Unflinching coverage of Zimbabwean politics and economy",
+              "Premium investigations not available anywhere else",
+              "Ad-free reading on every device",
+              "Support an independent newsroom — not a conglomerate",
+              "Full archive access from day one",
+              "Newsletter briefings from our editorial team",
+            ].map((item, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-[var(--ink)]">
+                <svg
+                  className="w-4 h-4 text-[var(--accent)] shrink-0 mt-0.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  aria-hidden="true"
                 >
-                  Get started
-                </Link>
-              </div>
-            );
-          })}
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+      </section>
 
-      {/* Benefits list */}
-      <div
-        style={{
-          background: "var(--surface-strong)",
-          border: "1px solid var(--line)",
-          borderRadius: "var(--radius)",
-          padding: "1.5rem",
-          margin: "0 0 2rem",
-        }}
-      >
-        <h2
-          className="news-section-label"
-          style={{ marginBottom: "1rem" }}
-        >
-          What&apos;s included
-        </h2>
-        <ul className="plan-features-list" style={{ maxWidth: "44ch" }}>
-          {BENEFITS.map((b, i) => (
-            <li key={i}>{b}</li>
-          ))}
-        </ul>
-      </div>
-
-      {/* FAQ nudge */}
-      <p className="meta" style={{ textAlign: "center", paddingBottom: "1.5rem" }}>
+      {/* Footer nudge */}
+      <p className="text-center text-xs text-[var(--muted)] py-8 px-4">
         Already a subscriber?{" "}
-        <Link className="story-cat-link" href="/login">
-          Sign in to your account
+        <Link href="/login" className="text-[var(--accent)] font-semibold hover:underline">
+          Sign in
         </Link>
         .{" "}
-        Questions?{" "}
-        <Link className="story-cat-link" href="/contact">
+        Have questions?{" "}
+        <Link href="/contact" className="text-[var(--accent)] font-semibold hover:underline">
           Contact us
         </Link>
         .
       </p>
+
     </main>
   );
 }

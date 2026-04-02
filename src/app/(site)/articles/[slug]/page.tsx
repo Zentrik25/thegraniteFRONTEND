@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 import { ArticleViewTracker } from "@/components/article-view-tracker";
 import { CommentsPanel } from "@/components/comments-panel";
 import { NewsletterForm } from "@/components/newsletter-form";
+import BookmarkButton from "@/components/reader/BookmarkButton";
+import HistoryTracker from "@/components/reader/HistoryTracker";
 import { getArticleBySlug, getArticleComments } from "@/lib/api/articles";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/env";
+
+export const revalidate = 60;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -57,38 +62,71 @@ export default async function ArticlePage({ params }: Props) {
 
   if (isNotFound) notFound();
 
-  // JSON-LD NewsArticle
-  const jsonLd = article
-    ? {
-        "@context": "https://schema.org",
-        "@type": "NewsArticle",
-        headline: article.title,
-        description: article.excerpt,
-        image: article.image_url ? [article.image_url] : [],
-        datePublished: article.published_at,
-        dateModified: article.updated_at || article.published_at,
-        author: article.author_name
-          ? [{ "@type": "Person", name: article.author_name }]
-          : [],
-        publisher: {
-          "@type": "Organization",
-          name: "The Granite Post",
-          url: SITE_URL,
-        },
-        url: article.canonical_url || `${SITE_URL}/articles/${slug}`,
-      }
+  // ── Structured data (@graph combines NewsArticle + BreadcrumbList) ──────────
+  const structuredData = article
+    ? (() => {
+        const articleUrl = article.canonical_url || `${SITE_URL}/articles/${slug}`;
+
+        // Build breadcrumb: Home [> Category] > Article
+        const crumbs: { "@type": "ListItem"; position: number; name: string; item?: string }[] =
+          [{ "@type": "ListItem", position: 1, name: "Home", item: SITE_URL }];
+
+        if (article.category) {
+          crumbs.push({
+            "@type": "ListItem",
+            position: 2,
+            name: article.category.name,
+            item: `${SITE_URL}/categories/${article.category.slug}`,
+          });
+        }
+
+        crumbs.push({
+          "@type": "ListItem",
+          position: crumbs.length + 1,
+          name: article.title,
+          item: articleUrl,
+        });
+
+        return {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "NewsArticle",
+              headline: article.title,
+              description: article.excerpt,
+              image: article.image_url ? [article.image_url] : [],
+              datePublished: article.published_at,
+              dateModified: article.updated_at || article.published_at,
+              author: article.author_name
+                ? [{ "@type": "Person", name: article.author_name }]
+                : [],
+              publisher: {
+                "@type": "Organization",
+                name: "The Granite Post",
+                url: SITE_URL,
+              },
+              url: articleUrl,
+            },
+            {
+              "@type": "BreadcrumbList",
+              itemListElement: crumbs,
+            },
+          ],
+        };
+      })()
     : null;
 
   return (
     <main className="container" id="main-content">
-      {jsonLd && (
+      {structuredData && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       )}
 
       {article && <ArticleViewTracker slug={slug} />}
+      {article && <HistoryTracker articleSlug={slug} />}
 
       {!article ? (
         <div className="news-section" role="status">
@@ -152,8 +190,14 @@ export default async function ArticlePage({ params }: Props) {
                 <p className="article-detail-dek">{article.excerpt}</p>
               )}
 
-              {/* Meta bar */}
-              <div className="article-detail-meta" role="complementary" aria-label="Article info">
+              {/* Meta bar + bookmark */}
+              <div
+                className="article-detail-meta"
+                role="complementary"
+                aria-label="Article info"
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "inherit", flexWrap: "wrap" }}>
                 {article.author_name && (
                   <span className="article-detail-author">
                     {article.author_slug ? (
@@ -208,18 +252,24 @@ export default async function ArticlePage({ params }: Props) {
                     </span>
                   </>
                 )}
+                </div>
+                <BookmarkButton articleSlug={slug} compact />
               </div>
             </header>
 
             {/* Hero image */}
             {article.image_url && (
               <figure style={{ margin: "0 0 1.5rem" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  className="article-hero-img"
-                  src={article.image_url}
-                  alt={article.image_alt || article.title}
-                />
+                <div className="article-hero-img" style={{ position: "relative" }}>
+                  <Image
+                    src={article.image_url}
+                    alt={article.image_alt || article.title}
+                    fill
+                    priority
+                    style={{ objectFit: "cover" }}
+                    sizes="(max-width: 768px) 100vw, 870px"
+                  />
+                </div>
                 {(article.image_caption || article.image_credit) && (
                   <figcaption className="article-img-caption">
                     {article.image_caption}

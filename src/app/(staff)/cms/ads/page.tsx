@@ -21,12 +21,24 @@ interface AdCampaign {
   budget?: string;
 }
 
+const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
+  active: { bg: "#d4edda", color: "#155724" },
+  paused: { bg: "#fff3cd", color: "#856404" },
+  ended:  { bg: "#e2e3e5", color: "#383d41" },
+  draft:  { bg: "#d1ecf1", color: "#0c5460" },
+};
+
+function ctr(impressions?: number, clicks?: number): string {
+  if (!impressions || !clicks) return "—";
+  return ((clicks / impressions) * 100).toFixed(2) + "%";
+}
+
 export default async function CmsAdsPage() {
   const cookieStore = await cookies();
   const session = cookieStore.get("granite_staff_session");
   if (!session?.value) redirect("/cms/login");
 
-  const { data } = await safeApiFetch<ApiListResponse<AdCampaign>>(
+  const { data, error } = await safeApiFetch<ApiListResponse<AdCampaign>>(
     "/api/v1/advertising/campaigns/?page_size=25",
     {
       headers: { Authorization: `Bearer ${session.value}` },
@@ -36,33 +48,33 @@ export default async function CmsAdsPage() {
 
   const campaigns = data?.results ?? [];
 
-  const statusColor: Record<string, { bg: string; color: string }> = {
-    active: { bg: "#d4edda", color: "#155724" },
-    paused: { bg: "#fff3cd", color: "#856404" },
-    ended: { bg: "#e2e3e5", color: "#383d41" },
-    draft: { bg: "#d1ecf1", color: "#0c5460" },
-  };
-
   return (
     <CmsShell title="Ad Campaigns">
-      <div style={{ marginBottom: "1.25rem", display: "flex", justifyContent: "flex-end" }}>
-        <a
-          href="/cms/ads/new"
+      {error && (
+        <div
+          role="alert"
           style={{
-            background: "var(--accent)",
-            color: "#fff",
-            padding: "0.5rem 1.25rem",
+            background: "#fff0f0",
+            border: "1px solid #f5c6cb",
+            color: "#721c24",
+            padding: "0.75rem 1rem",
             borderRadius: "4px",
-            fontWeight: 700,
             fontSize: "0.875rem",
-            textDecoration: "none",
+            marginBottom: "1rem",
           }}
         >
-          + New campaign
-        </a>
-      </div>
+          Could not load campaigns. {error}
+        </div>
+      )}
 
-      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "6px", overflow: "hidden" }}>
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e0e0e0",
+          borderRadius: "6px",
+          overflow: "hidden",
+        }}
+      >
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
             <tr style={{ background: "#f5f5f5", borderBottom: "1px solid #e0e0e0" }}>
@@ -71,24 +83,20 @@ export default async function CmsAdsPage() {
               <th style={{ textAlign: "left", padding: "0.75rem 0.5rem", fontWeight: 600 }}>Status</th>
               <th style={{ textAlign: "right", padding: "0.75rem 0.5rem", fontWeight: 600 }}>Impr.</th>
               <th style={{ textAlign: "right", padding: "0.75rem 0.5rem", fontWeight: 600 }}>Clicks</th>
+              <th style={{ textAlign: "right", padding: "0.75rem 0.5rem", fontWeight: 600 }}>CTR</th>
               <th style={{ textAlign: "right", padding: "0.75rem 1rem", fontWeight: 600 }}>Budget</th>
             </tr>
           </thead>
           <tbody>
             {campaigns.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
+                <td colSpan={7} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
                   No campaigns found.
                 </td>
               </tr>
             )}
             {campaigns.map((c) => {
-              const badge = statusColor[c.status] ?? { bg: "#eee", color: "#333" };
-              const ctr =
-                c.total_impressions && c.total_clicks
-                  ? ((c.total_clicks / c.total_impressions) * 100).toFixed(2) + "%"
-                  : "—";
-              void ctr;
+              const badge = STATUS_COLOR[c.status] ?? { bg: "#eee", color: "#333" };
               return (
                 <tr key={c.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <td style={{ padding: "0.75rem 1rem" }}>
@@ -122,6 +130,9 @@ export default async function CmsAdsPage() {
                   <td style={{ padding: "0.75rem 0.5rem", textAlign: "right", color: "#555" }}>
                     {c.total_clicks?.toLocaleString() ?? "—"}
                   </td>
+                  <td style={{ padding: "0.75rem 0.5rem", textAlign: "right", color: "#555" }}>
+                    {ctr(c.total_impressions, c.total_clicks)}
+                  </td>
                   <td style={{ padding: "0.75rem 1rem", textAlign: "right", color: "#555" }}>
                     {c.budget ? formatCurrencyUsd(c.budget) : "—"}
                   </td>
@@ -131,6 +142,12 @@ export default async function CmsAdsPage() {
           </tbody>
         </table>
       </div>
+
+      {data && data.total_pages && data.total_pages > 1 && (
+        <div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#888" }}>
+          Page {data.current_page} of {data.total_pages} — {data.count} campaigns total
+        </div>
+      )}
     </CmsShell>
   );
 }

@@ -5,19 +5,36 @@ import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { Pagination } from "@/components/site/Pagination";
 import { getTagDetail } from "@/lib/api/articles";
+import { SITE_URL } from "@/lib/env";
+
+export const revalidate = 120;
 
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+
   const data = await getTagDetail(slug);
   if (!data) return { title: "Tag not found" };
+
+  const canonical =
+    page === 1
+      ? `${SITE_URL}/tags/${slug}`
+      : `${SITE_URL}/tags/${slug}?page=${page}`;
+
   return {
     title: `#${data.tag.name}`,
     description: `Stories tagged with "${data.tag.name}" from The Granite Post.`,
+    alternates: { canonical },
+    openGraph: {
+      title: `#${data.tag.name} | The Granite Post`,
+      url: canonical,
+    },
   };
 }
 

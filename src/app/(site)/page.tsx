@@ -10,10 +10,26 @@ import { NewsletterForm } from "@/components/newsletter-form";
 import { getHomepageFeed } from "@/lib/api/articles";
 import { pluralize } from "@/lib/format";
 
+export const revalidate = 60;
+
+const HOME_TITLE = "The Granite Post — Zimbabwe's Journal of Record";
+const HOME_DESCRIPTION =
+  "Authoritative news and analysis from Zimbabwe. Breaking news, politics, business, technology and sport.";
+
 export const metadata: Metadata = {
-  title: "The Granite Post — Zimbabwe's Journal of Record",
-  description:
-    "Authoritative news and analysis from Zimbabwe. Breaking news, politics, business, technology and sport.",
+  title: HOME_TITLE,
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+  },
 };
 
 export default async function HomePage() {

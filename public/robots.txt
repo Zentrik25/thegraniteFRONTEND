@@ -1,13 +1,56 @@
+# ── Default rules ────────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 
-# Block CMS and account areas
+# Private and utility paths — no indexing value
+Disallow: /cms/
+Disallow: /account/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /verify-email
+Disallow: /subscribe/checkout
+Disallow: /subscribe/success
+
+# Parameterised search pages are thin/duplicate content
+Disallow: /search?
+
+# ── Google News ───────────────────────────────────────────────────────────────
+# Allow the news bot unrestricted access to article content
+User-agent: Googlebot-News
+Allow: /articles/
+Allow: /categories/
+Allow: /tags/
+Allow: /sections/
 Disallow: /cms/
 Disallow: /account/
 Disallow: /api/
 
-# Block search with empty query
-Disallow: /search?q=
+# ── AI training crawlers (content protection) ─────────────────────────────────
+User-agent: GPTBot
+Disallow: /
 
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Omgilibot
+Disallow: /
+
+User-agent: ImagesiftBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+# ── Sitemaps ──────────────────────────────────────────────────────────────────
 Sitemap: https://thegranitepost.co.zw/sitemap.xml
 Sitemap: https://thegranitepost.co.zw/news-sitemap.xml

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { getReaderAccessToken } from "@/lib/auth/reader-session";
 import { safeApiFetch } from "@/lib/api/fetcher";
 import type { ReaderMeResponse } from "@/lib/types";
-import Link from "next/link";
+import EditProfileForm from "@/components/reader/EditProfileForm";
 
 export const metadata: Metadata = {
   title: "My Account",
@@ -12,152 +14,166 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-async function getProfile(accessToken: string) {
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+async function fetchMe(token: string) {
   return safeApiFetch<ReaderMeResponse>("/api/v1/accounts/me/", {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default async function AccountPage() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("granite_reader_session");
-  if (!session?.value) redirect("/login?next=/account");
-
-  const { data: user, error } = await getProfile(session.value);
-
-  if (error || !user) {
-    return (
-      <div>
-        <h1 style={{ fontFamily: "var(--serif)", fontSize: "1.5rem", fontWeight: 700 }}>
-          My Account
-        </h1>
-        <p style={{ color: "var(--muted)", marginTop: "1rem" }}>
-          Unable to load your profile. Please try refreshing.
-        </p>
-      </div>
-    );
-  }
-
-  const profile = user.reader_profile;
+  const token = await getReaderAccessToken();
+  if (!token) redirect("/login?next=/account");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      <div>
-        <h1 style={{ fontFamily: "var(--serif)", fontSize: "1.75rem", fontWeight: 700 }}>
-          My Account
-        </h1>
-        <p style={{ color: "var(--muted)", marginTop: "0.25rem" }}>
-          Welcome back, {user.first_name || user.username}
-        </p>
+    <main className="min-h-screen bg-[var(--bg)]">
+      <div className="max-w-lg mx-auto px-4 py-10 sm:py-14">
+
+        {/* Site link */}
+        <div className="mb-8">
+          <Link
+            href="/"
+            className="font-serif text-xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
+          >
+            The Granite Post
+          </Link>
+        </div>
+
+        <Suspense fallback={<ProfileSkeleton />}>
+          <ProfileContent token={token} />
+        </Suspense>
+
+      </div>
+    </main>
+  );
+}
+
+// ── Profile (async Server Component) ─────────────────────────────────────────
+
+async function ProfileContent({ token }: { token: string }) {
+  const { data: user, status } = await fetchMe(token);
+
+  // Session cookie present but backend rejected it (expired / revoked)
+  if (status === 401) redirect("/login?next=/account");
+
+  if (!user) return <ProfileError />;
+
+  const displayName = user.reader_profile?.display_name;
+  const initials = (displayName ?? user.username).slice(0, 2).toUpperCase();
+
+  return (
+    <div className="flex flex-col gap-6">
+
+      {/* Avatar + greeting */}
+      <div className="flex items-center gap-4">
+        <div
+          aria-hidden="true"
+          className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0"
+        >
+          <span className="text-white font-bold text-lg leading-none">{initials}</span>
+        </div>
+        <div>
+          <h1 className="font-serif text-2xl font-bold text-[var(--ink)] leading-tight">
+            {displayName ?? user.username}
+          </h1>
+          <p className="text-sm text-[var(--muted)] mt-0.5">Reader account</p>
+        </div>
       </div>
 
       {/* Profile card */}
-      <section
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--line)",
-          borderRadius: "6px",
-          padding: "1.5rem",
-        }}
-      >
-        <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "1rem" }}>Profile</h2>
-        <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "0.5rem 1rem", fontSize: "0.9rem" }}>
-          <dt style={{ color: "var(--muted)" }}>Name</dt>
-          <dd>{[user.first_name, user.last_name].filter(Boolean).join(" ") || "—"}</dd>
-          <dt style={{ color: "var(--muted)" }}>Username</dt>
-          <dd>{user.username}</dd>
-          <dt style={{ color: "var(--muted)" }}>Email</dt>
-          <dd>{user.email}</dd>
-          {profile?.bio && (
-            <>
-              <dt style={{ color: "var(--muted)" }}>Bio</dt>
-              <dd>{profile.bio}</dd>
-            </>
-          )}
-        </dl>
+      <section className="bg-[var(--surface)] border border-[var(--line)] rounded-lg divide-y divide-[var(--line)]">
+        <Row label="Display name" value={displayName ?? <span className="text-[var(--muted)] italic">Not set</span>} />
+        <Row label="Username"     value={`@${user.username}`} />
+        <Row label="Email"        value={user.email} />
       </section>
 
-      {/* Subscription */}
-      {profile?.subscription_status && (
-        <section
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--line)",
-            borderRadius: "6px",
-            padding: "1.5rem",
+      {/* Edit profile */}
+      <section className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-5 py-6">
+        <h2 className="font-semibold text-sm text-[var(--ink)] mb-5">Edit profile</h2>
+        <EditProfileForm
+          initial={{
+            display_name: user.reader_profile?.display_name ?? "",
+            avatar_url:   user.reader_profile?.avatar_url ?? "",
+            bio:          user.reader_profile?.bio ?? "",
           }}
-        >
-          <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem" }}>
-            Subscription
-          </h2>
-          <p style={{ fontSize: "0.9rem", color: "var(--muted)" }}>
-            Status:{" "}
-            <strong style={{ color: "var(--ink)" }}>
-              {profile.subscription_status.replace("_", " ")}
-            </strong>
-          </p>
-          <Link
-            href="/account/subscription"
-            style={{ color: "var(--accent)", fontSize: "0.875rem", fontWeight: 600 }}
-          >
-            Manage subscription →
-          </Link>
-        </section>
-      )}
+        />
+      </section>
 
-      {/* Quick links */}
-      <nav
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "0.75rem",
-        }}
-      >
-        {[
-          { label: "Bookmarks", href: "/account/bookmarks" },
-          { label: "Reading history", href: "/account/history" },
-          { label: "Subscription", href: "/account/subscription" },
-          { label: "Newsletter", href: "/#newsletter" },
-        ].map(({ label, href }) => (
-          <Link
-            key={href}
-            href={href}
-            style={{
-              display: "block",
-              background: "var(--surface)",
-              border: "1px solid var(--line)",
-              borderRadius: "6px",
-              padding: "1rem",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              color: "var(--ink)",
-              textDecoration: "none",
-            }}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      {/* Logout */}
+      {/* Sign out */}
       <form action="/api/reader/logout" method="POST">
         <button
           type="submit"
-          style={{
-            background: "transparent",
-            border: "1px solid var(--line)",
-            padding: "0.625rem 1.25rem",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: "0.875rem",
-            color: "var(--muted)",
-          }}
+          className="text-sm text-[var(--muted)] hover:text-[var(--ink)] underline underline-offset-2 transition-colors"
         >
           Sign out
         </button>
       </form>
+
+    </div>
+  );
+}
+
+// ── Row helper ────────────────────────────────────────────────────────────────
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-4 px-5 py-4">
+      <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)] sm:w-32 shrink-0">
+        {label}
+      </dt>
+      <dd className="text-sm text-[var(--ink)] font-medium break-all">{value}</dd>
+    </div>
+  );
+}
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+
+function ProfileSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 animate-pulse" aria-busy="true" aria-label="Loading profile">
+      <div className="flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-[var(--line)]" />
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-36 rounded bg-[var(--line)]" />
+          <div className="h-3.5 w-24 rounded bg-[var(--line)]" />
+        </div>
+      </div>
+      <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg divide-y divide-[var(--line)]">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="px-5 py-4 flex flex-col gap-2">
+            <div className="h-3 w-20 rounded bg-[var(--line)]" />
+            <div className="h-4 w-48 rounded bg-[var(--line)]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Error state ───────────────────────────────────────────────────────────────
+
+function ProfileError() {
+  return (
+    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-6 py-10 text-center flex flex-col items-center gap-4">
+      <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+        <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+      </div>
+      <div>
+        <p className="font-semibold text-[var(--ink)]">Couldn&rsquo;t load your profile</p>
+        <p className="text-sm text-[var(--muted)] mt-1">Try refreshing the page.</p>
+      </div>
+      <a
+        href="/account"
+        className="text-sm text-[var(--accent)] font-semibold hover:underline"
+      >
+        Refresh
+      </a>
     </div>
   );
 }

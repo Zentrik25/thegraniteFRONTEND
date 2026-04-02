@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { UserProfile } from "@/lib/types";
@@ -13,11 +14,13 @@ export function AuthorCard({ author }: { author: UserProfile }) {
   return (
     <div className="author-card">
       {author.avatar_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           className="author-avatar"
           src={author.avatar_url}
           alt={author.byline}
+          width={64}
+          height={64}
+          style={{ objectFit: "cover" }}
         />
       ) : (
         <div className="author-avatar-ph" aria-hidden="true">

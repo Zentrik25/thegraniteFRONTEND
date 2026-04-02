@@ -4,10 +4,20 @@ import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+/** Reject absolute URLs to prevent open-redirect after login. */
+function safeRedirect(raw: string): string {
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("://")) {
+    return "/cms";
+  }
+  return raw;
+}
+
 function StaffLoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/cms";
+  const next = safeRedirect(params.get("next") ?? "/cms");
+
+  const expired = params.get("expired") === "1";
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -91,6 +101,22 @@ function StaffLoginForm() {
           onSubmit={handleSubmit}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
+          {expired && !error && (
+            <div
+              role="status"
+              style={{
+                background: "#fffbeb",
+                border: "1px solid #fcd34d",
+                color: "#92400e",
+                padding: "0.75rem",
+                borderRadius: "4px",
+                fontSize: "0.875rem",
+              }}
+            >
+              Your session has expired. Please sign in again.
+            </div>
+          )}
+
           {error && (
             <div
               role="alert"

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
@@ -20,11 +21,13 @@ export function LatestFeed({
       {items.map((article) => (
         <div className="latest-item" key={article.slug}>
           {article.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               className="latest-thumb"
               src={article.image_url}
               alt={article.image_alt || article.title}
+              width={96}
+              height={72}
+              style={{ objectFit: "cover", flexShrink: 0 }}
             />
           ) : (
             <span className="latest-thumb-ph" aria-hidden="true" />

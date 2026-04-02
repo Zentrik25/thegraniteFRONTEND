@@ -22,7 +22,7 @@ export default async function EditArticlePage({ params }: PageProps) {
   const headers = { Authorization: `Bearer ${session.value}` };
 
   const [articleRes, catsRes, tagsRes] = await Promise.all([
-    safeApiFetch<ArticleDetail>(`/api/v1/staff/articles/${id}/`, { headers, cache: "no-store" }),
+    safeApiFetch<ArticleDetail>(`/api/v1/articles/${id}/`, { headers, cache: "no-store" }),
     safeApiFetch<ApiListResponse<CategorySummary>>("/api/v1/categories/?page_size=200", { headers }),
     safeApiFetch<ApiListResponse<TagSummary>>("/api/v1/tags/?page_size=500", { headers }),
   ]);

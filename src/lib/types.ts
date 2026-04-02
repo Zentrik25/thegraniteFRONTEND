@@ -86,6 +86,7 @@ export type ArticleDetail = ArticleSummary & {
   seo_title?: string;
   seo_description?: string;
   resolved_og_image?: string;
+  scheduled_at?: string | null;
   updated_at?: string;
   section?: SectionSummary | null;
 };
@@ -244,29 +245,32 @@ export type SubscriptionPlan = {
   id: string;
   name: string;
   slug: string;
-  description?: string;
+  description: string;
   price_usd: string;
-  billing_period: string;
-  billing_period_label?: string;
-  features?: string | string[];
-  article_access?: string;
-  article_access_label?: string;
+  billing_period: "monthly" | "annual";
+  billing_period_label: string;
+  features: string | string[];
+  article_access: "free_only" | "premium" | "all";
+  article_access_label: string;
 };
+
+export type SubscriptionStatus = "active" | "cancelled" | "expired" | "past_due" | "trialing";
 
 export type Subscription = {
   id: string;
   plan: SubscriptionPlan;
   user?: { id: string | number; email: string; username?: string };
-  status: string;
-  status_label?: string;
-  started_at?: string;
-  current_period_start?: string;
-  current_period_end?: string;
-  cancelled_at?: string | null;
-  cancel_at_period_end?: boolean;
-  is_active_subscription?: boolean;
-  days_remaining?: number;
-  created_at?: string;
+  status: SubscriptionStatus;
+  status_label: string;
+  started_at: string;
+  current_period_start: string;
+  current_period_end: string;
+  cancelled_at: string | null;
+  cancel_at_period_end: boolean;
+  is_active_subscription: boolean;
+  days_remaining: number;
+  created_at: string;
+  /** Only present during checkout flow */
   redirect_url?: string;
   poll_url?: string;
 };

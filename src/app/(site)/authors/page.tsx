@@ -4,6 +4,8 @@ import { AuthorCard } from "@/components/site/AuthorCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { getAuthors } from "@/lib/api/users";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Authors",
   description: "Meet the journalists and writers behind The Granite Post.",

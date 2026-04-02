@@ -5,21 +5,36 @@ import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { Pagination } from "@/components/site/Pagination";
 import { getCategoryDetail } from "@/lib/api/articles";
+import { SITE_URL } from "@/lib/env";
+
+export const revalidate = 120;
 
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+
   const data = await getCategoryDetail(slug);
   if (!data) return { title: "Category not found" };
+
+  // Page 1 omits the query param; subsequent pages are self-canonical
+  const canonical =
+    page === 1
+      ? `${SITE_URL}/categories/${slug}`
+      : `${SITE_URL}/categories/${slug}?page=${page}`;
+
   return {
     title: data.category.name,
     description: data.category.description,
+    alternates: { canonical },
     openGraph: {
       title: `${data.category.name} | The Granite Post`,
+      url: canonical,
       images: data.category.og_image_url ? [data.category.og_image_url] : [],
     },
   };

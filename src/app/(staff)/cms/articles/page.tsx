@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { safeApiFetch } from "@/lib/api/fetcher";
 import type { ApiListResponse, ArticleSummary } from "@/lib/types";
 import CmsShell from "@/components/cms/CmsShell";
+import CmsStatusFilter from "@/components/cms/CmsStatusFilter";
 import Link from "next/link";
 import { formatRelativeTime } from "@/lib/format";
 
@@ -29,7 +30,7 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
   if (q) params.set("search", q);
 
   const { data } = await safeApiFetch<ApiListResponse<ArticleSummary>>(
-    `/api/v1/staff/articles/?${params.toString()}`,
+    `/api/v1/articles/?${params.toString()}`,
     {
       headers: { Authorization: `Bearer ${session.value}` },
       cache: "no-store",
@@ -86,19 +87,7 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
           </button>
         </form>
 
-        <select
-          onChange={(e) => {
-            // handled via form below
-          }}
-          defaultValue={status}
-          style={{ padding: "0.5rem", border: "1px solid #ddd", borderRadius: "4px", fontSize: "0.875rem" }}
-        >
-          <option value="">All statuses</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="archived">Archived</option>
-        </select>
+        <CmsStatusFilter defaultValue={status} />
 
         <Link
           href="/cms/articles/new"
@@ -172,7 +161,7 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
                   </td>
                   <td style={{ padding: "0.75rem 0.5rem" }}>
                     <Link
-                      href={`/cms/articles/${a.id}/edit`}
+                      href={`/cms/articles/${a.slug}/edit`}
                       style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none", fontSize: "0.8rem" }}
                     >
                       Edit

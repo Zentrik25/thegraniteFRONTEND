@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { getSectionDetail } from "@/lib/api/articles";
+import { SITE_URL } from "@/lib/env";
+
+export const revalidate = 120;
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,11 +18,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const section = await getSectionDetail(slug);
   if (!section) return { title: "Section not found" };
+
+  const canonical = `${SITE_URL}/sections/${slug}`;
+
   return {
     title: section.name,
     description: section.description,
+    alternates: { canonical },
     openGraph: {
       title: `${section.name} | The Granite Post`,
+      url: canonical,
       images: section.og_image_url ? [section.og_image_url] : [],
     },
   };
@@ -76,12 +85,16 @@ export default async function SectionPage({ params }: Props) {
           >
             <div className="lead-story-cell">
               {heroArticle.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="lead-story-img"
-                  src={heroArticle.image_url}
-                  alt={heroArticle.image_alt || heroArticle.title}
-                />
+                <div className="lead-story-img" style={{ position: "relative" }}>
+                  <Image
+                    src={heroArticle.image_url}
+                    alt={heroArticle.image_alt || heroArticle.title}
+                    fill
+                    priority
+                    style={{ objectFit: "cover" }}
+                    sizes="(max-width: 768px) 100vw, 870px"
+                  />
+                </div>
               ) : (
                 <div className="lead-img-placeholder" aria-hidden="true" />
               )}

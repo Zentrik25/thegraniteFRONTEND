@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
@@ -13,12 +14,15 @@ export function ArticleCard({ article, showExcerpt = true }: ArticleCardProps) {
   return (
     <article className="article-card">
       {article.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className="article-card-img"
-          src={article.image_url}
-          alt={article.image_alt || article.title}
-        />
+        <div className="article-card-img" style={{ position: "relative" }}>
+          <Image
+            src={article.image_url}
+            alt={article.image_alt || article.title}
+            fill
+            style={{ objectFit: "cover" }}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 370px"
+          />
+        </div>
       ) : (
         <div className="article-card-img-ph" aria-hidden="true" />
       )}

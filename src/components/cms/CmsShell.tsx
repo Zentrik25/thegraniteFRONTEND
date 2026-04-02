@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
+import { hasStaffSession } from "@/lib/auth/staff-session";
 
 interface CmsShellProps {
   children: ReactNode;
@@ -17,7 +19,14 @@ const navItems = [
   { label: "Staff", href: "/cms/staff" },
 ];
 
-export default function CmsShell({ children, title }: CmsShellProps) {
+/** Server component — every CMS page that renders this gets a free session check. */
+export default async function CmsShell({ children, title }: CmsShellProps) {
+  // Centralised guard: any page rendering CmsShell is protected even if the
+  // per-page check was accidentally omitted. The login page never uses CmsShell,
+  // so there is no redirect loop.
+  const authed = await hasStaffSession();
+  if (!authed) redirect("/cms/login");
+
   return (
     <div
       style={{

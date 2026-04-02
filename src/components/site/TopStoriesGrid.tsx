@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
@@ -15,12 +16,16 @@ export function TopStoriesGrid({ slots }: { slots: TopStorySlot[] }) {
       {/* Lead story */}
       <div className="lead-story-cell">
         {lead.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className="lead-story-img"
-            src={lead.image_url}
-            alt={lead.image_alt || lead.title}
-          />
+          <div className="lead-story-img" style={{ position: "relative" }}>
+            <Image
+              src={lead.image_url}
+              alt={lead.image_alt || lead.title}
+              fill
+              priority
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, 870px"
+            />
+          </div>
         ) : (
           <div className="lead-img-placeholder" aria-hidden="true" />
         )}

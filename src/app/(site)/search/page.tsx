@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 import { SearchForm } from "@/components/search-form";
 import { Pagination } from "@/components/site/Pagination";
@@ -77,12 +78,13 @@ export default async function SearchPage({ searchParams }: Props) {
               {results.results.map((result) => (
                 <div className="search-result-item" key={result.article.slug}>
                   {result.article.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       className="latest-thumb"
                       src={result.article.image_url}
                       alt={result.article.image_alt || result.article.title}
-                      style={{ flexShrink: 0 }}
+                      width={96}
+                      height={72}
+                      style={{ objectFit: "cover", flexShrink: 0 }}
                     />
                   )}
                   <div className="search-result-body">

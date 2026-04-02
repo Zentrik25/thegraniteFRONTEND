@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { safeApiFetch } from "@/lib/api/fetcher";
 import type { ApiListResponse, Subscription } from "@/lib/types";
 import CmsShell from "@/components/cms/CmsShell";
@@ -8,6 +9,16 @@ import { formatDate, formatCurrencyUsd } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Subscriptions — CMS" };
 export const dynamic = "force-dynamic";
+
+const STATUS_TABS = ["", "active", "trialing", "past_due", "cancelled", "expired"] as const;
+
+const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
+  active:    { bg: "#d4edda", color: "#155724" },
+  trialing:  { bg: "#d1ecf1", color: "#0c5460" },
+  past_due:  { bg: "#fff3cd", color: "#856404" },
+  cancelled: { bg: "#f8d7da", color: "#721c24" },
+  expired:   { bg: "#e2e3e5", color: "#383d41" },
+};
 
 interface PageProps {
   searchParams: Promise<{ status?: string; page?: string }>;
@@ -25,7 +36,7 @@ export default async function CmsSubscriptionsPage({ searchParams }: PageProps) 
   const params = new URLSearchParams({ page, page_size: "25" });
   if (status) params.set("status", status);
 
-  const { data } = await safeApiFetch<ApiListResponse<Subscription>>(
+  const { data, error } = await safeApiFetch<ApiListResponse<Subscription>>(
     `/api/v1/subscriptions/?${params.toString()}`,
     {
       headers: { Authorization: `Bearer ${session.value}` },
@@ -35,19 +46,12 @@ export default async function CmsSubscriptionsPage({ searchParams }: PageProps) 
 
   const subs = data?.results ?? [];
 
-  const statusColor: Record<string, { bg: string; color: string }> = {
-    active: { bg: "#d4edda", color: "#155724" },
-    trialing: { bg: "#d1ecf1", color: "#0c5460" },
-    past_due: { bg: "#fff3cd", color: "#856404" },
-    cancelled: { bg: "#f8d7da", color: "#721c24" },
-    expired: { bg: "#e2e3e5", color: "#383d41" },
-  };
-
   return (
     <CmsShell title="Subscriptions">
+      {/* Status filter */}
       <div style={{ marginBottom: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {["", "active", "past_due", "cancelled", "expired"].map((s) => (
-          <a
+        {STATUS_TABS.map((s) => (
+          <Link
             key={s}
             href={s ? `/cms/subscriptions?status=${s}` : "/cms/subscriptions"}
             style={{
@@ -62,11 +66,35 @@ export default async function CmsSubscriptionsPage({ searchParams }: PageProps) 
             }}
           >
             {s || "All"}
-          </a>
+          </Link>
         ))}
       </div>
 
-      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "6px", overflow: "hidden" }}>
+      {error && (
+        <div
+          role="alert"
+          style={{
+            background: "#fff0f0",
+            border: "1px solid #f5c6cb",
+            color: "#721c24",
+            padding: "0.75rem 1rem",
+            borderRadius: "4px",
+            fontSize: "0.875rem",
+            marginBottom: "1rem",
+          }}
+        >
+          Could not load subscriptions. {error}
+        </div>
+      )}
+
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #e0e0e0",
+          borderRadius: "6px",
+          overflow: "hidden",
+        }}
+      >
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
           <thead>
             <tr style={{ background: "#f5f5f5", borderBottom: "1px solid #e0e0e0" }}>
@@ -81,12 +109,12 @@ export default async function CmsSubscriptionsPage({ searchParams }: PageProps) 
             {subs.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "#999" }}>
-                  No subscriptions found.
+                  {error ? "Error loading data." : "No subscriptions found."}
                 </td>
               </tr>
             )}
             {subs.map((s) => {
-              const badge = statusColor[s.status] ?? { bg: "#eee", color: "#333" };
+              const badge = STATUS_COLOR[s.status] ?? { bg: "#eee", color: "#333" };
               return (
                 <tr key={s.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <td style={{ padding: "0.75rem 1rem" }}>
@@ -122,8 +150,35 @@ export default async function CmsSubscriptionsPage({ searchParams }: PageProps) 
       </div>
 
       {data && data.total_pages && data.total_pages > 1 && (
-        <div style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#888" }}>
-          Page {data.current_page} of {data.total_pages} — {data.count} total
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            gap: "0.5rem",
+            alignItems: "center",
+            fontSize: "0.875rem",
+            color: "#888",
+          }}
+        >
+          <span>
+            Page {data.current_page} of {data.total_pages} — {data.count} total
+          </span>
+          {data.current_page && data.current_page > 1 && (
+            <Link
+              href={`/cms/subscriptions?${new URLSearchParams({ ...(status ? { status } : {}), page: String(data.current_page - 1) })}`}
+              style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}
+            >
+              ← Prev
+            </Link>
+          )}
+          {data.current_page && data.current_page < data.total_pages && (
+            <Link
+              href={`/cms/subscriptions?${new URLSearchParams({ ...(status ? { status } : {}), page: String(data.current_page + 1) })}`}
+              style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}
+            >
+              Next →
+            </Link>
+          )}
         </div>
       )}
     </CmsShell>
