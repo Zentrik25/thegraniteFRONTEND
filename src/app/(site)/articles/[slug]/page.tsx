@@ -1,0 +1,299 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+
+import { ArticleViewTracker } from "@/components/article-view-tracker";
+import { CommentsPanel } from "@/components/comments-panel";
+import { NewsletterForm } from "@/components/newsletter-form";
+import { getArticleBySlug, getArticleComments } from "@/lib/api/articles";
+import { formatDate, formatDateTime } from "@/lib/format";
+import { SITE_URL } from "@/lib/env";
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { article } = await getArticleBySlug(slug);
+
+  if (!article) return { title: "Article not found" };
+
+  const title = article.og_title || article.seo_title || article.title;
+  const description =
+    article.og_description || article.seo_description || article.excerpt;
+  const imageUrl = article.resolved_og_image || article.og_image_url || article.image_url;
+  const canonical = article.canonical_url || `${SITE_URL}/articles/${slug}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description: description ?? undefined,
+      type: "article",
+      url: canonical,
+      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630 }] : [],
+      publishedTime: article.published_at ?? undefined,
+      modifiedTime: article.updated_at ?? undefined,
+      authors: article.author_name ? [article.author_name] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: description ?? undefined,
+      images: imageUrl ? [imageUrl] : [],
+    },
+  };
+}
+
+export default async function ArticlePage({ params }: Props) {
+  const { slug } = await params;
+  const [{ article, paywalled, notFound: isNotFound }, commentsData] = await Promise.all([
+    getArticleBySlug(slug),
+    getArticleComments(slug),
+  ]);
+
+  if (isNotFound) notFound();
+
+  // JSON-LD NewsArticle
+  const jsonLd = article
+    ? {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title,
+        description: article.excerpt,
+        image: article.image_url ? [article.image_url] : [],
+        datePublished: article.published_at,
+        dateModified: article.updated_at || article.published_at,
+        author: article.author_name
+          ? [{ "@type": "Person", name: article.author_name }]
+          : [],
+        publisher: {
+          "@type": "Organization",
+          name: "The Granite Post",
+          url: SITE_URL,
+        },
+        url: article.canonical_url || `${SITE_URL}/articles/${slug}`,
+      }
+    : null;
+
+  return (
+    <main className="container" id="main-content">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+
+      {article && <ArticleViewTracker slug={slug} />}
+
+      {!article ? (
+        <div className="news-section" role="status">
+          <p className="kicker">Unavailable</p>
+          <p className="copy">
+            This article could not be loaded. The backend may be offline.
+          </p>
+        </div>
+      ) : (
+        <div className="article-detail-wrap">
+          {/* ── Main article column ── */}
+          <div className="article-detail-main">
+            {/* Breadcrumb */}
+            <nav
+              aria-label="Breadcrumb"
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                fontSize: "0.72rem",
+                color: "var(--muted)",
+                fontFamily: "var(--font-ui)",
+                marginBottom: "1rem",
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <Link href="/" style={{ color: "var(--accent)" }}>
+                Home
+              </Link>
+              <span aria-hidden="true">›</span>
+              {article.category && (
+                <>
+                  <Link
+                    href={`/categories/${article.category.slug}`}
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {article.category.name}
+                  </Link>
+                  <span aria-hidden="true">›</span>
+                </>
+              )}
+              <span aria-current="page" style={{ color: "var(--muted)" }}>
+                {article.title.length > 50
+                  ? `${article.title.slice(0, 50)}…`
+                  : article.title}
+              </span>
+            </nav>
+
+            {/* Article header */}
+            <header className="article-detail-header">
+              {article.is_breaking && (
+                <p className="article-detail-kicker">Breaking</p>
+              )}
+              {!article.is_breaking && article.category && (
+                <p className="article-detail-kicker">{article.category.name}</p>
+              )}
+
+              <h1 className="article-detail-headline">{article.title}</h1>
+
+              {article.excerpt && (
+                <p className="article-detail-dek">{article.excerpt}</p>
+              )}
+
+              {/* Meta bar */}
+              <div className="article-detail-meta" role="complementary" aria-label="Article info">
+                {article.author_name && (
+                  <span className="article-detail-author">
+                    {article.author_slug ? (
+                      <Link href={`/authors/${article.author_slug}`}>
+                        {article.author_name}
+                      </Link>
+                    ) : (
+                      article.author_name
+                    )}
+                  </span>
+                )}
+                {article.author_name && article.published_at && (
+                  <span className="article-detail-meta-sep" aria-hidden="true">
+                    ·
+                  </span>
+                )}
+                {article.published_at && (
+                  <time dateTime={article.published_at}>
+                    {formatDateTime(article.published_at)}
+                  </time>
+                )}
+                {article.updated_at &&
+                  article.updated_at !== article.published_at && (
+                    <>
+                      <span className="article-detail-meta-sep" aria-hidden="true">
+                        ·
+                      </span>
+                      <span>
+                        Updated{" "}
+                        <time dateTime={article.updated_at}>
+                          {formatDate(article.updated_at)}
+                        </time>
+                      </span>
+                    </>
+                  )}
+                {article.is_premium && (
+                  <>
+                    <span className="article-detail-meta-sep" aria-hidden="true">
+                      ·
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                        color: "var(--accent)",
+                        fontFamily: "var(--font-ui)",
+                      }}
+                    >
+                      Premium
+                    </span>
+                  </>
+                )}
+              </div>
+            </header>
+
+            {/* Hero image */}
+            {article.image_url && (
+              <figure style={{ margin: "0 0 1.5rem" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="article-hero-img"
+                  src={article.image_url}
+                  alt={article.image_alt || article.title}
+                />
+                {(article.image_caption || article.image_credit) && (
+                  <figcaption className="article-img-caption">
+                    {article.image_caption}
+                    {article.image_caption && article.image_credit ? " — " : ""}
+                    {article.image_credit && (
+                      <span style={{ fontStyle: "italic" }}>
+                        {article.image_credit}
+                      </span>
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            )}
+
+            {/* Paywall gate */}
+            {paywalled ? (
+              <div className="paywall-banner">
+                <h2>This article is for subscribers</h2>
+                <p>
+                  Subscribe to The Granite Post for unlimited access to premium
+                  journalism.
+                </p>
+                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+                  <Link className="btn-primary" href="/subscribe">
+                    Subscribe now
+                  </Link>
+                  <Link className="btn-outline" href="/login">
+                    Sign in
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Article body */}
+                {article.body ? (
+                  <div
+                    className="article-body"
+                    dangerouslySetInnerHTML={{ __html: article.body }}
+                  />
+                ) : (
+                  <p className="copy">Full article text is not available.</p>
+                )}
+
+                {/* Tags */}
+                {article.tags && article.tags.length > 0 && (
+                  <div className="article-tags-row">
+                    {article.tags.map((tag) => (
+                      <Link
+                        key={tag.slug}
+                        className="tag-chip"
+                        href={`/tags/${tag.slug}`}
+                      >
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Comments */}
+                <CommentsPanel
+                  slug={slug}
+                  initialComments={commentsData?.results ?? []}
+                  totalCount={commentsData?.count ?? 0}
+                />
+              </>
+            )}
+          </div>
+
+          {/* ── Sidebar ── */}
+          <aside aria-label="Article sidebar">
+            <NewsletterForm source={`article-${slug}`} />
+          </aside>
+        </div>
+      )}
+    </main>
+  );
+}

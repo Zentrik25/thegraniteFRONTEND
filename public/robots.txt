@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Block CMS and account areas
+Disallow: /cms/
+Disallow: /account/
+Disallow: /api/
+
+# Block search with empty query
+Disallow: /search?q=
+
+Sitemap: https://thegranitepost.co.zw/sitemap.xml
+Sitemap: https://thegranitepost.co.zw/news-sitemap.xml
