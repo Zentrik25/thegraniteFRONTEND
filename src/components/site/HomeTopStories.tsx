@@ -2,12 +2,13 @@ import Link from "next/link";
 
 import type { ArticleSummary } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
-import { formatRelativeTime } from "@/lib/format";
+import { ArticleMeta } from "@/components/site/ArticleMeta";
 
 interface HomeTopStoriesProps {
   articles: ArticleSummary[];
 }
 
+/** BBC-style 4-column "More stories" promo card row. */
 export function HomeTopStories({ articles }: HomeTopStoriesProps) {
   const items = articles.slice(0, 4);
   if (items.length === 0) return null;
@@ -43,11 +44,7 @@ export function HomeTopStories({ articles }: HomeTopStoriesProps) {
               <h3 className="hp-card-title">
                 <Link href={`/articles/${article.slug}`}>{article.title}</Link>
               </h3>
-              {article.published_at && (
-                <time className="hp-card-time" dateTime={article.published_at}>
-                  {formatRelativeTime(article.published_at)}
-                </time>
-              )}
+              <ArticleMeta article={article} />
             </div>
           </article>
         ))}

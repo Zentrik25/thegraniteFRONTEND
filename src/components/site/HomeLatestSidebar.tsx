@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import type { ArticleSummary, TrendingArticle } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
-import { formatRelativeTime, pluralize } from "@/lib/format";
+import { ArticleMeta } from "@/components/site/ArticleMeta";
+import { pluralize } from "@/lib/format";
 
 interface HomeLatestSidebarProps {
   articles: ArticleSummary[];
@@ -52,11 +53,7 @@ export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps
                     {article.excerpt && (
                       <p className="hp-latest-excerpt">{article.excerpt}</p>
                     )}
-                    {article.published_at && (
-                      <time className="hp-latest-time" dateTime={article.published_at}>
-                        {formatRelativeTime(article.published_at)}
-                      </time>
-                    )}
+                    <ArticleMeta article={article} />
                   </div>
                 </article>
               ))}
@@ -64,7 +61,7 @@ export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps
           )}
         </div>
 
-        {/* Sidebar — Most read only, no newsletter form */}
+        {/* Sidebar — Most read */}
         {trending.length > 0 && (
           <aside aria-label="Most read">
             <div className="hp-sidebar-widget">

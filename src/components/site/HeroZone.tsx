@@ -1,20 +1,24 @@
 import Link from "next/link";
 
-import type { TopStorySlot } from "@/lib/types";
+import type { ArticleSummary } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
-import { formatRelativeTime } from "@/lib/format";
+import { ArticleMeta } from "@/components/site/ArticleMeta";
 
 interface HeroZoneProps {
-  slots: TopStorySlot[];
+  /** Featured articles — first is lead, next up to 3 are secondaries. */
+  articles: ArticleSummary[];
 }
 
-export function HeroZone({ slots }: HeroZoneProps) {
-  const filled = slots.filter((s) => s.article !== null);
-  if (filled.length === 0) return null;
+/**
+ * BBC-style hero zone.
+ * Lead (big image left) + up to 3 secondaries (right column).
+ * Powered by featured/editor-picked articles from the backend.
+ */
+export function HeroZone({ articles }: HeroZoneProps) {
+  if (articles.length === 0) return null;
 
-  const [leadSlot, ...sideSlots] = filled;
-  const lead = leadSlot.article!;
-  const sides = sideSlots.slice(0, 3).map((s) => s.article!);
+  const [lead, ...sideArticles] = articles;
+  const sides = sideArticles.slice(0, 3);
 
   return (
     <div className="hp-hero">
@@ -47,11 +51,7 @@ export function HeroZone({ slots }: HeroZoneProps) {
             <p className="hp-lead-summary">{lead.excerpt}</p>
           )}
 
-          {lead.published_at && (
-            <time className="hp-lead-time" dateTime={lead.published_at}>
-              {formatRelativeTime(lead.published_at)}
-            </time>
-          )}
+          <ArticleMeta article={lead} />
         </article>
 
         {/* Secondary stories */}
@@ -80,11 +80,7 @@ export function HeroZone({ slots }: HeroZoneProps) {
                   <h3 className="hp-side-title">
                     <Link href={`/articles/${article.slug}`}>{article.title}</Link>
                   </h3>
-                  {article.published_at && (
-                    <time className="hp-side-time" dateTime={article.published_at}>
-                      {formatRelativeTime(article.published_at)}
-                    </time>
-                  )}
+                  <ArticleMeta article={article} />
                 </div>
               </article>
             ))}

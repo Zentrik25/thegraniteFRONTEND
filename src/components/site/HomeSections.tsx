@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import type { ArticleSummary, SectionDetail } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
-import { formatRelativeTime } from "@/lib/format";
+import { ArticleMeta } from "@/components/site/ArticleMeta";
 
 interface HomeSectionsProps {
   sections: SectionDetail[];
@@ -21,12 +21,8 @@ function SectionBlock({ section }: { section: SectionDetail }) {
   return (
     <div className="hp-section-block">
       <div className="hp-section-head">
-        <Link className="hp-section-name" href={sectionHref}>
-          {section.name}
-        </Link>
-        <Link className="hp-section-more" href={sectionHref}>
-          More {section.name} →
-        </Link>
+        <Link className="hp-section-name" href={sectionHref}>{section.name}</Link>
+        <Link className="hp-section-more" href={sectionHref}>More {section.name} →</Link>
       </div>
 
       <div className="hp-section-grid">
@@ -57,6 +53,8 @@ function SectionBlock({ section }: { section: SectionDetail }) {
             {lead.excerpt && (
               <p className="hp-section-lead-excerpt">{lead.excerpt}</p>
             )}
+
+            <ArticleMeta article={lead} />
           </article>
         )}
 
@@ -72,11 +70,7 @@ function SectionBlock({ section }: { section: SectionDetail }) {
                 <h3 className="hp-section-item-title">
                   <Link href={`/articles/${article.slug}`}>{article.title}</Link>
                 </h3>
-                {article.published_at && (
-                  <time className="hp-section-item-time" dateTime={article.published_at}>
-                    {formatRelativeTime(article.published_at)}
-                  </time>
-                )}
+                <ArticleMeta article={article} />
               </article>
             ))}
           </div>

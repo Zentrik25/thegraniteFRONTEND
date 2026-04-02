@@ -1,0 +1,88 @@
+import Link from "next/link";
+
+import type { TopStorySlot } from "@/lib/types";
+import { mediaProxyPath } from "@/lib/utils/media";
+import { ArticleMeta } from "@/components/site/ArticleMeta";
+
+interface HomeTopStoriesBlockProps {
+  slots: TopStorySlot[];
+}
+
+/**
+ * "Top Stories" section — backend-curated ranked list.
+ * Shows up to 5 items: first as a wide card with image, rest as text rows.
+ */
+export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
+  const items = slots.filter((s) => s.article !== null).slice(0, 5);
+  if (items.length === 0) return null;
+
+  const [first, ...rest] = items;
+  const lead = first.article!;
+
+  return (
+    <div className="hp-top-stories-block">
+      <div className="hp-row-head">
+        <p className="hp-row-label">Top Stories</p>
+        <Link className="hp-row-more" href="/search">All stories →</Link>
+      </div>
+
+      <div className="hp-top-stories-grid">
+        {/* Lead card */}
+        <article className="hp-top-lead-card">
+          {lead.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="hp-top-lead-img"
+              src={mediaProxyPath(lead.image_url) ?? ""}
+              alt={lead.image_alt || lead.title}
+              loading="lazy"
+            />
+          ) : (
+            <div className="hp-top-lead-img-ph" aria-hidden="true" />
+          )}
+          <div className="hp-top-lead-body">
+            {(lead.is_breaking || lead.category) && (
+              <span className={`cat-badge${lead.is_breaking ? " cat-badge--breaking" : ""}`}>
+                {lead.is_breaking ? "Breaking" : lead.category?.name}
+              </span>
+            )}
+            <h3 className="hp-top-lead-title">
+              <Link href={`/articles/${lead.slug}`}>{lead.title}</Link>
+            </h3>
+            {lead.excerpt && (
+              <p className="hp-top-lead-excerpt">{lead.excerpt}</p>
+            )}
+            <ArticleMeta article={lead} />
+          </div>
+        </article>
+
+        {/* Ranked text rows */}
+        {rest.length > 0 && (
+          <div className="hp-top-list">
+            {rest.map((slot) => {
+              const article = slot.article!;
+              return (
+                <article key={article.slug} className="hp-top-list-item">
+                  <span className="hp-top-rank" aria-hidden="true">
+                    {String(slot.rank).padStart(2, "0")}
+                  </span>
+                  <div className="hp-top-list-body">
+                    {(article.is_breaking || article.category) && (
+                      <span className={`cat-badge${article.is_breaking ? " cat-badge--breaking" : ""}`}>
+                        {article.is_breaking ? "Breaking" : article.category?.name}
+                      </span>
+                    )}
+                    <h3 className="hp-top-list-title">
+                      <Link href={`/articles/${article.slug}`}>{article.title}</Link>
+                    </h3>
+                    <ArticleMeta article={article} />
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

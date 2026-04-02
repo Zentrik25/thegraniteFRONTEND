@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 
 import { BreakingBanner } from "@/components/site/BreakingBanner";
 import { HeroZone } from "@/components/site/HeroZone";
+import { HomeTopStoriesBlock } from "@/components/site/HomeTopStoriesBlock";
 import { HomeTopStories } from "@/components/site/HomeTopStories";
 import { HomeLatestSidebar } from "@/components/site/HomeLatestSidebar";
 import { HomeSections } from "@/components/site/HomeSections";
 import { HomeNewsletterBand } from "@/components/site/HomeNewsletterBand";
 import { getHomepageFeed } from "@/lib/api/articles";
+import type { ArticleSummary, SectionDetail, TopStorySlot } from "@/lib/types";
 
 export const revalidate = 60;
 
@@ -25,24 +27,72 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const feed = await getHomepageFeed();
 
-  // Hero: top 4 ranked slots
-  const heroSlots = feed.topStories.slice(0, 4);
+  // ── Deduplication ─────────────────────────────────────────────────────────
+  // Each article slug is tracked globally. Zones are allocated in priority order:
+  // Hero → Top Stories → More Stories → Latest → Section blocks
+  const seen = new Set<string>();
 
-  // "More stories" row: slots 4–7, fallback to featured
-  const moreStories =
-    feed.topStories.slice(4, 8).filter((s) => s.article !== null).length >= 2
-      ? feed.topStories.slice(4, 8).map((s) => s.article!)
-      : feed.featured.slice(0, 4);
+  function pickArticles(pool: ArticleSummary[], max: number): ArticleSummary[] {
+    const result: ArticleSummary[] = [];
+    for (const a of pool) {
+      if (result.length >= max) break;
+      if (!seen.has(a.slug)) {
+        seen.add(a.slug);
+        result.push(a);
+      }
+    }
+    return result;
+  }
+
+  function pickSlots(pool: TopStorySlot[], max: number): TopStorySlot[] {
+    const result: TopStorySlot[] = [];
+    for (const s of pool) {
+      if (result.length >= max) break;
+      if (!s.article) continue;
+      if (!seen.has(s.article.slug)) {
+        seen.add(s.article.slug);
+        result.push(s);
+      }
+    }
+    return result;
+  }
+
+  function dedupeSection(section: SectionDetail): SectionDetail {
+    const hero =
+      section.hero_article && !seen.has(section.hero_article.slug)
+        ? (seen.add(section.hero_article.slug), section.hero_article)
+        : null;
+    const articles = section.articles.filter((a) => {
+      if (seen.has(a.slug)) return false;
+      seen.add(a.slug);
+      return true;
+    });
+    return { ...section, hero_article: hero, articles };
+  }
+
+  // 1. Hero — up to 4 featured articles
+  const heroArticles = pickArticles(feed.featured, 4);
+
+  // 2. Top Stories — backend-ranked, up to 5, no repeats from hero
+  const topStorySlots = pickSlots(feed.topStories, 5);
+
+  // 3. More stories row — next 4 featured not yet shown
+  const moreStories = pickArticles(feed.featured, 4);
+
+  // 4. Latest feed — exclude anything already shown
+  const latestArticles = pickArticles(feed.latest, 10);
+
+  // 5. Section blocks — filter out seen articles from each section
+  const sectionDetails = feed.sectionDetails
+    .map(dedupeSection)
+    .filter((s) => s.hero_article !== null || s.articles.length > 0);
 
   return (
     <>
-      {/* Breaking strip */}
       <BreakingBanner articles={feed.breaking} />
 
-      {/* Single centered page wrapper — consistent 1rem side padding, max 1200px */}
       <div className="hp-page-wrap">
 
-        {/* Backend offline notice */}
         {feed.apiUnavailable && (
           <div className="hp-offline-notice" role="status">
             <p className="hp-offline-label">Backend offline</p>
@@ -52,27 +102,26 @@ export default async function HomePage() {
           </div>
         )}
 
-        {/* Hero zone: lead + secondaries */}
-        {heroSlots.some((s) => s.article !== null) && (
-          <HeroZone slots={heroSlots} />
+        {heroArticles.length > 0 && (
+          <HeroZone articles={heroArticles} />
         )}
 
-        {/* More stories row */}
+        {topStorySlots.length > 0 && (
+          <HomeTopStoriesBlock slots={topStorySlots} />
+        )}
+
         {moreStories.length > 0 && (
           <HomeTopStories articles={moreStories} />
         )}
 
-        {/* Latest + sidebar */}
-        <HomeLatestSidebar articles={feed.latest} trending={feed.trending} />
+        <HomeLatestSidebar articles={latestArticles} trending={feed.trending} />
 
-        {/* Section blocks */}
-        {feed.sectionDetails.length > 0 && (
-          <HomeSections sections={feed.sectionDetails} />
+        {sectionDetails.length > 0 && (
+          <HomeSections sections={sectionDetails} />
         )}
 
       </div>
 
-      {/* Newsletter band — full-width with its own inner centering */}
       <HomeNewsletterBand />
     </>
   );

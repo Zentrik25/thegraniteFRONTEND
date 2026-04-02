@@ -1074,8 +1074,8 @@ img + .cat-badge,
 .hp-latest-item { display: flex; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
 .hp-latest-item:first-child { padding-top: 0; }
 .hp-latest-item:last-child { border-bottom: none; }
-.hp-latest-thumb { flex-shrink: 0; width: 96px; aspect-ratio: 16/9; object-fit: cover; display: block; }
-.hp-latest-thumb-ph { flex-shrink: 0; width: 96px; aspect-ratio: 16/9; background: #e0e0e0; display: block; }
+.hp-latest-thumb { flex-shrink: 0; width: 130px; height: 90px; object-fit: cover; display: block; }
+.hp-latest-thumb-ph { flex-shrink: 0; width: 130px; height: 90px; background: #e0e0e0; display: block; }
 .hp-latest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 .hp-latest-category { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); display: block; margin-bottom: 0.2rem; font-family: var(--font-ui); }
 .hp-latest-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: #141414; margin: 0 0 0.2rem; font-family: var(--font-ui); }
@@ -1116,6 +1116,52 @@ img + .cat-badge,
 .home-section-more { font-size: 0.75rem; font-weight: 600; color: var(--accent); text-decoration: none; font-family: var(--font-ui); }
 .home-section-more:hover { text-decoration: underline; }
 
+/* ── Article meta line (time · author · 👁 views) ── */
+.article-meta-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.15rem 0;
+  font-size: 0.7rem;
+  color: #767676;
+  font-family: var(--font-ui);
+  margin: 0;
+  line-height: 1.4;
+}
+.article-meta-sep { color: #c8c8c8; margin: 0 0.15rem; }
+.article-meta-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #767676;
+}
+.article-meta-eye {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ── Top Stories block (ranked list from backend) ── */
+.hp-top-stories-block { padding: 1.25rem 0; border-bottom: 1px solid #e6e6e6; }
+.hp-top-stories-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+.hp-top-lead-card { display: flex; flex-direction: column; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e6e6e6; }
+.hp-top-lead-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+.hp-top-lead-img-ph { width: 100%; aspect-ratio: 16/9; background: #e0e0e0; display: block; }
+.hp-top-lead-body { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; padding-top: 0.6rem; }
+.hp-top-lead-title { font-size: 1.05rem; font-weight: 700; line-height: 1.2; color: #141414; margin: 0; font-family: var(--font-ui); }
+.hp-top-lead-title a { color: inherit; text-decoration: none; }
+.hp-top-lead-title a:hover { text-decoration: underline; }
+.hp-top-lead-excerpt { font-size: 0.82rem; color: #3d3d3d; line-height: 1.5; margin: 0; font-family: var(--font-ui); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hp-top-list { display: flex; flex-direction: column; }
+.hp-top-list-item { display: flex; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
+.hp-top-list-item:last-child { border-bottom: none; padding-bottom: 0; }
+.hp-top-rank { flex-shrink: 0; font-size: 1.1rem; font-weight: 900; color: #d8d8d8; font-family: var(--font-ui); width: 2rem; line-height: 1.2; }
+.hp-top-list-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+.hp-top-list-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: #141414; margin: 0; font-family: var(--font-ui); }
+.hp-top-list-title a { color: inherit; text-decoration: none; }
+.hp-top-list-title a:hover { text-decoration: underline; }
+
 /* ── HP responsive (min-width, mobile-first) ── */
 
 /* Tablet (≥640px): 2-col card row */
@@ -1132,6 +1178,9 @@ img + .cat-badge,
   .hp-section-grid { grid-template-columns: 3fr 2fr; gap: 1.5rem; }
   .hp-latest-layout { grid-template-columns: 1fr 280px; }
   .home-newsletter-inner { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+  /* Top stories block: image lead left, ranked list right */
+  .hp-top-stories-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .hp-top-lead-card { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 }
 
 /* Small mobile: stack newsletter form */
