@@ -4,6 +4,30 @@ import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
 
 export const runtime = "nodejs";
 
+/**
+ * Django builds media URLs using request.build_absolute_uri() →
+ * http://127.0.0.1:8000/media/... — unreachable from the browser.
+ *
+ * We add a `proxy_url` field to every media item pointing to our
+ * /api/media/... pass-through route so images render in the browser.
+ * The original `url` (absolute backend URL) is preserved — that's what
+ * gets saved into Article.image_url (a URLField requiring a valid URL).
+ */
+function withProxyUrl(item: Record<string, unknown>): Record<string, unknown> {
+  if (typeof item.url !== "string") return item;
+  try {
+    const parsed = new URL(item.url);
+    if (parsed.pathname.startsWith("/media/")) {
+      // Strip the leading "/media" so the proxy route receives the subpath only.
+      // /api/media/[...path] already prepends /media/ when fetching from Django.
+      return { ...item, proxy_url: `/api/media${parsed.pathname.slice("/media".length)}` };
+    }
+  } catch {
+    // Not a parseable URL — leave as-is.
+  }
+  return item;
+}
+
 export async function GET(request: NextRequest) {
   const session = request.cookies.get(STAFF_ACCESS_COOKIE)?.value;
   if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -18,6 +42,11 @@ export async function GET(request: NextRequest) {
   );
 
   const data = await upstream.json().catch(() => ({}));
+
+  if (data && Array.isArray(data.results)) {
+    data.results = data.results.map(withProxyUrl);
+  }
+
   return NextResponse.json(data, { status: upstream.status });
 }
 
@@ -47,5 +76,11 @@ export async function POST(request: NextRequest) {
   });
 
   const data = await upstream.json().catch(() => ({}));
-  return NextResponse.json(data, { status: upstream.status });
+
+  const rewritten =
+    data && typeof data === "object" && !Array.isArray(data)
+      ? withProxyUrl(data as Record<string, unknown>)
+      : data;
+
+  return NextResponse.json(rewritten, { status: upstream.status });
 }

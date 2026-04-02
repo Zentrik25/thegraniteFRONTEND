@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
 import type { ArticleSummary } from "@/lib/types";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 interface ArticleCardProps {
   article: ArticleSummary;
@@ -14,15 +14,13 @@ export function ArticleCard({ article, showExcerpt = true }: ArticleCardProps) {
   return (
     <article className="article-card">
       {article.image_url ? (
-        <div className="article-card-img" style={{ position: "relative" }}>
-          <Image
-            src={article.image_url}
-            alt={article.image_alt || article.title}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 370px"
-          />
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="article-card-img"
+          src={mediaProxyPath(article.image_url) ?? ""}
+          alt={article.image_alt || article.title}
+          loading="lazy"
+        />
       ) : (
         <div className="article-card-img-ph" aria-hidden="true" />
       )}

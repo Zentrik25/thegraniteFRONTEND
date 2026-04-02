@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 
 import { SearchForm } from "@/components/search-form";
 import { Pagination } from "@/components/site/Pagination";
 import { StoryMeta } from "@/components/site/StoryMeta";
 import { searchArticles } from "@/lib/api/articles";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 interface Props {
   searchParams: Promise<{ q?: string; page?: string }>;
@@ -78,13 +78,12 @@ export default async function SearchPage({ searchParams }: Props) {
               {results.results.map((result) => (
                 <div className="search-result-item" key={result.article.slug}>
                   {result.article.image_url && (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       className="latest-thumb"
-                      src={result.article.image_url}
+                      src={mediaProxyPath(result.article.image_url) ?? ""}
                       alt={result.article.image_alt || result.article.title}
-                      width={96}
-                      height={72}
-                      style={{ objectFit: "cover", flexShrink: 0 }}
+                      loading="lazy"
                     />
                   )}
                   <div className="search-result-body">

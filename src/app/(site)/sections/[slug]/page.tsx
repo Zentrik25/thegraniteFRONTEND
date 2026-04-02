@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
 import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { getSectionDetail } from "@/lib/api/articles";
 import { SITE_URL } from "@/lib/env";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export const revalidate = 120;
 
@@ -85,16 +85,13 @@ export default async function SectionPage({ params }: Props) {
           >
             <div className="lead-story-cell">
               {heroArticle.image_url ? (
-                <div className="lead-story-img" style={{ position: "relative" }}>
-                  <Image
-                    src={heroArticle.image_url}
-                    alt={heroArticle.image_alt || heroArticle.title}
-                    fill
-                    priority
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 768px) 100vw, 870px"
-                  />
-                </div>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  className="lead-story-img"
+                  src={mediaProxyPath(heroArticle.image_url) ?? ""}
+                  alt={heroArticle.image_alt || heroArticle.title}
+                  fetchPriority="high"
+                />
               ) : (
                 <div className="lead-img-placeholder" aria-hidden="true" />
               )}

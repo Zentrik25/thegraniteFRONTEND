@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
 import type { ArticleSummary } from "@/lib/types";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export function LatestFeed({
   articles,
@@ -21,13 +21,12 @@ export function LatestFeed({
       {items.map((article) => (
         <div className="latest-item" key={article.slug}>
           {article.image_url ? (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               className="latest-thumb"
-              src={article.image_url}
+              src={mediaProxyPath(article.image_url) ?? ""}
               alt={article.image_alt || article.title}
-              width={96}
-              height={72}
-              style={{ objectFit: "cover", flexShrink: 0 }}
+              loading="lazy"
             />
           ) : (
             <span className="latest-thumb-ph" aria-hidden="true" />

@@ -12,13 +12,16 @@ export const dynamic = "force-dynamic";
 interface MediaItem {
   id: string | number;
   url: string;
+  proxy_url?: string;
   thumbnail_url?: string;
-  filename: string;
-  file_size?: number;
+  original_filename?: string;
+  size_bytes?: number;
   width?: number;
   height?: number;
-  uploaded_at: string;
+  created_at?: string;
   alt_text?: string;
+  caption?: string;
+  credit?: string;
 }
 
 export default async function CmsMediaPage() {

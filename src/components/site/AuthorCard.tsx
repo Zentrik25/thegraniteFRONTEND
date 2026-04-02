@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import type { UserProfile } from "@/lib/types";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export function AuthorCard({ author }: { author: UserProfile }) {
   const initials = author.byline
@@ -14,13 +14,13 @@ export function AuthorCard({ author }: { author: UserProfile }) {
   return (
     <div className="author-card">
       {author.avatar_url ? (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
           className="author-avatar"
-          src={author.avatar_url}
+          src={mediaProxyPath(author.avatar_url) ?? ""}
           alt={author.byline}
-          width={64}
-          height={64}
           style={{ objectFit: "cover" }}
+          loading="lazy"
         />
       ) : (
         <div className="author-avatar-ph" aria-hidden="true">

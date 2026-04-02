@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { getReaderAccessToken } from "@/lib/auth/reader-session";
+import { mediaProxyPath } from "@/lib/utils/media";
 import { safeApiFetch } from "@/lib/api/fetcher";
 import { unwrapList } from "@/lib/api/fetcher";
 import type { ApiListResponse, BookmarkRecord } from "@/lib/types";
@@ -70,13 +70,13 @@ export default async function BookmarksPage() {
 
                 {/* Thumbnail */}
                 {article.image_url && (
-                  <Image
-                    src={article.image_url}
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={mediaProxyPath(article.image_url) ?? ""}
                     alt=""
-                    width={80}
-                    height={56}
                     className="rounded object-cover shrink-0 hidden sm:block"
-                    style={{ objectFit: "cover" }}
+                    style={{ width: 80, height: 56, objectFit: "cover" }}
+                    loading="lazy"
                   />
                 )}
 

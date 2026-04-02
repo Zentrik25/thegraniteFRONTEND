@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
 import { ArticleViewTracker } from "@/components/article-view-tracker";
 import { CommentsPanel } from "@/components/comments-panel";
@@ -11,6 +10,7 @@ import HistoryTracker from "@/components/reader/HistoryTracker";
 import { getArticleBySlug, getArticleComments } from "@/lib/api/articles";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/env";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export const revalidate = 60;
 
@@ -260,16 +260,13 @@ export default async function ArticlePage({ params }: Props) {
             {/* Hero image */}
             {article.image_url && (
               <figure style={{ margin: "0 0 1.5rem" }}>
-                <div className="article-hero-img" style={{ position: "relative" }}>
-                  <Image
-                    src={article.image_url}
-                    alt={article.image_alt || article.title}
-                    fill
-                    priority
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 768px) 100vw, 870px"
-                  />
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="article-hero-img"
+                  src={mediaProxyPath(article.image_url) ?? ""}
+                  alt={article.image_alt || article.title}
+                  fetchPriority="high"
+                />
                 {(article.image_caption || article.image_credit) && (
                   <figcaption className="article-img-caption">
                     {article.image_caption}

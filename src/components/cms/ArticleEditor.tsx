@@ -11,12 +11,48 @@ interface ArticleEditorProps {
   tags: TagSummary[];
 }
 
+/**
+ * Convert a backend media URL (http://127.0.0.1:8000/media/...)
+ * to the browser-reachable proxy path (/api/media/...).
+ * Non-media URLs (e.g. CDN, Unsplash) are returned unchanged.
+ */
+function toProxyUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.startsWith("/media/")) {
+      // Strip leading "/media" — the proxy route at /api/media/[...path] adds it back.
+      return `/api/media${parsed.pathname.slice("/media".length)}`;
+    }
+  } catch {
+    // Relative path or already proxied — use as-is.
+  }
+  return url;
+}
+
 function slugify(title: string): string {
   return title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+/** Recursively flatten DRF validation error dicts into a readable string. */
+function flattenErrors(body: unknown): string {
+  if (!body || typeof body !== "object") return String(body ?? "Save failed.");
+  return Object.entries(body as Record<string, unknown>)
+    .map(([k, v]) => {
+      if (Array.isArray(v)) return `${k}: ${v.join(", ")}`;
+      if (typeof v === "object") return `${k}: ${flattenErrors(v)}`;
+      return `${k}: ${v}`;
+    })
+    .join(" | ");
+}
+
+// ArticleWriteSerializer accepted fields (for reference):
+// title, excerpt, body, status, category (PK), tags (PK[]), is_breaking,
+// top_story_rank, featured_rank, image_url, image_alt, image_caption,
+// image_credit, og_title, og_description, og_image_url, canonical_url.
+// Read-only: slug, published_at, seo_title, seo_description, is_featured.
 
 export default function ArticleEditor({ article, categories, tags }: ArticleEditorProps) {
   const router = useRouter();
@@ -75,21 +111,23 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
       : "/api/staff/articles/";
     const method = isEdit ? "PATCH" : "POST";
 
+    // Build a payload that matches ArticleWriteSerializer exactly.
+    // - category: integer PK or null (the only nullable FK)
+    // - tags: array of integer PKs
+    // - all CharField/URLField fields must be "" not null (blank=True, no null=True on model)
     const payload: Record<string, unknown> = {
-      ...fields,
-      category: fields.category || null,
-      tags: Array.from(selectedTags),
-      scheduled_at: fields.status === "scheduled" && fields.scheduled_at
-        ? fields.scheduled_at
-        : null,
+      title: fields.title,
+      excerpt: fields.excerpt,
+      body: fields.body,
+      status: fields.status,
+      category: fields.category ? Number(fields.category) : null,
+      tags: Array.from(selectedTags).map(Number),
+      is_breaking: fields.is_breaking,
+      image_url: fields.image_url,
+      image_alt: fields.image_alt,
+      og_title: fields.og_title,
+      og_description: fields.og_description,
     };
-
-    // Remove empty SEO strings so the backend uses its own defaults.
-    (["og_title", "og_description", "seo_title", "seo_description"] as const).forEach((k) => {
-      if (!payload[k]) payload[k] = null;
-    });
-    if (!payload.image_url) payload.image_url = null;
-    if (!payload.image_alt) payload.image_alt = null;
 
     try {
       const res = await fetch(url, {
@@ -101,12 +139,7 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
       const body = await res.json();
 
       if (!res.ok) {
-        const msg =
-          typeof body === "object"
-            ? Object.entries(body)
-                .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-                .join(" | ")
-            : String(body.error ?? "Save failed.");
+        const msg = flattenErrors(body);
         setError(msg);
         return;
       }
@@ -176,26 +209,15 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
                 type="text"
                 required
                 value={fields.title}
-                onChange={(e) => {
-                  update("title", e.target.value);
-                  if (!isEdit) update("slug", slugify(e.target.value));
-                }}
                 style={inputStyle}
                 placeholder="Article headline"
+                onChange={(e) => update("title", e.target.value)}
               />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Slug *</label>
-              <input
-                type="text"
-                required
-                value={fields.slug}
-                onChange={(e) => update("slug", e.target.value)}
-                style={inputStyle}
-                pattern="[a-z0-9-]+"
-                title="Lowercase letters, numbers, and hyphens only"
-              />
+              {!isEdit && fields.title && (
+                <div style={{ fontSize: "0.75rem", color: "#999", marginTop: "0.2rem" }}>
+                  Slug: {slugify(fields.title)}
+                </div>
+              )}
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -224,24 +246,10 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
-                  <option value="scheduled">Scheduled</option>
                   <option value="archived">Archived</option>
                 </select>
               </div>
             </div>
-
-            {fields.status === "scheduled" && (
-              <div>
-                <label style={labelStyle}>Publish at *</label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={fields.scheduled_at}
-                  onChange={(e) => update("scheduled_at", e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
-            )}
 
             <div>
               <label style={labelStyle}>Excerpt</label>
@@ -299,7 +307,7 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
           {fields.image_url && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={fields.image_url}
+              src={toProxyUrl(fields.image_url)}
               alt={fields.image_alt || "Hero preview"}
               style={{
                 width: "100%",
@@ -388,36 +396,25 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
 
         {/* ── Flags ───────────────────────────────────────────────────── */}
         <div style={sectionStyle}>
-          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-            {(
-              [
-                ["is_breaking", "Breaking news"],
-                ["is_premium", "Premium (paywalled)"],
-                ["is_featured", "Featured"],
-              ] as const
-            ).map(([key, label]) => (
-              <label
-                key={key}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.4rem",
-                  fontSize: "0.875rem",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={fields[key] as boolean}
-                  onChange={(e) => update(key, e.target.checked)}
-                />
-                {label}
-              </label>
-            ))}
-          </div>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={fields.is_breaking}
+              onChange={(e) => update("is_breaking", e.target.checked)}
+            />
+            Breaking news
+          </label>
         </div>
 
-        {/* ── SEO (collapsible) ────────────────────────────────────────── */}
+        {/* ── Open Graph (collapsible) ─────────────────────────────────── */}
         <div style={sectionStyle}>
           <button
             type="button"
@@ -435,7 +432,7 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
               color: "#333",
             }}
           >
-            <span>{showSeo ? "▾" : "▸"}</span> SEO &amp; Open Graph
+            <span>{showSeo ? "▾" : "▸"}</span> Open Graph overrides
             <span style={{ fontWeight: 400, color: "#999", fontSize: "0.8rem" }}>
               (optional — falls back to title / excerpt)
             </span>
@@ -443,51 +440,30 @@ export default function ArticleEditor({ article, categories, tags }: ArticleEdit
 
           {showSeo && (
             <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.875rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  <label style={labelStyle}>SEO title</label>
-                  <input
-                    type="text"
-                    value={fields.seo_title}
-                    onChange={(e) => update("seo_title", e.target.value)}
-                    style={inputStyle}
-                    maxLength={70}
-                    placeholder="Overrides headline in &lt;title&gt;"
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>OG title</label>
-                  <input
-                    type="text"
-                    value={fields.og_title}
-                    onChange={(e) => update("og_title", e.target.value)}
-                    style={inputStyle}
-                    maxLength={95}
-                    placeholder="Overrides headline in og:title"
-                  />
-                </div>
-              </div>
               <div>
-                <label style={labelStyle}>SEO description</label>
-                <textarea
-                  rows={2}
-                  value={fields.seo_description}
-                  onChange={(e) => update("seo_description", e.target.value)}
-                  style={{ ...inputStyle, resize: "vertical" }}
-                  maxLength={160}
-                  placeholder="Meta description (≤160 chars)"
+                <label style={labelStyle}>OG title</label>
+                <input
+                  type="text"
+                  value={fields.og_title}
+                  onChange={(e) => update("og_title", e.target.value)}
+                  style={inputStyle}
+                  maxLength={95}
+                  placeholder="Overrides headline in og:title / WhatsApp preview"
                 />
               </div>
               <div>
-                <label style={labelStyle}>OG description</label>
+                <label style={labelStyle}>OG description (≤160 chars)</label>
                 <textarea
                   rows={2}
                   value={fields.og_description}
                   onChange={(e) => update("og_description", e.target.value)}
                   style={{ ...inputStyle, resize: "vertical" }}
-                  maxLength={200}
+                  maxLength={160}
                   placeholder="og:description shown in social previews"
                 />
+                <div style={{ fontSize: "0.7rem", color: "#aaa", marginTop: "0.2rem" }}>
+                  {fields.og_description.length}/160
+                </div>
               </div>
             </div>
           )}

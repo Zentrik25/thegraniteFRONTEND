@@ -5,13 +5,17 @@ import { formatDate } from "@/lib/format";
 
 interface MediaItem {
   id: string | number;
-  url: string;
+  url: string;           // original backend URL
+  proxy_url?: string;    // browser-reachable proxy URL added by our route handler
   thumbnail_url?: string;
-  filename: string;
+  original_filename?: string;
+  filename?: string;
   file_size?: number;
+  size_bytes?: number;
   width?: number;
   height?: number;
-  uploaded_at: string;
+  uploaded_at?: string;
+  created_at?: string;
   alt_text?: string;
 }
 
@@ -76,7 +80,8 @@ export default function MediaManager({ initialItems }: MediaManagerProps) {
   }, []);
 
   async function handleDelete(item: MediaItem) {
-    if (!window.confirm(`Delete "${item.filename}"? This cannot be undone.`)) return;
+    const name = item.original_filename ?? item.filename ?? String(item.id);
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
 
     setDeletingId(item.id);
     try {
@@ -188,8 +193,8 @@ export default function MediaManager({ initialItems }: MediaManagerProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={item.thumbnail_url ?? item.url}
-                alt={item.alt_text ?? item.filename}
+                src={item.proxy_url ?? item.thumbnail_url ?? item.url}
+                alt={item.alt_text ?? item.original_filename ?? item.filename ?? ""}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 loading="lazy"
               />
@@ -205,21 +210,23 @@ export default function MediaManager({ initialItems }: MediaManagerProps) {
                   whiteSpace: "nowrap",
                   color: "#333",
                 }}
-                title={item.filename}
+                title={item.original_filename ?? item.filename ?? ""}
               >
-                {item.filename}
+                {item.original_filename ?? item.filename ?? ""}
               </div>
               <div style={{ fontSize: "0.7rem", color: "#aaa", marginTop: "0.1rem" }}>
                 {item.width && item.height ? `${item.width}×${item.height}` : ""}
-                {item.file_size ? ` · ${formatBytes(item.file_size)}` : ""}
+                {(item.size_bytes ?? item.file_size)
+                  ? ` · ${formatBytes((item.size_bytes ?? item.file_size)!)}`
+                  : ""}
               </div>
               <div style={{ fontSize: "0.7rem", color: "#bbb" }}>
-                {formatDate(item.uploaded_at)}
+                {formatDate(item.created_at ?? item.uploaded_at ?? "")}
               </div>
 
               <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.4rem" }}>
                 <a
-                  href={item.url}
+                  href={item.proxy_url ?? item.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

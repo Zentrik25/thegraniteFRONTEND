@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { StoryMeta } from "@/components/site/StoryMeta";
 import type { ArticleSummary } from "@/lib/types";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export function FeaturedGrid({ articles }: { articles: ArticleSummary[] }) {
   if (articles.length === 0) return null;
@@ -12,15 +12,13 @@ export function FeaturedGrid({ articles }: { articles: ArticleSummary[] }) {
       {articles.slice(0, 4).map((article) => (
         <article className="featured-card" key={article.slug}>
           {article.image_url ? (
-            <div className="featured-img" style={{ position: "relative" }}>
-              <Image
-                src={article.image_url}
-                alt={article.image_alt || article.title}
-                fill
-                style={{ objectFit: "cover" }}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 370px"
-              />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="featured-img"
+              src={mediaProxyPath(article.image_url) ?? ""}
+              alt={article.image_alt || article.title}
+              loading="lazy"
+            />
           ) : (
             <span className="featured-img-placeholder" aria-hidden="true" />
           )}

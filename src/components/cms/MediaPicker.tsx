@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 
 interface MediaItem {
   id: string | number;
-  url: string;
+  url: string;           // original backend URL — saved into Article.image_url
+  proxy_url?: string;    // browser-reachable proxy URL — used for <img> display only
   thumbnail_url?: string;
-  filename: string;
+  original_filename?: string;
+  filename?: string;
   width?: number;
   height?: number;
 }
@@ -107,7 +109,7 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
                 key={item.id}
                 type="button"
                 onClick={() => onSelect(item.url)}
-                title={item.filename}
+                title={item.original_filename ?? item.filename ?? ""}
                 style={{
                   padding: 0,
                   border: "2px solid transparent",
@@ -125,10 +127,11 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
                 }}
               >
                 <div style={{ aspectRatio: "16/9", overflow: "hidden" }}>
+                  {/* Use proxy_url for display — backend URL is unreachable from browser */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={item.thumbnail_url ?? item.url}
-                    alt={item.filename}
+                    src={item.proxy_url ?? item.thumbnail_url ?? item.url}
+                    alt={item.original_filename ?? item.filename ?? ""}
                     loading="lazy"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
@@ -143,7 +146,7 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {item.filename}
+                  {item.original_filename ?? item.filename ?? ""}
                 </div>
               </button>
             ))}

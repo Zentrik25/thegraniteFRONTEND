@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 
 import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { getAuthor } from "@/lib/api/users";
+import { mediaProxyPath } from "@/lib/utils/media";
 
 export const revalidate = 300;
 
@@ -46,13 +46,13 @@ export default async function AuthorPage({ params }: Props) {
       {/* Author hero */}
       <div className="author-hero">
         {user.avatar_url ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             className="author-hero-avatar"
-            src={user.avatar_url}
+            src={mediaProxyPath(user.avatar_url) ?? ""}
             alt={user.byline}
-            width={96}
-            height={96}
             style={{ objectFit: "cover" }}
+            loading="lazy"
           />
         ) : (
           <div className="author-hero-avatar-ph" aria-hidden="true">

@@ -39,11 +39,11 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
 
   const articles = data?.results ?? [];
 
+  // ArticleListSerializer returns status via get_status_display — normalise to lowercase for lookup.
   const statusBadge: Record<string, { bg: string; color: string }> = {
     published: { bg: "#d4edda", color: "#155724" },
-    draft: { bg: "#e2e3e5", color: "#383d41" },
-    scheduled: { bg: "#d1ecf1", color: "#0c5460" },
-    archived: { bg: "#fff3cd", color: "#856404" },
+    draft:     { bg: "#e2e3e5", color: "#383d41" },
+    archived:  { bg: "#fff3cd", color: "#856404" },
   };
 
   return (
@@ -127,7 +127,8 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
               </tr>
             )}
             {articles.map((a) => {
-              const badge = statusBadge[a.status ?? "draft"] ?? { bg: "#eee", color: "#333" };
+              const normalStatus = (a.status ?? "draft").toLowerCase();
+              const badge = statusBadge[normalStatus] ?? { bg: "#eee", color: "#333" };
               return (
                 <tr key={a.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <td style={{ padding: "0.75rem 1rem", maxWidth: "320px" }}>
@@ -153,7 +154,7 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
                         textTransform: "capitalize",
                       }}
                     >
-                      {a.status ?? "draft"}
+                      {normalStatus}
                     </span>
                   </td>
                   <td style={{ padding: "0.75rem 0.5rem", color: "#888", whiteSpace: "nowrap" }}>
