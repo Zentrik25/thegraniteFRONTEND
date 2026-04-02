@@ -48,12 +48,26 @@ export async function getHomepageFeed() {
     breaking.status >= 500 &&
     sections.status >= 500;
 
+  // Fetch up to 6 primary section detail pages in parallel for section blocks
+  const primarySections = sections.data?.results.slice(0, 6) ?? [];
+  const sectionDetailResults = await Promise.all(
+    primarySections.map((s) =>
+      safeApiFetch<SectionDetail>(`/api/v1/sections/${s.slug}/`, {
+        next: { revalidate: 120 },
+      }),
+    ),
+  );
+  const sectionDetails = sectionDetailResults
+    .filter((r) => r.data !== null)
+    .map((r) => r.data as SectionDetail);
+
   return {
     latest: latest.data ? unwrapList(latest.data) : [],
     topStories: topStories.data || [],
     featured: featured.data ? unwrapList(featured.data) : [],
     breaking: breaking.data ? unwrapList(breaking.data) : [],
     sections: sections.data?.results || [],
+    sectionDetails,
     trending: trending.data || [],
     apiUnavailable,
   };

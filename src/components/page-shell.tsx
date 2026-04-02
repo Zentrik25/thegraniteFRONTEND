@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getSections } from "@/lib/api/articles";
+import { SiteHeader } from "@/components/site/SiteHeader";
 
 const FOOTER_COLS = [
   {
@@ -39,65 +40,8 @@ export async function PageShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="shell">
-      {/* ── Sticky masthead ── */}
-      <header className="masthead-wrap" role="banner">
-        {/* Utility bar */}
-        <div className="header-utility">
-          <div className="header-utility-inner">
-            <span>The Granite Post — Zimbabwe&apos;s journal of record</span>
-            <div className="header-utility-links">
-              <Link href="/search">Search</Link>
-              <Link href="/login">Sign In</Link>
-              <Link href="/subscribe">Subscribe</Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Brand row */}
-        <div className="masthead-brand-row">
-          <Link
-            className="masthead-wordmark"
-            href="/"
-            aria-label="The Granite Post — home"
-          >
-            The Granite <em>Post</em>
-          </Link>
-          <nav className="masthead-actions" aria-label="Primary actions">
-            <Link className="btn-ghost" href="/search">
-              Search
-            </Link>
-            <Link className="btn-ghost" href="/login">
-              Sign In
-            </Link>
-            <Link className="btn-primary btn-sm" href="/subscribe">
-              Subscribe
-            </Link>
-          </nav>
-        </div>
-
-        {/* Section navigation */}
-        {sections.length > 0 && (
-          <div className="nav-strip-wrap">
-            <nav className="nav-sections-strip" aria-label="Sections">
-              <Link className="nav-section-link" href="/">
-                Home
-              </Link>
-              {sections.map((s) => (
-                <Link
-                  key={s.slug}
-                  className="nav-section-link"
-                  href={`/sections/${s.slug}`}
-                >
-                  {s.name}
-                </Link>
-              ))}
-              <Link className="nav-section-link" href="/authors">
-                Authors
-              </Link>
-            </nav>
-          </div>
-        )}
-      </header>
+      {/* ── BBC-style sticky header with hamburger ── */}
+      <SiteHeader sections={sections} />
 
       {/* Page content */}
       <div className="page-content">{children}</div>
