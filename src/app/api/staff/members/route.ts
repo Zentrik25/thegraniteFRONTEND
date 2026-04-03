@@ -8,6 +8,7 @@ const VALID_ROLES = new Set(["ADMIN", "EDITOR", "AUTHOR", "MODERATOR"]);
 
 interface CreateStaffBody {
   email: string;
+  username: string;
   first_name?: string;
   last_name?: string;
   role: string;
@@ -20,6 +21,10 @@ function isValidCreateBody(raw: unknown): raw is CreateStaffBody {
   
   // Validate email
   if (typeof b.email !== "string" || !b.email.includes("@")) return false;
+  
+  // Validate username
+  if (typeof b.username !== "string" || b.username.length < 3) return false;
+  if (!/^[a-zA-Z0-9@.+\-_]+$/.test(b.username)) return false;
   
   // Validate role
   if (typeof b.role !== "string" || !VALID_ROLES.has(b.role)) return false;
@@ -44,6 +49,15 @@ function validateCreateBody(raw: unknown): { valid: boolean; errors: Record<stri
     errors.email = ["Email is required."];
   } else if (!b.email.includes("@")) {
     errors.email = ["Enter a valid email address."];
+  }
+  
+  // Validate username
+  if (!b.username || typeof b.username !== "string") {
+    errors.username = ["Username is required."];
+  } else if (b.username.length < 3) {
+    errors.username = ["Username must be at least 3 characters."];
+  } else if (!/^[a-zA-Z0-9@.+\-_]+$/.test(b.username)) {
+    errors.username = ["Username can only contain letters, digits, @, ., +, -, and _."];
   }
   
   // Validate role
@@ -100,7 +114,7 @@ export async function POST(request: NextRequest) {
   // Also ensure it passes the type check
   if (!isValidCreateBody(body)) {
     return NextResponse.json(
-      { errors: { non_field_errors: ["Required: email, role (ADMIN|EDITOR|AUTHOR|MODERATOR), password (≥8 chars)."] } },
+      { errors: { non_field_errors: ["Required: email, username (≥3 chars, letters/digits/@/./+/-/_), role (ADMIN|EDITOR|AUTHOR|MODERATOR), password (≥8 chars)."] } },
       { status: 400 },
     );
   }

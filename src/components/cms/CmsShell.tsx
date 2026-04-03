@@ -98,7 +98,7 @@ export default async function CmsShell({ children, title }: CmsShellProps) {
                 transition: "background 0.1s",
               }}
             >
-              <span style={{ fontSize: "1rem" }}>{icon}</span>
+              <span style={{ fontSize: "1rem", filter: "brightness(0) invert(1)" }}>{icon}</span>
               {label}
             </Link>
           ))}

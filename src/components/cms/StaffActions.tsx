@@ -11,6 +11,7 @@ type StaffRole = (typeof ROLES)[number];
 
 interface InviteForm {
   email: string;
+  username: string;
   first_name: string;
   last_name: string;
   role: StaffRole;
@@ -38,6 +39,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
   const [showInvite, setShowInvite] = useState(false);
   const [inviteForm, setInviteForm] = useState<InviteForm>({
     email: "",
+    username: "",
     first_name: "",
     last_name: "",
     role: "AUTHOR",
@@ -74,6 +76,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: inviteForm.email,
+          username: inviteForm.username,
           first_name: inviteForm.first_name,
           last_name: inviteForm.last_name,
           role: inviteForm.role,
@@ -133,7 +136,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
         return;
       }
       setMembers((prev) => [...prev, body as StaffMember]);
-      setInviteForm({ email: "", first_name: "", last_name: "", role: "AUTHOR", password: "", password_confirm: "" });
+      setInviteForm({ email: "", username: "", first_name: "", last_name: "", role: "AUTHOR", password: "", password_confirm: "" });
       setShowInvite(false);
     } catch {
       setInviteError("Network error. Please try again.");
@@ -303,6 +306,17 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
                   value={inviteForm.email}
                   onChange={(e) => updateInvite("email", e.target.value)}
                   style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Username *</label>
+                <input
+                  type="text"
+                  required
+                  value={inviteForm.username}
+                  onChange={(e) => updateInvite("username", e.target.value)}
+                  style={inputStyle}
+                  placeholder="letters, digits, @/./+/-/_ only"
                 />
               </div>
               <div>
