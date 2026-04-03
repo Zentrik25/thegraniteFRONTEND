@@ -154,40 +154,48 @@ export default async function ArticlePage({ params }: Props) {
                 fontSize: "0.72rem",
                 color: "var(--muted)",
                 fontFamily: "var(--font-ui)",
-                marginBottom: "1rem",
+                marginBottom: "0.5rem",
                 flexWrap: "wrap",
                 alignItems: "center",
               }}
             >
-              <Link href="/" style={{ color: "var(--accent)" }}>
-                Home
-              </Link>
+              <Link href="/" style={{ color: "var(--accent)" }}>Home</Link>
               <span aria-hidden="true">›</span>
               {article.category && (
                 <>
-                  <Link
-                    href={`/categories/${article.category.slug}`}
-                    style={{ color: "var(--accent)" }}
-                  >
+                  <Link href={`/categories/${article.category.slug}`} style={{ color: "var(--accent)" }}>
                     {article.category.name}
                   </Link>
                   <span aria-hidden="true">›</span>
                 </>
               )}
               <span aria-current="page" style={{ color: "var(--muted)" }}>
-                {article.title.length > 50
-                  ? `${article.title.slice(0, 50)}…`
-                  : article.title}
+                {article.title.length > 50 ? `${article.title.slice(0, 50)}…` : article.title}
               </span>
             </nav>
+
+            {/* Back to Home */}
+            <Link
+              href="/"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.3rem",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                color: "var(--accent)",
+                fontFamily: "var(--font-ui)",
+                textDecoration: "none",
+                marginBottom: "1.1rem",
+              }}
+            >
+              ← Back to Home
+            </Link>
 
             {/* Article header */}
             <header className="article-detail-header">
               {article.is_breaking && (
                 <p className="article-detail-kicker">Breaking</p>
-              )}
-              {!article.is_breaking && article.category && (
-                <p className="article-detail-kicker">{article.category.name}</p>
               )}
 
               <h1 className="article-detail-headline">{article.title}</h1>

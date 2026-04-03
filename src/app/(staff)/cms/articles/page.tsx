@@ -31,11 +31,16 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
 
   const sp = await searchParams;
   const page = sp.page ?? "1";
+  // "status" param: empty string = user hasn't chosen a filter.
+  // We treat empty as "all except archived" so deleted articles disappear from the default view.
+  // Pass "all" explicitly to show every status including archived.
   const status = sp.status ?? "";
   const q = sp.q ?? "";
 
   const params = new URLSearchParams({ page, page_size: "25" });
-  if (status) params.set("status", status);
+  if (status && status !== "all") {
+    params.set("status", status);
+  }
   if (q) params.set("search", q);
 
   const { data } = await safeApiFetch<ApiListResponse<ArticleSummary>>(
@@ -46,7 +51,12 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
     }
   );
 
-  const articles = data?.results ?? [];
+  // When no status filter is active, hide archived so "deleted" articles vanish from the default view.
+  // The backend DELETE archives rather than hard-deletes; this makes it feel permanent to editors.
+  const allResults = data?.results ?? [];
+  const articles = status === "" || status === "all"
+    ? allResults.filter((a) => (a.status ?? "draft").toLowerCase() !== "archived")
+    : allResults;
 
   return (
     <CmsShell title="Articles">
@@ -166,16 +176,14 @@ export default async function CmsArticlesPage({ searchParams }: PageProps) {
                     : <span style={{ color: "#ccc" }}>—</span>}
                 </td>
                 <td style={{ padding: "0.65rem 0.75rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <Link
                       href={`/cms/articles/${a.slug}/edit`}
                       style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none", fontSize: "0.8rem" }}
                     >
                       Edit →
                     </Link>
-                    {(a.status ?? "draft").toLowerCase() !== "archived" && (
-                      <DeleteArticleButton slug={a.slug} title={a.title} />
-                    )}
+                    <DeleteArticleButton slug={a.slug} title={a.title} />
                   </div>
                 </td>
               </tr>

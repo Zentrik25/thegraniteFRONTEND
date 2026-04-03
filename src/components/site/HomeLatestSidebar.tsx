@@ -50,9 +50,6 @@ export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps
                     <h3 className="hp-latest-title">
                       <Link href={`/articles/${article.slug}`}>{article.title}</Link>
                     </h3>
-                    {article.excerpt && (
-                      <p className="hp-latest-excerpt">{article.excerpt}</p>
-                    )}
                     <ArticleMeta article={article} />
                   </div>
                 </article>

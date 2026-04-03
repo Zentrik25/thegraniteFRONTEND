@@ -8,17 +8,13 @@ interface DeleteArticleButtonProps {
   title: string;
 }
 
-/**
- * Soft-deletes (archives) an article via the staff API.
- * Requires confirmation before acting. Refreshes the list on success.
- */
 export function DeleteArticleButton({ slug, title }: DeleteArticleButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
     const confirmed = window.confirm(
-      `Archive "${title}"?\n\nThis will set the article to archived status and remove it from the public site. You can restore it from the editor.`
+      `Delete "${title}"?\n\nThe article will be removed from the public site. You can restore it by editing and republishing.`
     );
     if (!confirmed) return;
 
@@ -29,7 +25,7 @@ export function DeleteArticleButton({ slug, title }: DeleteArticleButtonProps) {
           router.refresh();
         } else {
           const data = await res.json().catch(() => ({}));
-          window.alert((data as { error?: string }).error ?? "Failed to archive article. Try again.");
+          window.alert((data as { error?: string }).error ?? "Delete failed. Try again.");
         }
       } catch {
         window.alert("Network error. Check your connection and try again.");
@@ -42,19 +38,36 @@ export function DeleteArticleButton({ slug, title }: DeleteArticleButtonProps) {
       type="button"
       onClick={handleDelete}
       disabled={isPending}
-      title="Archive this article"
+      title="Delete article"
       style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.25rem",
         background: "transparent",
-        border: "none",
+        border: "1px solid #f5c6cb",
+        borderRadius: "4px",
         color: isPending ? "#ccc" : "#c00",
         cursor: isPending ? "not-allowed" : "pointer",
-        padding: "0",
-        fontSize: "0.8rem",
+        padding: "0.2rem 0.5rem",
+        fontSize: "0.75rem",
         fontWeight: 600,
         lineHeight: 1,
+        whiteSpace: "nowrap",
       }}
     >
-      {isPending ? "…" : "Archive"}
+      {isPending ? (
+        "…"
+      ) : (
+        <>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Delete
+        </>
+      )}
     </button>
   );
 }

@@ -38,11 +38,12 @@ export default function CmsStatusFilter({ defaultValue }: CmsStatusFilterProps) 
         fontSize: "0.875rem",
       }}
     >
-      <option value="">All statuses</option>
+      <option value="">Active (default)</option>
       <option value="published">Published</option>
       <option value="draft">Draft</option>
       <option value="scheduled">Scheduled</option>
-      <option value="archived">Archived</option>
+      <option value="archived">Deleted / Archived</option>
+      <option value="all">All (including deleted)</option>
     </select>
   );
 }

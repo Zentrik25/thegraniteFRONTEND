@@ -17,6 +17,8 @@ const navItems = [
   { label: "Ads", href: "/cms/ads" },
   { label: "Subscriptions", href: "/cms/subscriptions" },
   { label: "Staff", href: "/cms/staff" },
+  { label: "Analytics", href: "/cms/analytics" },
+  { label: "Settings", href: "/cms/settings" },
 ];
 
 /** Server component — every CMS page that renders this gets a free session check. */

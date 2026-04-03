@@ -112,7 +112,18 @@
 }
 
 /* ── Shell / Layout ── */
-.shell { min-height: 100vh; display: flex; flex-direction: column; }
+/* padding-top offsets content below the fixed header:
+   desktop = brand bar (52px) + section nav (38px) = 90px
+   mobile  = brand bar only = 52px */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 90px;
+}
+@media (max-width: 767px) {
+  .shell { padding-top: 52px; }
+}
 .page-content { flex: 1; min-width: 0; }
 .container {
   width: 100%;
@@ -128,10 +139,12 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
    BBC-STYLE SITE HEADER
    ═══════════════════════════════════════════ */
 
-/* ── Sticky masthead wrapper ── */
+/* ── Fixed masthead wrapper ── */
 .bbc-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
   background: #fff;
   border-bottom: 1px solid #e6e6e6;
@@ -194,7 +207,7 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
 /* ── Wordmark ── */
 .bbc-wordmark {
   font-family: var(--font-ui);
-  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-size: clamp(1.6rem, 3.5vw, 2.3rem);
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1;

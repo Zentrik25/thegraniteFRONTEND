@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type FormEvent } from "react";
+import { useState, useCallback, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
 import MediaPicker from "@/components/cms/MediaPicker";
@@ -184,6 +184,8 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Synchronous guard — prevents double-submit when React state update is not yet flushed
+  const savingRef = useRef(false);
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((p) => ({ ...p, [key]: value }));
@@ -233,6 +235,10 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   }
 
   async function save(overrideStatus?: string) {
+    // Synchronous check — prevents concurrent saves regardless of React batching
+    if (savingRef.current) return;
+    savingRef.current = true;
+
     setError(null);
     setSaving(true);
     setSaved(false);
@@ -263,6 +269,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
     } catch {
       setError("Network error. Please try again.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -281,15 +288,16 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   }
 
   async function handleArchive() {
-    if (!isEdit) return;
+    if (!isEdit || savingRef.current) return;
     if (!confirm("Archive this article? It will be unpublished and hidden from readers.")) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       const res = await fetch(`/api/staff/articles/${article!.slug}/`, { method: "DELETE" });
       if (res.ok) { router.push("/cms/articles"); router.refresh(); }
       else setError("Could not archive article.");
     } catch { setError("Network error."); }
-    finally { setSaving(false); }
+    finally { savingRef.current = false; setSaving(false); }
   }
 
   const isDraft     = fields.status === "draft";
