@@ -51,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Articles ──────────────────────────────────────────────────────────────
   const articles: MetadataRoute.Sitemap =
-    articlesRes.data?.results.map((a) => ({
+    articlesRes.data?.results?.map((a) => ({
       url: `${base}/articles/${a.slug}`,
       lastModified: a.updated_at ? new Date(a.updated_at) : new Date(),
       changeFrequency: "weekly" as const,
@@ -60,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Categories ────────────────────────────────────────────────────────────
   const categories: MetadataRoute.Sitemap =
-    categoriesRes.data?.results.map((c) => ({
+    categoriesRes.data?.results?.map((c) => ({
       url: `${base}/categories/${c.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Sections ──────────────────────────────────────────────────────────────
   const sections: MetadataRoute.Sitemap =
-    sectionsRes.data?.results.map((s) => ({
+    sectionsRes.data?.results?.map((s) => ({
       url: `${base}/sections/${s.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Tags ──────────────────────────────────────────────────────────────────
   const tags: MetadataRoute.Sitemap =
-    tagsRes.data?.results.map((t) => ({
+    tagsRes.data?.results?.map((t) => ({
       url: `${base}/tags/${t.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.4,
@@ -86,7 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // ── Authors ───────────────────────────────────────────────────────────────
   const authors: MetadataRoute.Sitemap =
-    authorsRes.data?.results.map((a) => ({
+    authorsRes.data?.results?.map((a) => ({
       url: `${base}/authors/${a.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.5,

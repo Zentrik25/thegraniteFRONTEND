@@ -1,8 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/env";
 import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
+import { forwardStaffRequest } from "@/lib/api/staff-proxy";
 
 export const runtime = "nodejs";
+
+export async function GET(request: NextRequest) {
+  return forwardStaffRequest(request, "/api/v1/articles/");
+}
 
 // POST /api/v1/articles/ — create new article (staff only)
 export async function POST(request: NextRequest) {

@@ -13,6 +13,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
+import { extractStaffRoleFromJwt, hasMinimumStaffRole } from "@/lib/auth/staff-roles";
 
 /** Validate that a redirect target is a safe relative path on this origin. */
 function safeNext(raw: string | null, fallback: string): string {
@@ -27,10 +28,31 @@ function safeNext(raw: string | null, fallback: string): string {
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const dest = pathname + search;
+  const staffRoot = pathname.startsWith("/admin") ? "/admin" : "/cms";
+  const editorOnlyCmsPath =
+    pathname.startsWith("/cms/sections") ||
+    pathname.startsWith("/cms/categories") ||
+    pathname.startsWith("/cms/tags") ||
+    pathname.startsWith("/admin/sections") ||
+    pathname.startsWith("/admin/categories") ||
+    pathname.startsWith("/admin/tags");
 
   // ── Staff CMS ─────────────────────────────────────────────────────────────
-  if (pathname.startsWith("/cms") && !pathname.startsWith("/cms/login")) {
-    if (request.cookies.get("granite_staff_session")?.value) {
+  if (
+    (pathname.startsWith("/cms") || pathname.startsWith("/admin")) &&
+    !pathname.startsWith("/cms/login") &&
+    !pathname.startsWith("/admin/login")
+  ) {
+    const accessToken = request.cookies.get("granite_staff_session")?.value;
+
+    if (accessToken) {
+      if (editorOnlyCmsPath) {
+        const role = extractStaffRoleFromJwt(accessToken);
+        if (role && !hasMinimumStaffRole(role, "editor")) {
+          return NextResponse.redirect(new URL(staffRoot, request.url));
+        }
+      }
+
       return NextResponse.next();
     }
 
@@ -40,8 +62,8 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const url = new URL("/cms/login", request.url);
-    url.searchParams.set("next", safeNext(dest, "/cms"));
+    const url = new URL(`${staffRoot}/login`, request.url);
+    url.searchParams.set("next", safeNext(dest, staffRoot));
     return NextResponse.redirect(url);
   }
 
@@ -66,5 +88,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/cms/:path*", "/account/:path*"],
+  matcher: ["/cms/:path*", "/admin/:path*", "/account/:path*"],
 };

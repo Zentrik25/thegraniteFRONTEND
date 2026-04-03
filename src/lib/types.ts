@@ -31,12 +31,17 @@ export type CategorySummary = {
   slug: string;
   description?: string;
   og_image_url?: string;
+  section?: number | null;
+  article_count?: number;
+  section_name?: string | null;
+  section_slug?: string | null;
 };
 
 export type TagSummary = {
   id: string | number;
   name: string;
   slug: string;
+  article_count?: number;
 };
 
 export type SectionSummary = {
@@ -46,7 +51,9 @@ export type SectionSummary = {
   description?: string;
   og_image_url?: string;
   display_order?: number;
+  is_active?: boolean;
   is_primary?: boolean;
+  featured_article?: number | null;
   article_count?: number;
   category_count?: number;
 };
@@ -55,6 +62,41 @@ export type SectionDetail = SectionSummary & {
   hero_article: ArticleSummary | null;
   categories: CategorySummary[];
   articles: ArticleSummary[];
+};
+
+export type SectionListResponse = {
+  status?: string;
+  count: number;
+  results: SectionSummary[];
+};
+
+export type SectionArticlesResponse = ApiListResponse<ArticleSummary> & {
+  status?: string;
+};
+
+export type SectionWritePayload = {
+  name: string;
+  description?: string;
+  og_image_url?: string;
+  display_order?: number;
+  is_active?: boolean;
+  is_primary?: boolean;
+  featured_article?: number | null;
+};
+
+export type CategoryWritePayload = {
+  name: string;
+  description?: string;
+  og_image_url?: string;
+  section?: number | null;
+};
+
+export type TagWritePayload = {
+  name: string;
+};
+
+export type ApiDetailResponse = {
+  detail: string;
 };
 
 // ─── Articles ──────────────────────────────────────────────────────────────

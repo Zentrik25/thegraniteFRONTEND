@@ -9,16 +9,19 @@ interface CmsShellProps {
 }
 
 const navItems = [
-  { label: "Dashboard", href: "/cms" },
-  { label: "Articles", href: "/cms/articles" },
-  { label: "Media", href: "/cms/media" },
-  { label: "Comments", href: "/cms/comments" },
-  { label: "Newsletter", href: "/cms/newsletter" },
-  { label: "Ads", href: "/cms/ads" },
-  { label: "Subscriptions", href: "/cms/subscriptions" },
-  { label: "Staff", href: "/cms/staff" },
-  { label: "Analytics", href: "/cms/analytics" },
-  { label: "Settings", href: "/cms/settings" },
+  { label: "Dashboard", href: "/cms", icon: "📊" },
+  { label: "Articles", href: "/cms/articles", icon: "📝" },
+  { label: "Sections", href: "/cms/sections", icon: "📑" },
+  { label: "Categories", href: "/cms/categories", icon: "🏷️" },
+  { label: "Tags", href: "/cms/tags", icon: "🔖" },
+  { label: "Media", href: "/cms/media", icon: "🖼️" },
+  { label: "Comments", href: "/cms/comments", icon: "💬" },
+  { label: "Newsletter", href: "/cms/newsletter", icon: "📧" },
+  { label: "Ads", href: "/cms/ads", icon: "📢" },
+  { label: "Subscriptions", href: "/cms/subscriptions", icon: "🎁" },
+  { label: "Staff", href: "/cms/staff", icon: "👥" },
+  { label: "Analytics", href: "/cms/analytics", icon: "📈" },
+  { label: "Settings", href: "/cms/settings", icon: "⚙️" },
 ];
 
 /** Server component — every CMS page that renders this gets a free session check. */
@@ -78,20 +81,24 @@ export default async function CmsShell({ children, title }: CmsShellProps) {
           </span>
         </div>
 
-        <nav style={{ flex: 1, padding: "0.75rem 0" }}>
-          {navItems.map(({ label, href }) => (
+        <nav style={{ flex: 1, padding: "0.5rem 0" }}>
+          {navItems.map(({ label, href, icon }) => (
             <Link
               key={href}
               href={href}
               style={{
-                display: "block",
-                padding: "0.6rem 1rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                padding: "0.45rem 1rem",
                 color: "#ccc",
                 textDecoration: "none",
                 fontSize: "0.875rem",
+                fontWeight: 700,
                 transition: "background 0.1s",
               }}
             >
+              <span style={{ fontSize: "1rem" }}>{icon}</span>
               {label}
             </Link>
           ))}
