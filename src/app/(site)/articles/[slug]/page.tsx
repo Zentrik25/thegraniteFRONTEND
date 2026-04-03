@@ -7,6 +7,7 @@ import { CommentsPanel } from "@/components/comments-panel";
 import { NewsletterForm } from "@/components/newsletter-form";
 import BookmarkButton from "@/components/reader/BookmarkButton";
 import HistoryTracker from "@/components/reader/HistoryTracker";
+import { ShareRow } from "@/components/site/ShareRow";
 import { getArticleBySlug, getArticleComments } from "@/lib/api/articles";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/env";
@@ -159,11 +160,11 @@ export default async function ArticlePage({ params }: Props) {
                 alignItems: "center",
               }}
             >
-              <Link href="/" style={{ color: "var(--accent)" }}>Home</Link>
+              <Link href="/" className="article-breadcrumb-link">Home</Link>
               <span aria-hidden="true">›</span>
               {article.category && (
                 <>
-                  <Link href={`/categories/${article.category.slug}`} style={{ color: "var(--accent)" }}>
+                  <Link href={`/categories/${article.category.slug}`} className="article-breadcrumb-link">
                     {article.category.name}
                   </Link>
                   <span aria-hidden="true">›</span>
@@ -174,26 +175,13 @@ export default async function ArticlePage({ params }: Props) {
               </span>
             </nav>
 
-            {/* Back to Home */}
-            <Link
-              href="/"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.3rem",
-                fontSize: "0.78rem",
-                fontWeight: 600,
-                color: "var(--accent)",
-                fontFamily: "var(--font-ui)",
-                textDecoration: "none",
-                marginBottom: "1.1rem",
-              }}
-            >
-              ← Back to Home
-            </Link>
-
             {/* Article header */}
             <header className="article-detail-header">
+              {article.category && (
+                <span className="article-detail-category-kicker">
+                  {article.category.name}
+                </span>
+              )}
               {article.is_breaking && (
                 <p className="article-detail-kicker">Breaking</p>
               )}
@@ -209,9 +197,9 @@ export default async function ArticlePage({ params }: Props) {
                 className="article-detail-meta"
                 role="complementary"
                 aria-label="Article info"
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "inherit", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", flex: 1, minWidth: 0 }}>
                 {article.author_name && (
                   <span className="article-detail-author">
                     {article.author_slug ? (
@@ -284,6 +272,12 @@ export default async function ArticlePage({ params }: Props) {
                 </div>
                 <BookmarkButton articleSlug={slug} compact />
               </div>
+
+              {/* Share buttons */}
+              <ShareRow
+                title={article.title}
+                url={article.canonical_url || `${SITE_URL}/articles/${slug}`}
+              />
             </header>
 
             {/* Hero image */}

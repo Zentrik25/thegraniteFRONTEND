@@ -13,6 +13,8 @@ interface HomeLatestSidebarProps {
 export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps) {
   const items = articles.slice(0, 10);
 
+  if (items.length === 0 && trending.length === 0) return null;
+
   return (
     <section aria-labelledby="hp-latest-label">
       <div className="hp-latest-layout">
@@ -23,9 +25,7 @@ export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps
             <Link className="hp-latest-more" href="/search">More →</Link>
           </div>
 
-          {items.length === 0 ? (
-            <p className="copy">No recent stories yet.</p>
-          ) : (
+          {items.length === 0 ? null : (
             <div role="feed" aria-label="Latest news">
               {items.map((article) => (
                 <article key={article.slug} className="hp-latest-item">

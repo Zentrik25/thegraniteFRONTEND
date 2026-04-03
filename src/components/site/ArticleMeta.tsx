@@ -23,7 +23,7 @@ export function ArticleMeta({ article, className }: ArticleMetaProps) {
 
   return (
     <p className={`article-meta-line${className ? ` ${className}` : ""}`}>
-      {parts.join(" · ")}
+      {parts.join(" | ")}
     </p>
   );
 }

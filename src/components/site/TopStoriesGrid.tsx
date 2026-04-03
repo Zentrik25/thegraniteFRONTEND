@@ -4,6 +4,20 @@ import { StoryMeta } from "@/components/site/StoryMeta";
 import type { TopStorySlot } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
 
+/** Replaces spaces with non-breaking spaces around dates, currency, and numbers */
+function formatHeadline(title: string): string {
+  return title
+    // "April 1", "March 31", "January 2026" etc — month + number
+    .replace(
+      /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d)/g,
+      "$1\u00A0$2"
+    )
+    // Currency: US$320, ZWG 500, R 1,200, USD 100
+    .replace(/\b(US\$|ZWG|USD|ZAR|R|£|€)\s*(\d)/g, "$1\u00A0$2")
+    // Number + common suffix: 4%, 3.5bn, 12m
+    .replace(/(\d)\s+(percent|billion|million|trillion|bn|mn|tn|kg|km|MW|kV)/gi, "$1\u00A0$2");
+}
+
 export function TopStoriesGrid({ slots }: { slots: TopStorySlot[] }) {
   const filled = slots.filter((s) => s.article !== null);
   if (filled.length === 0) return null;
@@ -34,7 +48,9 @@ export function TopStoriesGrid({ slots }: { slots: TopStorySlot[] }) {
         ) : null}
 
         <h2 className="lead-story-title">
-          <Link href={`/articles/${lead.slug}`}>{lead.title}</Link>
+          <Link href={`/articles/${lead.slug}`}>
+            {formatHeadline(lead.title)}
+          </Link>
         </h2>
 
         {lead.excerpt && (
@@ -61,7 +77,9 @@ export function TopStoriesGrid({ slots }: { slots: TopStorySlot[] }) {
                 </p>
               )}
               <h3 className="secondary-title">
-                <Link href={`/articles/${article.slug}`}>{article.title}</Link>
+                <Link href={`/articles/${article.slug}`}>
+                  {formatHeadline(article.title)}
+                </Link>
               </h3>
               <StoryMeta article={article} />
             </div>
