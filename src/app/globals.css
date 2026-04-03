@@ -194,7 +194,7 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
 /* ── Wordmark ── */
 .bbc-wordmark {
   font-family: var(--font-ui);
-  font-size: clamp(1.1rem, 3vw, 1.7rem);
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -1085,9 +1085,10 @@ img + .cat-badge,
 .hp-latest-time { font-size: 0.68rem; color: #767676; font-family: var(--font-ui); }
 .hp-sidebar-widget { margin-bottom: 1.5rem; }
 .hp-sidebar-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #141414; border-top: 4px solid #141414; padding-top: 0.4rem; margin-bottom: 0.75rem; font-family: var(--font-ui); }
-.hp-trending-item { display: flex; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
+.hp-trending-item { display: flex; gap: 0.65rem; padding: 0.6rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
 .hp-trending-item:last-child { border-bottom: none; }
-.hp-trending-rank { flex-shrink: 0; font-size: 1rem; font-weight: 700; color: #c8c8c8; width: 1.4rem; line-height: 1.2; font-family: var(--font-ui); }
+.hp-trending-thumb { flex-shrink: 0; width: 68px; height: 50px; object-fit: cover; display: block; }
+.hp-trending-thumb-ph { flex-shrink: 0; width: 68px; height: 50px; background: #ebebeb; }
 .hp-trending-text { flex: 1; min-width: 0; font-size: 0.82rem; font-weight: 700; line-height: 1.25; color: #141414; font-family: var(--font-ui); }
 .hp-trending-text a { color: inherit; text-decoration: none; }
 .hp-trending-text a:hover { text-decoration: underline; }
@@ -1156,7 +1157,8 @@ img + .cat-badge,
 .hp-top-list { display: flex; flex-direction: column; }
 .hp-top-list-item { display: flex; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
 .hp-top-list-item:last-child { border-bottom: none; padding-bottom: 0; }
-.hp-top-rank { flex-shrink: 0; font-size: 1.1rem; font-weight: 900; color: #d8d8d8; font-family: var(--font-ui); width: 2rem; line-height: 1.2; }
+.hp-top-list-thumb { flex-shrink: 0; width: 90px; height: 65px; object-fit: cover; display: block; }
+.hp-top-list-thumb-ph { flex-shrink: 0; width: 90px; height: 65px; background: #ebebeb; }
 .hp-top-list-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 .hp-top-list-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: #141414; margin: 0; font-family: var(--font-ui); }
 .hp-top-list-title a { color: inherit; text-decoration: none; }
@@ -1187,4 +1189,107 @@ img + .cat-badge,
 @media (max-width: 400px) {
   .home-newsletter-field-row { flex-direction: column; }
   .hp-side-thumb, .hp-side-thumb-ph { width: 72px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SKELETON LOADING STATES
+   Pulse animation for RSC streaming skeletons.
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes skel-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+.skel {
+  background: #ebebeb;
+  border-radius: 3px;
+  animation: skel-pulse 1.6s ease-in-out infinite;
+}
+
+/* Block skeleton — fills available width at a given aspect-ratio or height */
+.skel-block {
+  display: block;
+  width: 100%;
+}
+
+/* Line skeleton — single text-line stand-in */
+.skel-line {
+  display: block;
+  height: 0.8rem;
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE POLISH — 3G / 4G focused devices
+   ═══════════════════════════════════════════════════════════ */
+
+/* Remove tap highlight flash on iOS */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure touch targets meet 44px minimum on mobile */
+@media (max-width: 767px) {
+  .bbc-hamburger,
+  .bbc-drawer-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Article detail: tighten horizontal padding */
+  main.container {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  /* Article headline: prevent overflow on small screens */
+  .article-detail-headline {
+    font-size: clamp(1.35rem, 5.5vw, 2rem);
+    word-break: break-word;
+  }
+
+  /* Article body: slightly smaller for readability on 360px devices */
+  .article-body {
+    font-size: 1rem;
+    line-height: 1.72;
+  }
+
+  /* Breadcrumb: collapse gracefully */
+  nav[aria-label="Breadcrumb"] {
+    font-size: 0.68rem;
+  }
+
+  /* Paywall: full-width buttons */
+  .paywall-banner .btn-primary,
+  .paywall-banner .btn-outline {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Footer grid: single column */
+  .site-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  /* Page headers: tighter */
+  .page-header {
+    padding: 1rem 0 0.75rem;
+  }
+
+  /* Search result thumbnails: fixed size on narrow screens */
+  .latest-thumb {
+    width: 72px;
+    height: 54px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+}
+
+/* Content-visibility: skip off-screen rendering for heavy sections */
+.hp-latest-layout,
+.hp-section-block {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
 }

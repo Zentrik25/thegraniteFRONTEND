@@ -56,16 +56,24 @@ export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
           </div>
         </article>
 
-        {/* Ranked text rows */}
+        {/* Secondary rows with thumbnails */}
         {rest.length > 0 && (
           <div className="hp-top-list">
             {rest.map((slot) => {
               const article = slot.article!;
               return (
                 <article key={article.slug} className="hp-top-list-item">
-                  <span className="hp-top-rank" aria-hidden="true">
-                    {String(slot.rank).padStart(2, "0")}
-                  </span>
+                  {article.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="hp-top-list-thumb"
+                      src={mediaProxyPath(article.image_url) ?? ""}
+                      alt={article.image_alt || article.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="hp-top-list-thumb-ph" aria-hidden="true" />
+                  )}
                   <div className="hp-top-list-body">
                     {(article.is_breaking || article.category) && (
                       <span className={`cat-badge${article.is_breaking ? " cat-badge--breaking" : ""}`}>

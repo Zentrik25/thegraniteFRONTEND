@@ -31,12 +31,13 @@ export default async function CmsShell({ children, title }: CmsShellProps) {
     <div
       style={{
         display: "flex",
-        minHeight: "100vh",
+        height: "100vh",
+        overflow: "hidden",
         background: "#f8f8f8",
         fontFamily: "var(--sans)",
       }}
     >
-      {/* Sidebar */}
+      {/* Sidebar — sticky, never scrolls with main content */}
       <aside
         style={{
           width: "220px",
@@ -45,6 +46,10 @@ export default async function CmsShell({ children, title }: CmsShellProps) {
           color: "#e8e8e8",
           display: "flex",
           flexDirection: "column",
+          height: "100vh",
+          position: "sticky",
+          top: 0,
+          overflowY: "auto",
         }}
       >
         <div
@@ -111,20 +116,23 @@ export default async function CmsShell({ children, title }: CmsShellProps) {
         </div>
       </aside>
 
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+      {/* Main — scrolls independently of the sidebar */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflowY: "auto" }}>
         {title && (
           <header
             style={{
               background: "#fff",
               borderBottom: "1px solid #e0e0e0",
               padding: "1rem 1.5rem",
+              position: "sticky",
+              top: 0,
+              zIndex: 10,
             }}
           >
             <h1 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>{title}</h1>
           </header>
         )}
-        <main style={{ flex: 1, padding: "1.5rem", overflowY: "auto" }}>
+        <main style={{ flex: 1, padding: "1.5rem" }}>
           {children}
         </main>
       </div>

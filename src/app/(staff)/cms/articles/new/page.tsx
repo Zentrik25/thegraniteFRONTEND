@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import CmsShell from "@/components/cms/CmsShell";
 import ArticleEditor from "@/components/cms/ArticleEditor";
 import { safeApiFetch } from "@/lib/api/fetcher";
-import type { ApiListResponse, CategorySummary, TagSummary } from "@/lib/types";
+import type { ApiListResponse, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
 
 export const metadata: Metadata = { title: "New Article — CMS" };
 
@@ -15,9 +15,10 @@ export default async function NewArticlePage() {
 
   const headers = { Authorization: `Bearer ${session.value}` };
 
-  const [catsRes, tagsRes] = await Promise.all([
+  const [catsRes, tagsRes, authorsRes] = await Promise.all([
     safeApiFetch<ApiListResponse<CategorySummary>>("/api/v1/categories/?page_size=200", { headers }),
     safeApiFetch<ApiListResponse<TagSummary>>("/api/v1/tags/?page_size=500", { headers }),
+    safeApiFetch<ApiListResponse<StaffMember>>("/api/v1/staff/?page_size=100", { headers }),
   ]);
 
   return (
@@ -25,6 +26,7 @@ export default async function NewArticlePage() {
       <ArticleEditor
         categories={catsRes.data?.results ?? []}
         tags={tagsRes.data?.results ?? []}
+        authors={authorsRes.data?.results ?? []}
       />
     </CmsShell>
   );

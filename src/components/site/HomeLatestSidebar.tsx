@@ -68,9 +68,17 @@ export function HomeLatestSidebar({ articles, trending }: HomeLatestSidebarProps
               <p className="hp-sidebar-title">Most read</p>
               {trending.slice(0, 6).map((item) => (
                 <div key={item.article.slug} className="hp-trending-item">
-                  <span className="hp-trending-rank" aria-hidden="true">
-                    {String(item.rank).padStart(2, "0")}
-                  </span>
+                  {item.article.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="hp-trending-thumb"
+                      src={mediaProxyPath(item.article.image_url) ?? ""}
+                      alt={item.article.image_alt || item.article.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="hp-trending-thumb-ph" aria-hidden="true" />
+                  )}
                   <div className="hp-trending-text">
                     <Link href={`/articles/${item.article.slug}`}>
                       {item.article.title}

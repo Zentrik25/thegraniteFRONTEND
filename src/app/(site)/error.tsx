@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 
 interface Props {
@@ -11,11 +10,9 @@ interface Props {
 /**
  * Error boundary for all (site) routes.
  * Rendered inside the (site) layout — the site nav/footer remain visible.
+ * Next.js logs the server-side error automatically; no console.error needed here.
  */
 export default function SiteError({ error, reset }: Props) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
 
   return (
     <main

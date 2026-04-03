@@ -11,6 +11,18 @@ export type ApiListResponse<T> = {
   results: T[];
 };
 
+// ─── Staff members (for author dropdowns) ─────────────────────────────────
+
+export type StaffMember = {
+  id: string | number;
+  email?: string;
+  display_name?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+  slug?: string;
+};
+
 // ─── Taxonomy ──────────────────────────────────────────────────────────────
 
 export type CategorySummary = {

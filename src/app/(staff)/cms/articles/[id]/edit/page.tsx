@@ -4,7 +4,7 @@ import { redirect, notFound } from "next/navigation";
 import CmsShell from "@/components/cms/CmsShell";
 import ArticleEditor from "@/components/cms/ArticleEditor";
 import { safeApiFetch } from "@/lib/api/fetcher";
-import type { ApiListResponse, ArticleDetail, CategorySummary, TagSummary } from "@/lib/types";
+import type { ApiListResponse, ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Edit Article — CMS" };
 export const dynamic = "force-dynamic";
@@ -21,10 +21,11 @@ export default async function EditArticlePage({ params }: PageProps) {
   const { id } = await params;
   const headers = { Authorization: `Bearer ${session.value}` };
 
-  const [articleRes, catsRes, tagsRes] = await Promise.all([
+  const [articleRes, catsRes, tagsRes, authorsRes] = await Promise.all([
     safeApiFetch<ArticleDetail>(`/api/v1/articles/${id}/`, { headers, cache: "no-store" }),
     safeApiFetch<ApiListResponse<CategorySummary>>("/api/v1/categories/?page_size=200", { headers }),
     safeApiFetch<ApiListResponse<TagSummary>>("/api/v1/tags/?page_size=500", { headers }),
+    safeApiFetch<ApiListResponse<StaffMember>>("/api/v1/staff/?page_size=100", { headers }),
   ]);
 
   if (!articleRes.data) notFound();
@@ -35,6 +36,7 @@ export default async function EditArticlePage({ params }: PageProps) {
         article={articleRes.data}
         categories={catsRes.data?.results ?? []}
         tags={tagsRes.data?.results ?? []}
+        authors={authorsRes.data?.results ?? []}
       />
     </CmsShell>
   );
