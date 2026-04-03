@@ -17,14 +17,50 @@ interface CreateStaffBody {
 function isValidCreateBody(raw: unknown): raw is CreateStaffBody {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
   const b = raw as Record<string, unknown>;
-  return (
-    typeof b.email === "string" &&
-    b.email.includes("@") &&
-    typeof b.role === "string" &&
-    VALID_ROLES.has(b.role) &&
-    typeof b.password === "string" &&
-    b.password.length >= 8
-  );
+  
+  // Validate email
+  if (typeof b.email !== "string" || !b.email.includes("@")) return false;
+  
+  // Validate role
+  if (typeof b.role !== "string" || !VALID_ROLES.has(b.role)) return false;
+  
+  // Validate password
+  if (typeof b.password !== "string" || b.password.length < 8) return false;
+  
+  return true;
+}
+
+function validateCreateBody(raw: unknown): { valid: boolean; errors: Record<string, string[]> } {
+  const errors: Record<string, string[]> = {};
+  
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { valid: false, errors: { non_field_errors: ["Invalid request body."] } };
+  }
+  
+  const b = raw as Record<string, unknown>;
+  
+  // Validate email
+  if (!b.email || typeof b.email !== "string") {
+    errors.email = ["Email is required."];
+  } else if (!b.email.includes("@")) {
+    errors.email = ["Enter a valid email address."];
+  }
+  
+  // Validate role
+  if (!b.role || typeof b.role !== "string") {
+    errors.role = ["Role is required."];
+  } else if (!VALID_ROLES.has(b.role)) {
+    errors.role = [`Invalid role. Must be one of: ${Array.from(VALID_ROLES).join(", ")}`];
+  }
+  
+  // Validate password
+  if (!b.password || typeof b.password !== "string") {
+    errors.password = ["Password is required."];
+  } else if (b.password.length < 8) {
+    errors.password = ["Password must be at least 8 characters."];
+  }
+  
+  return { valid: Object.keys(errors).length === 0, errors };
 }
 
 export async function GET(request: NextRequest) {
@@ -52,12 +88,19 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ errors: { non_field_errors: ["Invalid request body."] } }, { status: 400 });
   }
 
+  // Validate using detailed validator
+  const { valid, errors } = validateCreateBody(body);
+  if (!valid) {
+    return NextResponse.json({ errors }, { status: 400 });
+  }
+
+  // Also ensure it passes the type check
   if (!isValidCreateBody(body)) {
     return NextResponse.json(
-      { error: "Required: email, role (ADMIN|EDITOR|AUTHOR|MODERATOR), password (≥8 chars)." },
+      { errors: { non_field_errors: ["Required: email, role (ADMIN|EDITOR|AUTHOR|MODERATOR), password (≥8 chars)."] } },
       { status: 400 },
     );
   }

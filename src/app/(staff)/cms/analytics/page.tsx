@@ -5,6 +5,7 @@ import Link from "next/link";
 import { safeApiFetch } from "@/lib/api/fetcher";
 import type { TrendingArticle } from "@/lib/types";
 import CmsShell from "@/components/cms/CmsShell";
+import AnalyticsKpis from "@/components/cms/AnalyticsKpis";
 import { mediaProxyPath } from "@/lib/utils/media";
 
 export const metadata: Metadata = { title: "Analytics — CMS" };
@@ -76,6 +77,9 @@ export default async function CmsAnalyticsPage({ searchParams }: PageProps) {
           This Week
         </Link>
       </div>
+
+      {/* KPIs and Charts */}
+      <AnalyticsKpis period={period as "day" | "week"} />
 
       {/* Trending articles */}
       <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: "6px", overflow: "hidden" }}>

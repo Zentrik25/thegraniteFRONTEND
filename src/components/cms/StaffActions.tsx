@@ -15,6 +15,7 @@ interface InviteForm {
   last_name: string;
   role: StaffRole;
   password: string;
+  password_confirm: string;
 }
 
 interface EditForm {
@@ -41,6 +42,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
     last_name: "",
     role: "AUTHOR",
     password: "",
+    password_confirm: "",
   });
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
@@ -52,28 +54,87 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
   async function handleInvite(e: FormEvent) {
     e.preventDefault();
     setInviteError(null);
+    
+    // Validate password match
+    if (inviteForm.password !== inviteForm.password_confirm) {
+      setInviteError("Passwords do not match. Please try again.");
+      return;
+    }
+    
+    // Validate password length
+    if (inviteForm.password.length < 8) {
+      setInviteError("Password must be at least 8 characters.");
+      return;
+    }
+    
     setInviting(true);
     try {
       const res = await fetch("/api/staff/members/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(inviteForm),
+        body: JSON.stringify({
+          email: inviteForm.email,
+          first_name: inviteForm.first_name,
+          last_name: inviteForm.last_name,
+          role: inviteForm.role,
+          password: inviteForm.password,
+        }),
       });
       const body = await res.json();
       if (!res.ok) {
-        const msg =
-          typeof body === "object"
-            ? Object.entries(body as Record<string, unknown>)
-                .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-                .join(" | ")
-            : String((body as Record<string, string>).error ?? "Failed.");
+        let msg = "Failed to create staff member.";
+        
+        console.error("Staff creation error response:", body);
+        
+        if (typeof body === "object" && body !== null) {
+          // Handle nested 'errors' field (common in validation responses)
+          if ((body as Record<string, unknown>).errors) {
+            const errorsObj = (body as Record<string, unknown>).errors as Record<string, unknown>;
+            const errorList = Object.entries(errorsObj)
+              .map(([k, v]) => {
+                if (Array.isArray(v)) return `${k}: ${v.join(", ")}`;
+                if (typeof v === "object") return `${k}: ${JSON.stringify(v)}`;
+                return `${k}: ${v}`;
+              })
+              .filter(e => e);
+            if (errorList.length > 0) {
+              msg = errorList.join(" | ");
+            }
+          }
+          // Handle error objects with error/detail/message fields
+          else if ((body as Record<string, unknown>).error) {
+            msg = String((body as Record<string, string>).error);
+          } else if ((body as Record<string, unknown>).detail) {
+            msg = String((body as Record<string, string>).detail);
+          } else if ((body as Record<string, unknown>).message) {
+            msg = String((body as Record<string, string>).message);
+          } else if ((body as Record<string, unknown>).non_field_errors) {
+            const nonFieldErrors = (body as Record<string, unknown>).non_field_errors;
+            if (Array.isArray(nonFieldErrors)) {
+              msg = nonFieldErrors.join(" | ");
+            }
+          } else {
+            // Try to extract field errors from root level
+            const fieldErrors = Object.entries(body as Record<string, unknown>)
+              .filter(([k]) => !["status", "code", "request_id"].includes(k))
+              .map(([k, v]) => {
+                if (Array.isArray(v)) return `${k}: ${v.join(", ")}`;
+                if (typeof v === "object") return `${k}: ${JSON.stringify(v)}`;
+                return `${k}: ${v}`;
+              })
+              .filter(e => e);
+            if (fieldErrors.length > 0) {
+              msg = fieldErrors.join(" | ");
+            }
+          }
+        }
+        
         setInviteError(msg);
         return;
       }
       setMembers((prev) => [...prev, body as StaffMember]);
-      setInviteForm({ email: "", first_name: "", last_name: "", role: "AUTHOR", password: "" });
+      setInviteForm({ email: "", first_name: "", last_name: "", role: "AUTHOR", password: "", password_confirm: "" });
       setShowInvite(false);
-      router.refresh();
     } catch {
       setInviteError("Network error. Please try again.");
     } finally {
@@ -285,6 +346,18 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
                   minLength={8}
                   value={inviteForm.password}
                   onChange={(e) => updateInvite("password", e.target.value)}
+                  style={inputStyle}
+                  autoComplete="new-password"
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Confirm password *</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={inviteForm.password_confirm}
+                  onChange={(e) => updateInvite("password_confirm", e.target.value)}
                   style={inputStyle}
                   autoComplete="new-password"
                 />
