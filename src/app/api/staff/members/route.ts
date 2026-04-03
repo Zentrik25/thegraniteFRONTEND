@@ -4,7 +4,7 @@ import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
 
 export const runtime = "nodejs";
 
-const VALID_ROLES = new Set(["ADMIN", "EDITOR", "AUTHOR", "MODERATOR"]);
+const VALID_ROLES = new Set(["admin", "editor", "author", "moderator", "senior_editor"]);
 
 interface CreateStaffBody {
   email: string;
@@ -27,7 +27,7 @@ function isValidCreateBody(raw: unknown): raw is CreateStaffBody {
   if (!/^[a-zA-Z0-9@.+\-_]+$/.test(b.username)) return false;
   
   // Validate role
-  if (typeof b.role !== "string" || !VALID_ROLES.has(b.role)) return false;
+  if (typeof b.role !== "string" || !VALID_ROLES.has(b.role.toLowerCase())) return false;
   
   // Validate password
   if (typeof b.password !== "string" || b.password.length < 8) return false;
@@ -60,10 +60,10 @@ function validateCreateBody(raw: unknown): { valid: boolean; errors: Record<stri
     errors.username = ["Username can only contain letters, digits, @, ., +, -, and _."];
   }
   
-  // Validate role
+  // Validate role (accept either case)
   if (!b.role || typeof b.role !== "string") {
     errors.role = ["Role is required."];
-  } else if (!VALID_ROLES.has(b.role)) {
+  } else if (!VALID_ROLES.has((b.role as string).toLowerCase())) {
     errors.role = [`Invalid role. Must be one of: ${Array.from(VALID_ROLES).join(", ")}`];
   }
   
@@ -119,13 +119,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const normalizedBody = {
+    ...(body as CreateStaffBody),
+    role: (body as CreateStaffBody).role.toLowerCase(),
+  };
+
   const upstream = await fetch(`${API_BASE_URL}/api/v1/staff/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(normalizedBody),
   });
 
   const data = await upstream.json().catch(() => ({}));

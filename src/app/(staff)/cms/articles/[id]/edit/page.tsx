@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import CmsShell from "@/components/cms/CmsShell";
 import ArticleEditor from "@/components/cms/ArticleEditor";
-import { safeApiFetch } from "@/lib/api/fetcher";
+import { safeApiFetch, unwrapList } from "@/lib/api/fetcher";
 import type { ApiListResponse, ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Edit Article — CMS" };
@@ -23,9 +23,9 @@ export default async function EditArticlePage({ params }: PageProps) {
 
   const [articleRes, catsRes, tagsRes, authorsRes] = await Promise.all([
     safeApiFetch<ArticleDetail>(`/api/v1/articles/${id}/`, { headers, cache: "no-store" }),
-    safeApiFetch<ApiListResponse<CategorySummary>>("/api/v1/categories/?page_size=200", { headers }),
-    safeApiFetch<ApiListResponse<TagSummary>>("/api/v1/tags/?page_size=500", { headers }),
-    safeApiFetch<ApiListResponse<StaffMember>>("/api/v1/staff/?page_size=100", { headers }),
+    safeApiFetch<ApiListResponse<CategorySummary> | CategorySummary[]>("/api/v1/categories/?page_size=200", { headers }),
+    safeApiFetch<ApiListResponse<TagSummary> | TagSummary[]>("/api/v1/tags/?page_size=500", { headers }),
+    safeApiFetch<ApiListResponse<StaffMember> | StaffMember[]>("/api/v1/staff/?page_size=100", { headers }),
   ]);
 
   if (!articleRes.data) notFound();
@@ -34,9 +34,9 @@ export default async function EditArticlePage({ params }: PageProps) {
     <CmsShell title="Edit Article">
       <ArticleEditor
         article={articleRes.data}
-        categories={catsRes.data?.results ?? []}
-        tags={tagsRes.data?.results ?? []}
-        authors={authorsRes.data?.results ?? []}
+        categories={catsRes.data ? unwrapList(catsRes.data) : []}
+        tags={tagsRes.data ? unwrapList(tagsRes.data) : []}
+        authors={authorsRes.data ? unwrapList(authorsRes.data) : []}
       />
     </CmsShell>
   );

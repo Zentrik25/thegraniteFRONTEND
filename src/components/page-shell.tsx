@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { getSections } from "@/lib/api/articles";
+import { getSectionDetails } from "@/lib/api/articles";
 import { SiteHeader } from "@/components/site/SiteHeader";
 
 const FOOTER_COLS = [
@@ -35,7 +35,7 @@ const FOOTER_COLS = [
 ];
 
 export async function PageShell({ children }: { children: React.ReactNode }) {
-  const sections = await getSections(true);
+  const sections = await getSectionDetails(true);
   const year = new Date().getFullYear();
 
   return (

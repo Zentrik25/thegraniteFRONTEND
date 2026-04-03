@@ -110,6 +110,18 @@ export async function getTagDetail(slug: string, page = 1) {
   return result.data;
 }
 
+export async function getSectionDetails(primary?: boolean): Promise<SectionDetail[]> {
+  const summaries = await getSections(primary);
+  const results = await Promise.all(
+    summaries.map((s) =>
+      safeApiFetch<SectionDetail>(`/api/v1/sections/${s.slug}/`, {
+        next: { revalidate: 300 },
+      }),
+    ),
+  );
+  return results.filter((r) => r.data !== null).map((r) => r.data as SectionDetail);
+}
+
 export async function getSectionDetail(slug: string) {
   const result = await safeApiFetch<SectionDetail>(`/api/v1/sections/${slug}/`, {
     next: { revalidate: 120 },

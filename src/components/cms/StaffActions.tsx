@@ -6,7 +6,7 @@ import RoleBadge from "@/components/cms/RoleBadge";
 import { formatDate } from "@/lib/format";
 import type { StaffMember } from "@/app/(staff)/cms/staff/page";
 
-const ROLES = ["ADMIN", "EDITOR", "AUTHOR", "MODERATOR"] as const;
+const ROLES = ["admin", "editor", "author", "moderator", "senior_editor"] as const;
 type StaffRole = (typeof ROLES)[number];
 
 interface InviteForm {
@@ -42,7 +42,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
     username: "",
     first_name: "",
     last_name: "",
-    role: "AUTHOR",
+    role: "author",
     password: "",
     password_confirm: "",
   });
@@ -136,7 +136,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
         return;
       }
       setMembers((prev) => [...prev, body as StaffMember]);
-      setInviteForm({ email: "", username: "", first_name: "", last_name: "", role: "AUTHOR", password: "", password_confirm: "" });
+      setInviteForm({ email: "", username: "", first_name: "", last_name: "", role: "author", password: "", password_confirm: "" });
       setShowInvite(false);
     } catch {
       setInviteError("Network error. Please try again.");
@@ -150,7 +150,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
   const [editForm, setEditForm] = useState<EditForm>({
     first_name: "",
     last_name: "",
-    role: "AUTHOR",
+    role: "author",
     is_active: true,
   });
   const [editError, setEditError] = useState<string | null>(null);
@@ -293,12 +293,12 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: "0.875rem",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
                 marginBottom: "1rem",
               }}
             >
-              <div>
+              <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Email *</label>
                 <input
                   type="email"
@@ -320,6 +320,21 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
                 />
               </div>
               <div>
+                <label style={labelStyle}>Role *</label>
+                <select
+                  required
+                  value={inviteForm.role}
+                  onChange={(e) => updateInvite("role", e.target.value as StaffRole)}
+                  style={inputStyle}
+                >
+                  {ROLES.map((r) => (
+                    <option key={r} value={r}>
+                      {r.split("_").map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label style={labelStyle}>First name</label>
                 <input
                   type="text"
@@ -336,21 +351,6 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
                   onChange={(e) => updateInvite("last_name", e.target.value)}
                   style={inputStyle}
                 />
-              </div>
-              <div>
-                <label style={labelStyle}>Role *</label>
-                <select
-                  required
-                  value={inviteForm.role}
-                  onChange={(e) => updateInvite("role", e.target.value as StaffRole)}
-                  style={inputStyle}
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r.charAt(0) + r.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div>
                 <label style={labelStyle}>Initial password *</label>
@@ -590,7 +590,7 @@ export default function StaffActions({ initialMembers, fetchError }: StaffAction
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>
-                        {r.charAt(0) + r.slice(1).toLowerCase()}
+                        {r.split("_").map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}
                       </option>
                     ))}
                   </select>

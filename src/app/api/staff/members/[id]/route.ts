@@ -4,7 +4,7 @@ import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
 
 export const runtime = "nodejs";
 
-const VALID_ROLES = new Set(["ADMIN", "EDITOR", "AUTHOR", "MODERATOR"]);
+const VALID_ROLES = new Set(["admin", "editor", "author", "moderator", "senior_editor"]);
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -36,13 +36,13 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  if (
-    body &&
-    typeof body === "object" &&
-    "role" in (body as Record<string, unknown>) &&
-    !VALID_ROLES.has((body as Record<string, unknown>).role as string)
-  ) {
-    return NextResponse.json({ error: "Invalid role." }, { status: 400 });
+  let patchBody = body as Record<string, unknown>;
+  if (patchBody.role && typeof patchBody.role === "string") {
+    const normalizedRole = patchBody.role.toLowerCase();
+    if (!VALID_ROLES.has(normalizedRole)) {
+      return NextResponse.json({ error: `Invalid role. Must be one of: ${Array.from(VALID_ROLES).join(", ")}` }, { status: 400 });
+    }
+    patchBody = { ...patchBody, role: normalizedRole };
   }
 
   const upstream = await fetch(`${API_BASE_URL}/api/v1/staff/${id}/`, {
@@ -51,7 +51,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session}`,
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(patchBody),
   });
 
   const data = await upstream.json().catch(() => ({}));

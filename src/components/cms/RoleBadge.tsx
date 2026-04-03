@@ -3,10 +3,11 @@ interface RoleBadgeProps {
 }
 
 const ROLE_STYLES: Record<string, { bg: string; color: string; label: string }> = {
-  ADMIN:     { bg: "#f8d7da", color: "#721c24", label: "Admin" },
-  EDITOR:    { bg: "#d1ecf1", color: "#0c5460", label: "Editor" },
-  AUTHOR:    { bg: "#d4edda", color: "#155724", label: "Author" },
-  MODERATOR: { bg: "#fff3cd", color: "#856404", label: "Moderator" },
+  admin:         { bg: "#f8d7da", color: "#721c24", label: "Admin" },
+  editor:        { bg: "#d1ecf1", color: "#0c5460", label: "Editor" },
+  author:        { bg: "#d4edda", color: "#155724", label: "Author" },
+  moderator:     { bg: "#fff3cd", color: "#856404", label: "Moderator" },
+  senior_editor: { bg: "#cce5ff", color: "#004085", label: "Senior Editor" },
 };
 
 /** Single-source badge for staff roles across all CMS pages. */

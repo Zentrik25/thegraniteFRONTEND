@@ -21,7 +21,7 @@ interface ChartData {
 
 const KPI_GRID_STYLE: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gridTemplateColumns: "repeat(4, 1fr)",
   gap: "1rem",
   marginBottom: "1.5rem",
 };
