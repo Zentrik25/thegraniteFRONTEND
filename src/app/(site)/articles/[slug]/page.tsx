@@ -22,6 +22,39 @@ function formatViewCount(n: number): string {
   return n.toLocaleString();
 }
 
+function articleKey(article: {
+  id?: number | string | null;
+  slug?: string | null;
+}): string | null {
+  if (article.slug) return `slug:${article.slug}`;
+  if (article.id != null) return `id:${article.id}`;
+  return null;
+}
+
+function dedupeArticles<
+  T extends { id?: number | string | null; slug?: string | null }
+>(
+  articles: T[] | null | undefined,
+  seen: Set<string>,
+  excludeKey?: string | null
+): T[] {
+  if (!articles?.length) return [];
+
+  const result: T[] = [];
+
+  for (const article of articles) {
+    const key = articleKey(article);
+    if (!key) continue;
+    if (key === excludeKey) continue;
+    if (seen.has(key)) continue;
+
+    seen.add(key);
+    result.push(article);
+  }
+
+  return result;
+}
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
@@ -35,7 +68,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = article.og_title || article.seo_title || article.title;
   const description =
     article.og_description || article.seo_description || article.excerpt;
-  const imageUrl = article.resolved_og_image || article.og_image_url || article.image_url;
+  const imageUrl =
+    article.resolved_og_image || article.og_image_url || article.image_url;
   const canonical = article.canonical_url || `${SITE_URL}/articles/${slug}`;
 
   return {
@@ -63,12 +97,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
-  const [{ article, paywalled, notFound: isNotFound }, commentsData] = await Promise.all([
-    getArticleBySlug(slug),
-    getArticleComments(slug),
-  ]);
+  const [{ article, paywalled, notFound: isNotFound }, commentsData] =
+    await Promise.all([getArticleBySlug(slug), getArticleComments(slug)]);
 
   if (isNotFound) notFound();
+
+  const seen = new Set<string>();
+  const currentArticleKey = article ? articleKey(article) : null;
+
+  const relatedArticles = dedupeArticles(
+    article?.related_articles,
+    seen,
+    currentArticleKey
+  );
+
+  const latestArticles = dedupeArticles(
+    article?.latest_articles,
+    seen,
+    currentArticleKey
+  );
+
+  const moreFromAuthor = dedupeArticles(
+    article?.more_from_author,
+    seen,
+    currentArticleKey
+  );
 
   // ── Structured data (@graph combines NewsArticle + BreadcrumbList) ──────────
   const structuredData = article
@@ -76,8 +129,12 @@ export default async function ArticlePage({ params }: Props) {
         const articleUrl = article.canonical_url || `${SITE_URL}/articles/${slug}`;
 
         // Build breadcrumb: Home [> Category] > Article
-        const crumbs: { "@type": "ListItem"; position: number; name: string; item?: string }[] =
-          [{ "@type": "ListItem", position: 1, name: "Home", item: SITE_URL }];
+        const crumbs: {
+          "@type": "ListItem";
+          position: number;
+          name: string;
+          item?: string;
+        }[] = [{ "@type": "ListItem", position: 1, name: "Home", item: SITE_URL }];
 
         if (article.category) {
           crumbs.push({
@@ -161,11 +218,16 @@ export default async function ArticlePage({ params }: Props) {
                 alignItems: "center",
               }}
             >
-              <Link href="/" className="article-breadcrumb-link">Home</Link>
+              <Link href="/" className="article-breadcrumb-link">
+                Home
+              </Link>
               {article.category && (
                 <>
                   <span aria-hidden="true">›</span>
-                  <Link href={`/categories/${article.category.slug}`} className="article-breadcrumb-link">
+                  <Link
+                    href={`/categories/${article.category.slug}`}
+                    className="article-breadcrumb-link"
+                  >
                     {article.category.name}
                   </Link>
                 </>
@@ -194,78 +256,115 @@ export default async function ArticlePage({ params }: Props) {
                 className="article-detail-meta"
                 role="complementary"
                 aria-label="Article info"
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "0.75rem",
+                }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap", flex: 1, minWidth: 0 }}>
-                {article.author_name && (
-                  <span className="article-detail-author">
-                    {article.author_slug ? (
-                      <Link href={`/authors/${article.author_slug}`}>
-                        {article.author_name}
-                      </Link>
-                    ) : (
-                      article.author_name
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    flexWrap: "wrap",
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  {article.author_name && (
+                    <span className="article-detail-author">
+                      {article.author_slug ? (
+                        <Link href={`/authors/${article.author_slug}`}>
+                          {article.author_name}
+                        </Link>
+                      ) : (
+                        article.author_name
+                      )}
+                    </span>
+                  )}
+                  {article.author_name && article.published_at && (
+                    <span className="article-detail-meta-sep" aria-hidden="true">
+                      ·
+                    </span>
+                  )}
+                  {article.published_at && (
+                    <time dateTime={article.published_at}>
+                      {formatDateTime(article.published_at)}
+                    </time>
+                  )}
+                  {article.updated_at &&
+                    article.updated_at !== article.published_at && (
+                      <>
+                        <span
+                          className="article-detail-meta-sep"
+                          aria-hidden="true"
+                        >
+                          ·
+                        </span>
+                        <span>
+                          Updated{" "}
+                          <time dateTime={article.updated_at}>
+                            {formatDate(article.updated_at)}
+                          </time>
+                        </span>
+                      </>
                     )}
-                  </span>
-                )}
-                {article.author_name && article.published_at && (
-                  <span className="article-detail-meta-sep" aria-hidden="true">
-                    ·
-                  </span>
-                )}
-                {article.published_at && (
-                  <time dateTime={article.published_at}>
-                    {formatDateTime(article.published_at)}
-                  </time>
-                )}
-                {article.updated_at &&
-                  article.updated_at !== article.published_at && (
+                  {article.is_premium && (
+                    <>
+                      <span
+                        className="article-detail-meta-sep"
+                        aria-hidden="true"
+                      >
+                        ·
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "0.68rem",
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          color: "var(--accent)",
+                          fontFamily: "var(--font-ui)",
+                        }}
+                      >
+                        Premium
+                      </span>
+                    </>
+                  )}
+                  {article.view_count != null && article.view_count > 0 && (
                     <>
                       <span className="article-detail-meta-sep" aria-hidden="true">
                         ·
                       </span>
-                      <span>
-                        Updated{" "}
-                        <time dateTime={article.updated_at}>
-                          {formatDate(article.updated_at)}
-                        </time>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.25rem",
+                          fontFamily: "var(--font-ui)",
+                        }}
+                        aria-label={`${article.view_count.toLocaleString()} views`}
+                      >
+                        <svg
+                          width="13"
+                          height="13"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        {formatViewCount(article.view_count)}
                       </span>
                     </>
                   )}
-                {article.is_premium && (
-                  <>
-                    <span className="article-detail-meta-sep" aria-hidden="true">
-                      ·
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "0.68rem",
-                        fontWeight: 800,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.07em",
-                        color: "var(--accent)",
-                        fontFamily: "var(--font-ui)",
-                      }}
-                    >
-                      Premium
-                    </span>
-                  </>
-                )}
-                {article.view_count != null && article.view_count > 0 && (
-                  <>
-                    <span className="article-detail-meta-sep" aria-hidden="true">·</span>
-                    <span
-                      style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", fontFamily: "var(--font-ui)" }}
-                      aria-label={`${article.view_count.toLocaleString()} views`}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                      {formatViewCount(article.view_count)}
-                    </span>
-                  </>
-                )}
                 </div>
                 <BookmarkButton articleSlug={slug} compact />
               </div>
@@ -309,7 +408,13 @@ export default async function ArticlePage({ params }: Props) {
                   Subscribe to The Granite Post for unlimited access to premium
                   journalism.
                 </p>
-                <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.75rem",
+                    justifyContent: "center",
+                  }}
+                >
                   <Link className="btn-primary" href="/subscribe">
                     Subscribe now
                   </Link>
@@ -357,16 +462,16 @@ export default async function ArticlePage({ params }: Props) {
             {/* ── Related article lists ── */}
             <ArticleListSection
               heading="Related articles"
-              articles={article.related_articles ?? []}
+              articles={relatedArticles}
             />
             <ArticleListSection
               heading="Latest updates"
-              articles={article.latest_articles ?? []}
+              articles={latestArticles}
             />
-            {article.more_from_author && article.more_from_author.length > 0 && (
+            {moreFromAuthor.length > 0 && (
               <ArticleListSection
                 heading={`More from ${article.author_name ?? "this author"}`}
-                articles={article.more_from_author}
+                articles={moreFromAuthor}
               />
             )}
           </div>

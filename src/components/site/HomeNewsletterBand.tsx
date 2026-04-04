@@ -45,7 +45,7 @@ export function HomeNewsletterBand() {
           </h2>
           <p className="home-newsletter-desc">
             Join readers across Zimbabwe getting authoritative news, analysis, and
-            commentary from The Granite Post — straight to your inbox, every morning.
+            commentary from The Granite Post straight to your inbox, every morning.
           </p>
         </div>
 

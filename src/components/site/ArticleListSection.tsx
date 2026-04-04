@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 import type { ArticleSummary } from "@/lib/types";
 import { mediaProxyPath } from "@/lib/utils/media";
@@ -28,13 +27,16 @@ export function ArticleListSection({ heading, articles }: ArticleListSectionProp
               <Link href={`/articles/${article.slug}`} className="als-img-link" aria-label={article.title} tabIndex={-1}>
                 <div className="als-img-wrap">
                   {src ? (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={src}
                       alt={article.image_alt || article.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 220px"
                       className="als-img"
+                      width={100}
+                      height={56}
                       loading="lazy"
+                      decoding="async"
+                      fetchPriority="low"
                     />
                   ) : (
                     <div className="als-img-ph" aria-hidden="true" />

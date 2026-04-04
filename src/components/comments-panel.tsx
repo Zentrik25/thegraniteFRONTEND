@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useTransition } from "react";
 
-import { getBrowserErrorMessage, browserJson } from "@/lib/api/browser";
+import { getBrowserErrorMessage } from "@/lib/api/browser";
 import { formatRelativeTime } from "@/lib/format";
 import type { CommentRecord } from "@/lib/types";
 
@@ -50,14 +50,21 @@ export function CommentsPanel({
     setFeedback(null);
     startTransition(async () => {
       try {
-        const newComment = await browserJson<CommentRecord>(
-          `/api/v1/articles/${slug}/comments/`,
-          {
-            method: "POST",
-            body: JSON.stringify({ author_name: name, author_email: email, body }),
-          },
-        );
-        setComments((prev) => [newComment, ...prev]);
+        const res = await fetch(`/api/articles/${slug}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ author_name: name, author_email: email, body }),
+        });
+        const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+        if (!res.ok) {
+          const msg =
+            (data["detail"] as string) ||
+            (data["error"] as string) ||
+            (data["message"] as string) ||
+            "Could not submit comment.";
+          throw new Error(msg);
+        }
+        setComments((prev) => [data as unknown as CommentRecord, ...prev]);
         setBody("");
         setFeedback({ type: "success", text: "Your comment has been submitted for moderation." });
       } catch (err) {
@@ -75,72 +82,85 @@ export function CommentsPanel({
         {totalCount > 0 ? `${totalCount} comment${totalCount !== 1 ? "s" : ""}` : "Comments"}
       </h2>
 
-      {/* Comment form */}
-      <form className="comment-form" onSubmit={submitComment}>
-        <p className="comment-form-title">Join the conversation</p>
-        <div className="form-field">
-          <label className="form-label" htmlFor="comment-name">
-            Name
-          </label>
-          <input
-            id="comment-name"
-            className="form-input"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            maxLength={80}
-            placeholder="Your name"
-          />
+      {/* Comment form card */}
+      <div className="comment-form-card">
+        <div className="comment-form-card-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Join the conversation
         </div>
-        <div className="form-field">
-          <label className="form-label" htmlFor="comment-email">
-            Email <span style={{ fontWeight: 400 }}>(not published)</span>
-          </label>
-          <input
-            id="comment-email"
-            className="form-input"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="your@email.com"
-          />
-        </div>
-        <div className="form-field">
-          <label className="form-label" htmlFor="comment-body">
-            Comment
-          </label>
-          <textarea
-            id="comment-body"
-            className="form-textarea"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            required
-            minLength={5}
-            maxLength={1000}
-            placeholder="Share your thoughts…"
-          />
-        </div>
-        {feedback && (
-          <p className={`form-feedback ${feedback.type}`}>{feedback.text}</p>
-        )}
-        <button className="btn-primary" disabled={isPending} type="submit">
-          {isPending ? "Submitting…" : "Post comment"}
-        </button>
-      </form>
+
+        <form className="comment-form-inner" onSubmit={submitComment}>
+          <div className="comment-form-row">
+            <div className="form-field">
+              <label className="form-label" htmlFor="comment-name">Name</label>
+              <input
+                id="comment-name"
+                className="form-input"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                maxLength={80}
+                placeholder="Your name"
+              />
+            </div>
+            <div className="form-field">
+              <label className="form-label" htmlFor="comment-email">
+                Email{" "}
+                <span className="comment-form-note">(not published)</span>
+              </label>
+              <input
+                id="comment-email"
+                className="form-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="your@email.com"
+              />
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label" htmlFor="comment-body">Comment</label>
+            <textarea
+              id="comment-body"
+              className="form-textarea"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              required
+              minLength={5}
+              maxLength={1000}
+              placeholder="Share your thoughts…"
+            />
+          </div>
+
+          {feedback && (
+            <p className={`form-feedback ${feedback.type}`}>{feedback.text}</p>
+          )}
+
+          <div className="comment-form-footer">
+            <p className="comment-form-policy">
+              Comments are moderated before publication.
+            </p>
+            <button className="btn-primary" disabled={isPending} type="submit">
+              {isPending ? "Submitting…" : "Post comment"}
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* Comments list */}
       {comments.length > 0 ? (
-        <div style={{ marginTop: "1.5rem" }}>
+        <div className="comment-list">
           {comments.map((c) => (
             <CommentItem key={c.id} comment={c} />
           ))}
         </div>
       ) : (
-        <p className="meta" style={{ marginTop: "1rem" }}>
-          No comments yet. Be the first.
-        </p>
+        <p className="meta comment-empty">No comments yet. Be the first.</p>
       )}
     </section>
   );
