@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { ArticleViewTracker } from "@/components/article-view-tracker";
+import { ArticleListSection } from "@/components/site/ArticleListSection";
 import { CommentsPanel } from "@/components/comments-panel";
 import { NewsletterForm } from "@/components/newsletter-form";
 import BookmarkButton from "@/components/reader/BookmarkButton";
@@ -351,6 +352,22 @@ export default async function ArticlePage({ params }: Props) {
                   totalCount={commentsData?.count ?? 0}
                 />
               </>
+            )}
+
+            {/* ── Related article lists ── */}
+            <ArticleListSection
+              heading="Related articles"
+              articles={article.related_articles ?? []}
+            />
+            <ArticleListSection
+              heading="Latest updates"
+              articles={article.latest_articles ?? []}
+            />
+            {article.more_from_author && article.more_from_author.length > 0 && (
+              <ArticleListSection
+                heading={`More from ${article.author_name ?? "this author"}`}
+                articles={article.more_from_author}
+              />
             )}
           </div>
 

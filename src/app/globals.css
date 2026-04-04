@@ -949,6 +949,27 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
 .share-btn--copied         { background: #f0fdf4; color: #15803d; border-color: #86efac; }
 
 .article-tags-row { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 1.25rem 0; border-top: 1px solid var(--line); }
+
+/* ── Article list sections (related / latest / more from author) ── */
+.als-section { margin-top: 2rem; padding-top: 1rem; border-top: 2px solid #141414; }
+.als-head { margin-bottom: 1rem; }
+.als-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #141414; font-family: var(--font-ui); margin: 0; }
+
+.als-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 500px) { .als-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .als-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.als-card { display: flex; flex-direction: column; gap: 0.5rem; }
+.als-img-link { display: block; text-decoration: none; }
+.als-img-wrap { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #e8e4dd; }
+.als-img { object-fit: cover; }
+.als-img-ph { width: 100%; height: 100%; background: #e8e4dd; }
+.als-body { display: flex; flex-direction: column; gap: 0.3rem; }
+.als-badges { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+.als-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: #141414; margin: 0; font-family: var(--font-ui); text-wrap: pretty; overflow-wrap: break-word; word-break: keep-all; }
+.als-card-title a { color: inherit; text-decoration: none; }
+.als-card-title a:hover { text-decoration: underline; color: var(--accent); }
+.als-meta { font-size: 0.7rem; color: var(--muted); font-family: var(--font-ui); margin: 0; }
 .tag-chip {
   display: inline-flex; padding: 0.28rem 0.72rem; border-radius: var(--radius-sm);
   font-size: 0.75rem; font-weight: 600; font-family: var(--font-ui);

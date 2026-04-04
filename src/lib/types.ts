@@ -143,6 +143,9 @@ export type ArticleDetail = ArticleSummary & {
   scheduled_at?: string | null;
   updated_at?: string;
   section?: SectionSummary | null;
+  related_articles?: ArticleSummary[];
+  latest_articles?: ArticleSummary[];
+  more_from_author?: ArticleSummary[];
 };
 
 export type TopStorySlot = {
