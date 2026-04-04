@@ -161,18 +161,14 @@ export default async function ArticlePage({ params }: Props) {
               }}
             >
               <Link href="/" className="article-breadcrumb-link">Home</Link>
-              <span aria-hidden="true">›</span>
               {article.category && (
                 <>
+                  <span aria-hidden="true">›</span>
                   <Link href={`/categories/${article.category.slug}`} className="article-breadcrumb-link">
                     {article.category.name}
                   </Link>
-                  <span aria-hidden="true">›</span>
                 </>
               )}
-              <span aria-current="page" style={{ color: "var(--muted)" }}>
-                {article.title.length > 50 ? `${article.title.slice(0, 50)}…` : article.title}
-              </span>
             </nav>
 
             {/* Article header */}

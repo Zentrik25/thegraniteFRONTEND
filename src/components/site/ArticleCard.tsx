@@ -6,42 +6,55 @@ import { mediaProxyPath } from "@/lib/utils/media";
 
 interface ArticleCardProps {
   article: ArticleSummary;
-  /** Show full excerpt (default clamps to 3 lines via CSS) */
+  /** Show excerpt text */
   showExcerpt?: boolean;
 }
 
-export function ArticleCard({ article, showExcerpt = true }: ArticleCardProps) {
+export function ArticleCard({
+  article,
+  showExcerpt = true,
+}: ArticleCardProps) {
+  const imageSrc = article.image_url ? mediaProxyPath(article.image_url) : null;
+
+  const badges = [
+    article.is_breaking && { label: "Breaking", className: "badge-breaking" },
+    article.is_live && { label: "Live", className: "badge-live" },
+    article.is_premium && { label: "Premium", className: "badge-premium" },
+  ].filter(Boolean) as { label: string; className: string }[];
+
   return (
     <article className="article-card">
-      {article.image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className="article-card-img"
-          src={mediaProxyPath(article.image_url) ?? ""}
-          alt={article.image_alt || article.title}
-          loading="lazy"
-        />
-      ) : (
-        <div className="article-card-img-ph" aria-hidden="true" />
-      )}
+      <Link
+        href={`/articles/${article.slug}`}
+        className="article-card-media-link"
+        aria-label={article.title}
+      >
+        {imageSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="article-card-img"
+            src={imageSrc}
+            alt={article.image_alt || article.title}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="article-card-img-ph" aria-hidden="true" />
+        )}
+      </Link>
 
       <div className="article-card-body">
-        {/* Badges */}
-        {(article.is_breaking || article.is_premium || article.is_live) && (
-          <div className="article-card-badges">
-            {article.is_breaking && (
-              <span className="badge badge-breaking">Breaking</span>
-            )}
-            {article.is_live && (
-              <span className="badge badge-live">Live</span>
-            )}
-            {article.is_premium && (
-              <span className="badge badge-premium">Premium</span>
-            )}
+        {badges.length > 0 && (
+          <div className="article-card-badges" aria-label="Article status">
+            {badges.map((badge) => (
+              <span key={badge.label} className={`badge ${badge.className}`}>
+                {badge.label}
+              </span>
+            ))}
           </div>
         )}
 
-        {article.category && (
+        {article.category?.name && (
           <p className="article-card-kicker">{article.category.name}</p>
         )}
 

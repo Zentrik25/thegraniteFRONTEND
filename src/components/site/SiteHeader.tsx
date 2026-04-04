@@ -55,6 +55,15 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
           </button>
 
           <Link className="bbc-wordmark" href="/" aria-label="The Granite Post — home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.svg"
+              alt=""
+              className="bbc-logo-mark"
+              aria-hidden="true"
+              width="34"
+              height="34"
+            />
             The Granite <em>Post</em>
           </Link>
 
@@ -99,7 +108,11 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
         aria-label="Navigation menu"
       >
         <div className="bbc-drawer-header">
-          <span className="bbc-drawer-title">Menu</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="" aria-hidden="true" width="28" height="28" style={{ borderRadius: "3px", flexShrink: 0 }} />
+            <span className="bbc-drawer-title">Menu</span>
+          </div>
           <button className="bbc-drawer-close" onClick={close} aria-label="Close menu">✕</button>
         </div>
 

@@ -218,8 +218,21 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
   color: #141414;
   text-decoration: none;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 .bbc-wordmark em { font-style: normal; color: var(--accent); }
+
+/* ── Logo mark (G emblem) in the nav ── */
+.bbc-logo-mark {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 3px;
+  height: 34px;
+  width: 34px;
+  object-fit: cover;
+}
 
 /* ── Desktop header actions ── */
 .bbc-actions {
@@ -922,10 +935,17 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
-.share-btn--whatsapp:hover { background: #25d366; color: #fff; border-color: #25d366; }
-.share-btn--facebook:hover { background: #1877f2; color: #fff; border-color: #1877f2; }
+/* Brand icon colours (default state) */
+.share-btn--whatsapp { color: #25d366; border-color: #25d366; }
+.share-btn--facebook { color: #1877f2; border-color: #1877f2; }
+.share-btn--twitter  { color: #141414; border-color: #d0d0d0; }
+.share-btn--copy     { color: var(--muted); }
+
+/* Hover: filled background */
+.share-btn--whatsapp:hover { background: #25d366; color: #fff; }
+.share-btn--facebook:hover { background: #1877f2; color: #fff; }
 .share-btn--twitter:hover  { background: #141414; color: #fff; border-color: #141414; }
-.share-btn--copy:hover     { background: #f6f6f6; border-color: #bbb; }
+.share-btn--copy:hover     { background: #f6f6f6; border-color: #bbb; color: #141414; }
 .share-btn--copied         { background: #f0fdf4; color: #15803d; border-color: #86efac; }
 
 .article-tags-row { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 1.25rem 0; border-top: 1px solid var(--line); }

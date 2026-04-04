@@ -50,7 +50,11 @@ export async function PageShell({ children }: { children: React.ReactNode }) {
       <footer className="site-footer" role="contentinfo">
         <div className="site-footer-grid">
           <div>
-            <p className="footer-brand-name">The Granite Post</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.5rem" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="" aria-hidden="true" width="40" height="40" style={{ borderRadius: "4px", flexShrink: 0 }} />
+              <p className="footer-brand-name" style={{ margin: 0 }}>The Granite Post</p>
+            </div>
             <p className="footer-tagline">
               Authoritative Zimbabwean journalism. Independent reporting and a
               free press for a free people.
