@@ -95,9 +95,9 @@ export default async function HomePage() {
 
         {feed.apiUnavailable && (
           <div className="hp-offline-notice" role="status">
-            <p className="hp-offline-label">Backend offline</p>
+            <p className="hp-offline-label">Service Under Maintenance</p>
             <p className="hp-offline-body">
-              Cannot reach the API at <strong>http://127.0.0.1:8000</strong>. Start the Django backend then refresh.
+              We are currently unavailable. Thank you for your support — we will be back shortly.
             </p>
           </div>
         )}
