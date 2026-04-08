@@ -2,17 +2,16 @@
 
 import { useEffect } from "react";
 
-import { PUBLIC_API_BASE_URL } from "@/lib/env";
-
 /**
- * Fires a POST to the analytics view endpoint once on mount.
+ * Fires a POST to the analytics view proxy endpoint once on mount.
+ * Routed through the Next.js server so the backend URL stays server-only
+ * and the reader session cookie is forwarded for per-user dedup.
  * Silently swallowed — never blocks reading.
  */
 export function ArticleViewTracker({ slug }: { slug: string }) {
   useEffect(() => {
-    fetch(`${PUBLIC_API_BASE_URL}/api/v1/analytics/articles/${slug}/view/`, {
+    fetch(`/api/analytics/articles/${slug}/view`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
     }).catch(() => {
       // analytics is best-effort
     });

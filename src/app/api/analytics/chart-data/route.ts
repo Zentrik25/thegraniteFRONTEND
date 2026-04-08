@@ -1,15 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/env";
 import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
+import type { TrendingArticle } from "@/lib/types";
 
 export const runtime = "nodejs";
 
 interface ChartDataResponse {
-  views: {
-    labels: string[];
-    data: number[];
-  };
-  comments: {
+  topArticles: {
     labels: string[];
     data: number[];
   };
@@ -25,40 +22,33 @@ export async function GET(request: NextRequest) {
   const period = searchParams.get("period") ?? "day";
 
   try {
-    // Fetch chart data from backend
-    const res = await fetch(`${API_BASE_URL}/api/v1/analytics/chart-data/?period=${period}`, {
-      headers: { Authorization: `Bearer ${session}` },
-    });
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/analytics/trending/?period=${period}&limit=10`,
+      { headers: { Authorization: `Bearer ${session}` } },
+    );
 
-    const data = await res.json().catch(() => ({}));
-
-    // If backend returns data directly, use it; otherwise generate mock data
-    if (data.views && data.comments) {
-      return NextResponse.json(data as ChartDataResponse);
+    if (!res.ok) {
+      return NextResponse.json({ error: "Upstream error" }, { status: res.status });
     }
 
-    // Fallback: generate mock chart data structure
-    const labels = period === "day"
-      ? ["12am", "4am", "8am", "12pm", "4pm", "8pm"]
-      : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const raw = await res.json().catch(() => null);
+    const items: TrendingArticle[] = Array.isArray(raw)
+      ? raw
+      : (raw as { results?: TrendingArticle[] } | null)?.results ?? [];
 
-    const viewsData: ChartDataResponse = {
-      views: {
-        labels,
-        data: labels.map(() => Math.floor(Math.random() * 1000) + 100),
-      },
-      comments: {
-        labels,
-        data: labels.map(() => Math.floor(Math.random() * 50) + 5),
+    const truncate = (s: string, max = 30) =>
+      s.length > max ? `${s.slice(0, max)}…` : s;
+
+    const chartData: ChartDataResponse = {
+      topArticles: {
+        labels: items.map((item) => truncate(item.article.title ?? item.article.slug)),
+        data: items.map((item) => item.view_count),
       },
     };
 
-    return NextResponse.json(viewsData);
+    return NextResponse.json(chartData);
   } catch (error) {
     console.error("Chart data fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch chart data" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch chart data" }, { status: 500 });
   }
 }

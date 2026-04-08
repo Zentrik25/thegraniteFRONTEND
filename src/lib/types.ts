@@ -204,6 +204,18 @@ export type TrendingArticle = {
   article: ArticleSummary;
 };
 
+export type DailyView = {
+  date: string;   // ISO date string "YYYY-MM-DD"
+  views: number;
+};
+
+export type ArticleStats = {
+  slug: string;
+  title?: string;
+  total_views: number;
+  daily_views: DailyView[];
+};
+
 // ─── Users / authors ──────────────────────────────────────────────────────
 
 export type UserProfile = {
