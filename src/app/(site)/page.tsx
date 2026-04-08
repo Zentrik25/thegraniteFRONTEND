@@ -15,7 +15,6 @@ import { HomeMainSidebar } from "@/components/site/HomeMainSidebar";
 import { CategorySection } from "@/components/site/CategorySection";
 import { HomeAfricaBand } from "@/components/site/HomeAfricaBand";
 import { HomeOpinionRow } from "@/components/site/HomeOpinionRow";
-import { HomeMostReadList } from "@/components/site/HomeMostReadList";
 import { HomeNewsletterBand } from "@/components/site/HomeNewsletterBand";
 
 export const revalidate = 60;
@@ -214,12 +213,7 @@ export default async function HomePage() {
       {/* ── 8. Opinion row — 3 cards on #f5f5f7 ── */}
       {opinionSection && <HomeOpinionRow section={opinionSection} />}
 
-      {/* ── 9. Most read — numbered top 5 ── */}
-      {feed.trending.length > 0 && (
-        <HomeMostReadList items={feed.trending} />
-      )}
-
-      {/* ── 10. Newsletter band ── */}
+      {/* ── 9. Newsletter band ── */}
       <HomeNewsletterBand />
 
     </div>
