@@ -1,5 +1,5 @@
-import { PageShell } from "@/components/page-shell";
+import { NewsSiteShell } from "@/components/NewsSiteShell";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
-  return <PageShell>{children}</PageShell>;
+  return <NewsSiteShell>{children}</NewsSiteShell>;
 }
