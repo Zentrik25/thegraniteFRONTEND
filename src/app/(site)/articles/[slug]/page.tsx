@@ -182,7 +182,7 @@ export default async function ArticlePage({ params }: Props) {
     : null;
 
   return (
-    <main className="container" id="main-content">
+    <main className="gp-container gp-article-page" id="main-content">
       {structuredData && (
         <script
           type="application/ld+json"
@@ -295,7 +295,8 @@ export default async function ArticlePage({ params }: Props) {
                     </time>
                   )}
                   {article.updated_at &&
-                    article.updated_at !== article.published_at && (
+                    article.updated_at !== article.published_at &&
+                    article.updated_at.slice(0, 10) !== article.published_at?.slice(0, 10) && (
                       <>
                         <span
                           className="article-detail-meta-sep"
