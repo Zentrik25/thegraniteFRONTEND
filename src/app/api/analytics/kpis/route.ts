@@ -48,25 +48,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch KPIs" }, { status: 500 });
   }
 }
-
-
-    const kpi: KpiResponse = {
-      total_views: totalViews,
-      total_articles: totalArticles,
-      avg_views_per_article: avgViewsPerArticle,
-      total_comments: totalComments,
-      avg_article_length: avgArticleLength,
-      active_readers: activeReaders,
-      engagement_rate: engagementRate,
-      bounce_rate: bounceRate,
-    };
-
-    return NextResponse.json(kpi);
-  } catch (error) {
-    console.error("KPI fetch error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch KPIs" },
-      { status: 500 },
-    );
-  }
-}
