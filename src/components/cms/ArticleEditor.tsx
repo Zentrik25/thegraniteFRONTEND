@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, type FormEvent } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
 import MediaPicker from "@/components/cms/MediaPicker";
@@ -274,11 +274,6 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    await save();
-  }
-
   async function handlePublish() {
     await save("published");
   }
@@ -373,8 +368,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       )}
 
       {/* ── 2-column layout ── */}
-      <form
-        onSubmit={handleSubmit}
+      <div
         style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}
       >
         {/* ══ LEFT — content ══════════════════════════════════════════════ */}
@@ -719,7 +713,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
             </div>
           </FormSection>
         </div>
-      </form>
+      </div>
 
       {/* Media picker modal */}
       {showMediaPicker && (

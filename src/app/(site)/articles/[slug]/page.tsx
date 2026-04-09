@@ -374,6 +374,7 @@ export default async function ArticlePage({ params }: Props) {
               <ShareRow
                 title={article.title}
                 url={article.canonical_url || `${SITE_URL}/articles/${slug}`}
+                excerpt={article.excerpt || undefined}
               />
             </header>
 
