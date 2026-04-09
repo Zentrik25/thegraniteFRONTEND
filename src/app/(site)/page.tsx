@@ -141,11 +141,11 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* ── 1. Hero carousel + sidebar ── */}
+      {/* ── 1. Hero carousel + sidebar (sidebar desktop-only here) ── */}
       <div className="gp-container">
         <div className="gp-hero-zone">
           <HeroCarousel articles={feed.featured} />
-          <aside aria-label="Sidebar">
+          <aside className="gp-hero-sidebar-desktop" aria-label="Sidebar">
             <HomeMainSidebar trending={feed.trending} />
           </aside>
         </div>
@@ -190,6 +190,11 @@ export default async function HomePage() {
         slug="crime-courts"
         articles={crimeArticles}
       />
+
+      {/* ── Mobile sidebar — Most Read + Newsletter, after categories ── */}
+      <div className="gp-container gp-hero-sidebar-mobile">
+        <HomeMainSidebar trending={feed.trending} />
+      </div>
 
       {/* ── 8. Africa dark band — full-width, 4 dark cards ── */}
       {africaSection && <HomeAfricaBand section={africaSection} />}
