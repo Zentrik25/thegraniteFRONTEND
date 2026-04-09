@@ -2056,7 +2056,7 @@ img + .cat-badge,
   letter-spacing: -0.025em;
   color: #fff;
   margin: 0 0 0.65rem;
-  max-width: 28ch;
+  max-width: 100%;
   text-wrap: pretty;
   overflow-wrap: break-word;
 }
@@ -2084,7 +2084,7 @@ img + .cat-badge,
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.58;
   margin: 0 0 0.65rem;
-  max-width: 28ch;
+  max-width: 100%;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -2187,13 +2187,12 @@ img + .cat-badge,
 
 /* ── Hero mobile ── */
 @media (max-width: 640px) {
-  /* Shorter hero so Trending Now is immediately visible on load */
-  .gp-hero-carousel         { height: clamp(210px, 52vw, 300px); border-radius: 8px; }
-  .gp-hero-slide            { height: clamp(210px, 52vw, 300px); }
-  .gp-hero-carousel--empty  { height: clamp(210px, 52vw, 300px); }
-  .gp-hero-fallback         { height: clamp(210px, 52vw, 300px); }
-  .gp-hero-headline         { font-size: clamp(1.1rem, 5vw, 1.5rem); max-width: 20ch; }
-  .gp-hero-excerpt          { display: none; } /* hide excerpt on mobile — save space */
+  .gp-hero-carousel         { height: clamp(340px, 80vw, 480px); border-radius: 8px; }
+  .gp-hero-slide            { height: clamp(340px, 80vw, 480px); }
+  .gp-hero-carousel--empty  { height: clamp(340px, 80vw, 480px); }
+  .gp-hero-fallback         { height: clamp(340px, 80vw, 480px); }
+  .gp-hero-headline         { font-size: clamp(1.25rem, 5.5vw, 1.75rem); }
+  .gp-hero-excerpt          { -webkit-line-clamp: 2; font-size: 0.88rem; }
   .gp-hero-content          { padding: 0 0 2rem; }
   .gp-hero-dots             { bottom: 0.65rem; right: 0.75rem; }
 }
