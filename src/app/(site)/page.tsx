@@ -141,8 +141,15 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* ── 1. Hero carousel — featured articles, auto-swipe ── */}
-      <HeroCarousel articles={feed.featured} />
+      {/* ── 1. Hero carousel + sidebar ── */}
+      <div className="gp-container">
+        <div className="gp-hero-zone">
+          <HeroCarousel articles={feed.featured} />
+          <aside aria-label="Sidebar">
+            <HomeMainSidebar trending={feed.trending} />
+          </aside>
+        </div>
+      </div>
 
       {/* ── 2. Top stories — curator-ranked slots ── */}
       {feed.topStories.length > 0 && (
@@ -151,18 +158,9 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* ── 3. Latest news grid + sidebar ── */}
+      {/* ── 3. Latest news grid ── */}
       <div className="gp-container">
-        <div className="gp-two-col">
-          <div className="gp-two-col-main">
-            <HomeNewsGrid articles={gridArticles} />
-          </div>
-          <aside className="gp-two-col-sidebar" aria-label="Sidebar">
-            <HomeMainSidebar
-              trending={feed.trending}
-            />
-          </aside>
-        </div>
+        <HomeNewsGrid articles={gridArticles} />
       </div>
 
       {/* ── 4. Politics ── */}

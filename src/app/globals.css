@@ -1915,27 +1915,36 @@ img + .cat-badge,
    HERO CAROUSEL
    ═══════════════════════════════════════════ */
 
-/* Outer shell — always full-width, black base */
+/* Hero + sidebar two-column wrapper */
+.gp-hero-zone {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 0 0;
+}
+
+/* Outer shell */
 .gp-hero-carousel {
   position: relative;
   width: 100%;
   overflow: hidden;
   background: #000;
-  min-height: 400px;
+  min-height: 260px;
+  border-radius: 4px;
 }
 
 /* Live slide: fills the shell, aligns content to bottom */
 .gp-hero-slide {
   position: relative;
   width: 100%;
-  min-height: 400px;
+  min-height: 260px;
   display: flex;
   align-items: flex-end;
 }
 
 /* Empty-state shell: dark editorial gradient, content centred */
 .gp-hero-carousel--empty {
-  min-height: 400px;
+  min-height: 260px;
   background: linear-gradient(135deg, #1a0a08 0%, #2d1410 60%, #181411 100%);
   display: flex;
   align-items: center;
@@ -1944,7 +1953,7 @@ img + .cat-badge,
 .gp-hero-fallback {
   position: relative;
   width: 100%;
-  min-height: 400px;
+  min-height: 260px;
   display: flex;
   align-items: center;
 }
@@ -2139,12 +2148,13 @@ img + .cat-badge,
 
 /* ── Hero desktop breakpoint ── */
 @media (min-width: 900px) {
-  .gp-hero-carousel         { min-height: 560px; }
-  .gp-hero-slide            { min-height: 560px; }
-  .gp-hero-carousel--empty  { min-height: 560px; }
-  .gp-hero-fallback         { min-height: 560px; }
-  .gp-hero-carousel--empty .gp-hero-content { min-height: 560px; }
-  .gp-hero-content          { padding-bottom: 4.5rem; }
+  .gp-hero-zone             { grid-template-columns: minmax(0, 2fr) 280px; align-items: start; }
+  .gp-hero-carousel         { min-height: 380px; }
+  .gp-hero-slide            { min-height: 380px; }
+  .gp-hero-carousel--empty  { min-height: 380px; }
+  .gp-hero-fallback         { min-height: 380px; }
+  .gp-hero-carousel--empty .gp-hero-content { min-height: 380px; }
+  .gp-hero-content          { padding-bottom: 3.5rem; }
 }
 
 /* ── Shared section head ── */
