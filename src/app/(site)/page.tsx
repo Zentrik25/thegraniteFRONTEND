@@ -6,10 +6,10 @@ import type {
   ArticleSummary,
   CategoryDetailResponse,
   SectionDetail,
-  TopStorySlot,
 } from "@/lib/types";
 
-import { HomeLeadZone } from "@/components/site/HomeLeadZone";
+import { HeroCarousel } from "@/components/site/HeroCarousel";
+import { HomeTopStoriesBlock } from "@/components/site/HomeTopStoriesBlock";
 import { HomeNewsGrid } from "@/components/site/HomeNewsGrid";
 import { HomeMainSidebar } from "@/components/site/HomeMainSidebar";
 import { CategorySection } from "@/components/site/CategorySection";
@@ -98,24 +98,15 @@ export default async function HomePage() {
 
   // ── Zone allocation ────────────────────────────────────────────────────────
 
-  // 1. Lead story — first featured article, falling back to latest
-  const featuredPool = feed.featured.length > 0 ? feed.featured : feed.latest;
-  const [lead, ...restFeatured] = featuredPool;
-  if (lead) seen.add(lead.slug);
+  // 1. Hero carousel — all featured articles are reserved for the carousel
+  feed.featured.forEach((a) => seen.add(a.slug));
 
-  // 2. Secondaries — top story slots (up to 5, no repeats from lead)
-  const rawSecondaries = feed.topStories
-    .map((s: TopStorySlot) => s.article)
-    .filter((a): a is ArticleSummary => a !== null && !seen.has(a.slug))
-    .slice(0, 5);
-  rawSecondaries.forEach((a) => seen.add(a.slug));
+  // 2. Top stories — reserve curated top-story slugs before latest grid picks
+  for (const s of feed.topStories) {
+    if (s.article) seen.add(s.article.slug);
+  }
 
-  // Pad secondaries to 5 from remaining featured/latest pool (immutable)
-  const fromFeatured = pick(restFeatured, 5 - rawSecondaries.length);
-  const fromLatest = pick(feed.latest, 5 - rawSecondaries.length - fromFeatured.length);
-  const secondaries = [...rawSecondaries, ...fromFeatured, ...fromLatest];
-
-  // 3. News grid — latest articles (up to 9)
+  // 3. News grid — latest articles (up to 9, after dedup)
   const gridArticles = pick(feed.latest, 9);
 
   // 4. Category sections — deduplicated AFTER lead/secondaries/grid are registered
@@ -150,14 +141,17 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* ── 1. Lead zone — big story + up to 5 secondaries ── */}
-      {lead && (
+      {/* ── 1. Hero carousel — featured articles, auto-swipe ── */}
+      <HeroCarousel articles={feed.featured} />
+
+      {/* ── 2. Top stories — curator-ranked slots ── */}
+      {feed.topStories.length > 0 && (
         <div className="gp-container">
-          <HomeLeadZone lead={lead} secondaries={secondaries} />
+          <HomeTopStoriesBlock slots={feed.topStories} />
         </div>
       )}
 
-      {/* ── 2. Latest news grid + sidebar ── */}
+      {/* ── 3. Latest news grid + sidebar ── */}
       <div className="gp-container">
         <div className="gp-two-col">
           <div className="gp-two-col-main">
@@ -171,41 +165,41 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* ── 3. Politics ── */}
+      {/* ── 4. Politics ── */}
       <CategorySection
         title="Politics"
         slug="politics"
         articles={politicsArticles}
       />
 
-      {/* ── 4. Business ── */}
+      {/* ── 5. Business ── */}
       <CategorySection
         title="Business"
         slug="business"
         articles={businessArticles}
       />
 
-      {/* ── 5. Technology ── */}
+      {/* ── 6. Technology ── */}
       <CategorySection
         title="Technology"
         slug="technology"
         articles={technologyArticles}
       />
 
-      {/* ── 6. Crime & Courts ── */}
+      {/* ── 7. Crime & Courts ── */}
       <CategorySection
         title="Crime & Courts"
         slug="crime-courts"
         articles={crimeArticles}
       />
 
-      {/* ── 7. Africa dark band — full-width, 4 dark cards ── */}
+      {/* ── 8. Africa dark band — full-width, 4 dark cards ── */}
       {africaSection && <HomeAfricaBand section={africaSection} />}
 
-      {/* ── 8. Opinion row — 3 cards on #f5f5f7 ── */}
+      {/* ── 9. Opinion row — 3 cards on #f5f5f7 ── */}
       {opinionSection && <HomeOpinionRow section={opinionSection} />}
 
-      {/* ── 9. Newsletter band ── */}
+      {/* ── 10. Newsletter band ── */}
       <HomeNewsletterBand />
 
     </div>

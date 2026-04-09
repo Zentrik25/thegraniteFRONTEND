@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { TopStorySlot } from "@/lib/types";
@@ -30,13 +31,15 @@ export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
         {/* Lead card */}
         <article className="hp-top-lead-card">
           {lead.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="hp-top-lead-img"
-              src={mediaProxyPath(lead.image_url) ?? ""}
-              alt={lead.image_alt || lead.title}
-              loading="lazy"
-            />
+            <div className="hp-top-lead-img relative overflow-hidden">
+              <Image
+                src={mediaProxyPath(lead.image_url) ?? ""}
+                alt={lead.image_alt || lead.title}
+                fill
+                sizes="(max-width: 960px) 100vw, 60vw"
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="hp-top-lead-img-ph" aria-hidden="true" />
           )}
@@ -64,13 +67,15 @@ export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
               return (
                 <article key={article.slug} className="hp-top-list-item">
                   {article.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      className="hp-top-list-thumb"
-                      src={mediaProxyPath(article.image_url) ?? ""}
-                      alt={article.image_alt || article.title}
-                      loading="lazy"
-                    />
+                    <div className="hp-top-list-thumb relative overflow-hidden">
+                      <Image
+                        src={mediaProxyPath(article.image_url) ?? ""}
+                        alt={article.image_alt || article.title}
+                        fill
+                        sizes="(max-width: 960px) 100vw, 30vw"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="hp-top-list-thumb-ph" aria-hidden="true" />
                   )}
