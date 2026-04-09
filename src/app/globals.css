@@ -2187,14 +2187,15 @@ img + .cat-badge,
 
 /* ── Hero mobile ── */
 @media (max-width: 640px) {
-  .gp-hero-carousel         { height: clamp(320px, 72vw, 480px); border-radius: 8px; }
-  .gp-hero-slide            { height: clamp(320px, 72vw, 480px); }
-  .gp-hero-carousel--empty  { height: clamp(320px, 72vw, 480px); }
-  .gp-hero-fallback         { height: clamp(320px, 72vw, 480px); }
-  .gp-hero-headline         { font-size: clamp(1.25rem, 5.5vw, 1.75rem); max-width: 22ch; }
-  .gp-hero-excerpt          { -webkit-line-clamp: 2; font-size: 0.88rem; }
-  .gp-hero-content          { padding: 0 0 2.5rem; } /* dots at 0.85rem on mobile */
-  .gp-hero-dots             { bottom: 0.85rem; right: 0.85rem; }
+  /* Shorter hero so Trending Now is immediately visible on load */
+  .gp-hero-carousel         { height: clamp(210px, 52vw, 300px); border-radius: 8px; }
+  .gp-hero-slide            { height: clamp(210px, 52vw, 300px); }
+  .gp-hero-carousel--empty  { height: clamp(210px, 52vw, 300px); }
+  .gp-hero-fallback         { height: clamp(210px, 52vw, 300px); }
+  .gp-hero-headline         { font-size: clamp(1.1rem, 5vw, 1.5rem); max-width: 20ch; }
+  .gp-hero-excerpt          { display: none; } /* hide excerpt on mobile — save space */
+  .gp-hero-content          { padding: 0 0 2rem; }
+  .gp-hero-dots             { bottom: 0.65rem; right: 0.75rem; }
 }
 
 /* ── Shared section head ── */
@@ -2465,6 +2466,76 @@ img + .cat-badge,
 .gp-sidebar-brief-title:hover { color: var(--apple-blue); }
 .gp-sidebar-more { font-family: var(--gp-font-body); font-size: 0.72rem; font-weight: 600; color: var(--apple-link); text-decoration: none; }
 .gp-sidebar-more:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════
+   TRENDING NOW WIDGET (sidebar + mobile)
+   ═══════════════════════════════════════════ */
+.gp-trending-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.gp-trending-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #e8e8ed;
+}
+.gp-trending-item:first-child { padding-top: 0; }
+.gp-trending-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+/* Thumbnail */
+.gp-trending-thumb-link { flex-shrink: 0; display: block; border-radius: 4px; overflow: hidden; }
+.gp-trending-thumb {
+  width: 64px;
+  height: 48px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+.gp-trending-thumb-ph {
+  width: 64px;
+  height: 48px;
+  border-radius: 4px;
+  background: #e8e8ed;
+  flex-shrink: 0;
+}
+
+/* Text body */
+.gp-trending-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+.gp-trending-cat {
+  font-family: var(--gp-font-body);
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--apple-blue);
+  white-space: nowrap;
+}
+.gp-trending-title {
+  font-family: var(--gp-font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--apple-black);
+  text-decoration: none;
+  line-height: 1.3;
+  text-wrap: pretty;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gp-trending-title:hover { color: var(--apple-blue); }
 
 /* ═══════════════════════════════════════════
    AFRICA BAND (full-width dark)
