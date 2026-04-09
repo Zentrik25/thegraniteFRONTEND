@@ -41,7 +41,7 @@ export function HomeAfricaBand({ section }: HomeAfricaBandProps) {
         <div className="gp-africa-grid">
           {articles.map((article) => (
             <article key={article.slug} className="gp-africa-card">
-              {article.image_url && (
+              {article.image_url ? (
                 <div className="gp-africa-card-img relative overflow-hidden">
                   <Image
                     src={mediaProxyPath(article.image_url) ?? ""}
@@ -51,6 +51,8 @@ export function HomeAfricaBand({ section }: HomeAfricaBandProps) {
                     className="object-cover"
                   />
                 </div>
+              ) : (
+                <div className="gp-africa-card-img gp-africa-card-img-ph" aria-hidden="true" />
               )}
               <div className="gp-africa-card-body">
                 {article.category && (

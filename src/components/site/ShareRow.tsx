@@ -8,29 +8,30 @@ interface ShareRowProps {
   excerpt?: string;
 }
 
-export function ShareRow({ title, url, excerpt }: ShareRowProps) {
+export function ShareRow({ url, excerpt }: ShareRowProps) {
   const [copied, setCopied] = useState(false);
 
+  const readMore = `READ MORE: ${url}`;
+
+  // Shared body used by WhatsApp, copy, and Twitter
+  const shareBody = excerpt
+    ? `${excerpt}\n\n${readMore}`
+    : readMore;
+
   function handleCopy() {
-    const text = excerpt ? `${excerpt}\n\n${url}` : url;
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(shareBody).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   }
 
-  // WhatsApp: title + excerpt + url
-  const waText = excerpt
-    ? `*${title}*\n\n${excerpt}\n\n${url}`
-    : `${title}\n\n${url}`;
+  // Twitter/X: cap total text at 280 chars (URL counts ~23 chars against the limit)
+  const tweetBody = shareBody.length > 257
+    ? `${shareBody.slice(0, 254)}…`
+    : shareBody;
 
-  // Twitter/X: excerpt (capped at 200 chars) + url via &url param
-  const tweetText = excerpt
-    ? excerpt.length > 200 ? `${excerpt.slice(0, 197)}…` : excerpt
-    : title;
-
-  const encodedWa = encodeURIComponent(waText);
-  const encodedTweet = encodeURIComponent(tweetText);
+  const encodedWa = encodeURIComponent(shareBody);
+  const encodedTweet = encodeURIComponent(tweetBody);
   const encodedUrl = encodeURIComponent(url);
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { subscribeToNewsletter } from "@/lib/api/newsletter";
 import { getBrowserErrorMessage } from "@/lib/api/browser";
@@ -16,7 +16,7 @@ export function HomeNewsletterBand() {
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
     setMessage("");
     setError("");
@@ -51,11 +51,7 @@ export function HomeNewsletterBand() {
         {/* Form */}
         <div className="home-newsletter-form-wrap">
           {message ? (
-            <p
-              className="form-feedback success"
-              style={{ fontSize: "0.92rem", padding: "0.9rem 1rem" }}
-              role="status"
-            >
+            <p className="home-newsletter-success" role="status">
               {message}
             </p>
           ) : (
@@ -75,19 +71,19 @@ export function HomeNewsletterBand() {
                   className="btn-primary"
                   type="submit"
                   disabled={isPending}
-                  style={{ flexShrink: 0, borderRadius: 0 }}
+                  style={{ flexShrink: 0 }}
                 >
                   {isPending ? "Subscribing…" : "Subscribe free"}
                 </button>
               </div>
 
               {error && (
-                <p className="form-feedback error" style={{ marginTop: "0.6rem" }} role="alert">
+                <p className="form-feedback error" role="alert">
                   {error}
                 </p>
               )}
 
-              <p className="home-newsletter-note" style={{ marginTop: "0.6rem" }}>
+              <p className="home-newsletter-note">
                 No spam. Unsubscribe at any time. By subscribing you agree to our{" "}
                 <a href="/privacy">Privacy Policy</a>.
               </p>

@@ -35,7 +35,11 @@ export function HomeOpinionRow({ section }: HomeOpinionRowProps) {
           {articles.map((article) => {
             const authorInitial = article.author_name?.[0]?.toUpperCase() ?? "A";
             return (
-              <article key={article.slug} className="gp-opinion-card">
+              <article
+                key={article.slug}
+                className="gp-opinion-card"
+                aria-labelledby={`gp-opinion-${article.slug}`}
+              >
                 <div className="gp-opinion-author-row">
                   <div className="gp-opinion-avatar" aria-hidden="true">
                     {authorInitial}
@@ -45,7 +49,7 @@ export function HomeOpinionRow({ section }: HomeOpinionRowProps) {
                   </span>
                 </div>
 
-                <h3 className="gp-opinion-headline">
+                <h3 className="gp-opinion-headline" id={`gp-opinion-${article.slug}`}>
                   <Link href={`/articles/${article.slug}`}>
                     {article.title}
                   </Link>

@@ -65,7 +65,7 @@ export function HeroCarousel({ articles }: HeroCarouselProps) {
           <div className="gp-hero-content">
             <div className="gp-container">
               <p className="gp-hero-cat">Zimbabwe&apos;s Journal of Record</p>
-              <h1 className="gp-hero-headline">The Granite Post</h1>
+              <h2 className="gp-hero-headline">The Granite Post</h2>
               <p className="gp-hero-excerpt">
                 Authoritative news and analysis from Zimbabwe — breaking news,
                 politics, business, technology and sport.

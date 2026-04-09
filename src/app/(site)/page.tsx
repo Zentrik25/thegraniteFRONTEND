@@ -195,10 +195,10 @@ export default async function HomePage() {
         articles={crimeArticles}
       />
 
-      {/* ── Mobile sidebar — Most Read + Newsletter, after categories ── */}
-      <div className="gp-container gp-hero-sidebar-mobile">
+      {/* ── Mobile sidebar — Most Read, after categories ── */}
+      <aside className="gp-container gp-hero-sidebar-mobile" aria-label="Most Read">
         <HomeMainSidebar trending={feed.trending} />
-      </div>
+      </aside>
 
       {/* ── 8. Africa dark band — full-width, 4 dark cards ── */}
       {africaSection && <HomeAfricaBand section={africaSection} />}

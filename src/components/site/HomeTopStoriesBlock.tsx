@@ -69,7 +69,7 @@ export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
                         src={mediaProxyPath(article.image_url) ?? ""}
                         alt={article.image_alt || article.title}
                         fill
-                        sizes="(max-width: 960px) 100vw, 30vw"
+                        sizes="(max-width: 960px) 90px, 30vw"
                         className="object-cover"
                       />
                     </div>
