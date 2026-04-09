@@ -1477,7 +1477,7 @@ img + .cat-badge,
 }
 
 /* ── Top Stories block (ranked list from backend) ── */
-.hp-top-stories-block { padding: 1rem 0; border-bottom: 1px solid #e6e6e6; }
+.hp-top-stories-block { padding: 1.5rem 0; border-bottom: 1px solid #d2d2d7; }
 .hp-top-stories-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
 .hp-top-lead-card { display: flex; flex-direction: column; margin-bottom: 1rem; padding-bottom: 1.25rem; border-bottom: 2px solid var(--line); }
 .hp-top-lead-img { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; }
@@ -1926,7 +1926,7 @@ img + .cat-badge,
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
-  padding: 1.25rem 0 0;
+  padding: 1.25rem 0 1.5rem;
 }
 
 /* Outer shell */
@@ -2011,8 +2011,8 @@ img + .cat-badge,
   left: 0;
   right: 0;
   z-index: 2;
-  /* top padding creates the "dark text zone" height; bottom clears the dots */
-  padding: 4rem 0 3.25rem;
+  /* pin to 5px from the very bottom edge */
+  padding: 0 0 5px;
 }
 
 /* Fallback centres its content vertically */
@@ -2022,16 +2022,19 @@ img + .cat-badge,
   align-items: center;
 }
 
-/* Category / eyebrow */
+/* Category / eyebrow — filled rectangle badge */
 .gp-hero-cat {
   display: inline-block;
   font-family: var(--gp-font-body);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--apple-bright, #2997ff);
-  margin-bottom: 0.55rem;
+  letter-spacing: 0.11em;
+  color: #fff;
+  background: var(--apple-blue, #0071e3);
+  padding: 0.2rem 0.55rem;
+  border-radius: 2px;
+  margin-bottom: 0.5rem;
 }
 
 /* Headline — large, cinematic */
@@ -2071,7 +2074,7 @@ img + .cat-badge,
   color: rgba(255, 255, 255, 0.75);
   line-height: 1.58;
   margin: 0 0 0.65rem;
-  max-width: 52ch;
+  max-width: 28ch;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -2163,7 +2166,7 @@ img + .cat-badge,
 
 /* Mobile: hide desktop sidebar, show mobile sidebar */
 .gp-hero-sidebar-desktop { display: none; }
-.gp-hero-sidebar-mobile  { display: block; padding: 0; }
+.gp-hero-sidebar-mobile  { display: block; padding: 1.5rem 0 0; }
 
 /* ── Hero desktop breakpoint ── */
 @media (min-width: 900px) {
@@ -2319,7 +2322,7 @@ img + .cat-badge,
 /* ═══════════════════════════════════════════
    NEWS CARD GRID (3-col)
    ═══════════════════════════════════════════ */
-.gp-news-section { padding-bottom: 1rem; }
+.gp-news-section { padding: 1.5rem 0; }
 .gp-news-grid { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
 .gp-news-card {
   background: #fff;
