@@ -2593,6 +2593,103 @@ img + .cat-badge,
 .gp-most-read-views { font-family: var(--gp-font-body); font-size: 0.65rem; color: #aeaeb2; margin: 0.15rem 0 0; }
 
 /* ═══════════════════════════════════════════
+   MOBILE NEWSLETTER STRIP (after top stories)
+   Hidden on desktop — full band handles it there.
+   ═══════════════════════════════════════════ */
+
+/* Wrapper: visible on mobile, gone at ≥900px */
+.gp-mobile-nl-wrap { display: block; padding-top: 0; padding-bottom: 1.5rem; }
+@media (min-width: 900px) { .gp-mobile-nl-wrap { display: none; } }
+
+/* Desktop-only bottom newsletter band */
+.gp-desktop-nl { display: none; }
+@media (min-width: 900px) { .gp-desktop-nl { display: block; } }
+
+/* Dark card */
+.gp-mobile-nl-card {
+  background: #000;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.gp-mobile-nl-eyebrow {
+  font-family: var(--gp-font-body);
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--apple-bright, #2997ff);
+  margin: 0 0 0.3rem;
+}
+
+.gp-mobile-nl-headline {
+  font-family: var(--gp-font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 0.3rem;
+}
+
+.gp-mobile-nl-body {
+  font-family: var(--gp-font-body);
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.gp-mobile-nl-form { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.gp-mobile-nl-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--gp-font-body);
+  font-size: 0.88rem;
+  transition: border-color 0.15s;
+}
+.gp-mobile-nl-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.gp-mobile-nl-input:focus { outline: none; border-color: var(--apple-bright, #2997ff); }
+
+.gp-mobile-nl-btn {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--apple-blue, #0071e3);
+  color: #fff;
+  font-family: var(--gp-font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 980px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.gp-mobile-nl-btn:hover { opacity: 0.88; }
+.gp-mobile-nl-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.gp-mobile-nl-success {
+  font-family: var(--gp-font-body);
+  font-size: 0.85rem;
+  color: #4cd964;
+  margin: 0;
+}
+
+.gp-mobile-nl-error {
+  font-family: var(--gp-font-body);
+  font-size: 0.75rem;
+  color: #ff453a;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════
    APPLE-STYLE FOOTER
    ═══════════════════════════════════════════ */
 .gp-footer { background: #000; border-top: 3px solid var(--apple-blue); color: rgba(255,255,255,0.5); }

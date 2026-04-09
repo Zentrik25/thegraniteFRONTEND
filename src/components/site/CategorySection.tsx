@@ -69,9 +69,6 @@ export function CategorySection({ title, slug, articles }: CategorySectionProps)
               <h3 className="gp-cat-large-headline">
                 <Link href={`/articles/${lead.slug}`}>{lead.title}</Link>
               </h3>
-              {lead.excerpt && (
-                <p className="gp-cat-large-excerpt">{lead.excerpt}</p>
-              )}
               <p className="gp-cat-meta">
                 {lead.author_name && <span>{lead.author_name}</span>}
                 {lead.author_name && lead.published_at && (

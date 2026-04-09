@@ -16,6 +16,7 @@ import { CategorySection } from "@/components/site/CategorySection";
 import { HomeAfricaBand } from "@/components/site/HomeAfricaBand";
 import { HomeOpinionRow } from "@/components/site/HomeOpinionRow";
 import { HomeNewsletterBand } from "@/components/site/HomeNewsletterBand";
+import { HomeMobileNewsletterStrip } from "@/components/site/HomeMobileNewsletterStrip";
 
 export const revalidate = 60;
 
@@ -158,6 +159,9 @@ export default async function HomePage() {
         </div>
       )}
 
+      {/* ── 2b. Newsletter strip — mobile only, early placement ── */}
+      <HomeMobileNewsletterStrip />
+
       {/* ── 3. Latest news grid ── */}
       <div className="gp-container">
         <HomeNewsGrid articles={gridArticles} />
@@ -202,8 +206,10 @@ export default async function HomePage() {
       {/* ── 9. Opinion row — 3 cards on #f5f5f7 ── */}
       {opinionSection && <HomeOpinionRow section={opinionSection} />}
 
-      {/* ── 10. Newsletter band ── */}
-      <HomeNewsletterBand />
+      {/* ── 10. Newsletter band — desktop only (mobile strip handles it above) ── */}
+      <div className="gp-desktop-nl">
+        <HomeNewsletterBand />
+      </div>
 
     </div>
   );

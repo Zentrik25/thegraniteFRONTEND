@@ -10,7 +10,6 @@
 import Link from "next/link";
 
 import type { TrendingArticle } from "@/lib/types";
-import { SidebarNewsletterForm } from "@/components/site/SidebarNewsletterForm";
 
 interface HomeMainSidebarProps {
   trending: TrendingArticle[];
@@ -42,12 +41,6 @@ export function HomeMainSidebar({ trending }: HomeMainSidebarProps) {
           </ol>
         </div>
       )}
-
-      {/* Newsletter widget */}
-      <div className="gp-sidebar-widget">
-        <p className="gp-sidebar-title">Newsletter</p>
-        <SidebarNewsletterForm />
-      </div>
 
     </div>
   );

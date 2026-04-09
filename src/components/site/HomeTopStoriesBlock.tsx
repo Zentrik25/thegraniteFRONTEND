@@ -52,9 +52,6 @@ export function HomeTopStoriesBlock({ slots }: HomeTopStoriesBlockProps) {
             <h3 className="hp-top-lead-title">
               <Link href={`/articles/${lead.slug}`}>{lead.title}</Link>
             </h3>
-            {lead.excerpt && (
-              <p className="hp-top-lead-excerpt">{lead.excerpt}</p>
-            )}
             <ArticleMeta article={lead} />
           </div>
         </article>
