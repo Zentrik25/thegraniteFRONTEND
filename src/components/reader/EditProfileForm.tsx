@@ -90,7 +90,7 @@ export default function EditProfileForm({ initial }: EditProfileFormProps) {
 
   const inputCls = (hasError: boolean) =>
     [
-      "w-full px-3 py-2.5 text-sm bg-white border rounded transition",
+      "w-full px-3.5 py-2.5 text-base bg-white border rounded-lg transition",
       "focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent",
       hasError ? "border-red-400" : "border-[var(--line)]",
     ].join(" ");
@@ -98,7 +98,7 @@ export default function EditProfileForm({ initial }: EditProfileFormProps) {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       {serverError && (
-        <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded px-4 py-3">
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3">
           {serverError}
         </div>
       )}
@@ -185,7 +185,8 @@ export default function EditProfileForm({ initial }: EditProfileFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-5 py-2.5 rounded bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-deep)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          className="px-6 py-2.5 rounded-full bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity flex items-center gap-2"
+          style={{ letterSpacing: "-0.28px" }}
         >
           {loading && (
             <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">

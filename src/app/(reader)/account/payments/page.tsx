@@ -93,7 +93,7 @@ export default async function PaymentsPage() {
 
         {/* Payment list */}
         {payments.length > 0 && (
-          <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg overflow-hidden">
+          <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl overflow-hidden" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
             <ul className="divide-y divide-[var(--line)]" role="list">
               {payments.map((payment) => (
                 <PaymentRow key={payment.id} payment={payment} />
@@ -168,7 +168,7 @@ function PaymentRow({ payment }: { payment: PaymentRecord }) {
 
 function EmptyState() {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-6 py-12 flex flex-col items-center gap-4 text-center">
+    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl px-6 py-12 flex flex-col items-center gap-4 text-center" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
       <div className="w-12 h-12 rounded-full bg-[var(--line)] flex items-center justify-center">
         <svg
           className="w-6 h-6 text-[var(--muted)]"

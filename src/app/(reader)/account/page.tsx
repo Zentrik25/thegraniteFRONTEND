@@ -32,21 +32,9 @@ export default async function AccountPage() {
   return (
     <main className="min-h-screen bg-[var(--bg)]">
       <div className="max-w-lg mx-auto px-4 py-10 sm:py-14">
-
-        {/* Site link */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="font-serif text-xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
-          >
-            The Granite Post
-          </Link>
-        </div>
-
         <Suspense fallback={<ProfileSkeleton />}>
           <ProfileContent token={token} />
         </Suspense>
-
       </div>
     </main>
   );
@@ -85,14 +73,20 @@ async function ProfileContent({ token }: { token: string }) {
       </div>
 
       {/* Profile card */}
-      <section className="bg-[var(--surface)] border border-[var(--line)] rounded-lg divide-y divide-[var(--line)]">
+      <section
+        className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl divide-y divide-[var(--line)] overflow-hidden"
+        style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}
+      >
         <Row label="Display name" value={displayName ?? <span className="text-[var(--muted)] italic">Not set</span>} />
         <Row label="Username"     value={`@${user.username}`} />
         <Row label="Email"        value={user.email} />
       </section>
 
       {/* Edit profile */}
-      <section className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-5 py-6">
+      <section
+        className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl px-5 py-6"
+        style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}
+      >
         <h2 className="font-semibold text-sm text-[var(--ink)] mb-5">Edit profile</h2>
         <EditProfileForm
           initial={{
@@ -142,7 +136,7 @@ function ProfileSkeleton() {
           <div className="h-3.5 w-24 rounded bg-[var(--line)]" />
         </div>
       </div>
-      <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg divide-y divide-[var(--line)]">
+      <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl divide-y divide-[var(--line)] overflow-hidden" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
         {[1, 2, 3].map((i) => (
           <div key={i} className="px-5 py-4 flex flex-col gap-2">
             <div className="h-3 w-20 rounded bg-[var(--line)]" />
@@ -158,7 +152,7 @@ function ProfileSkeleton() {
 
 function ProfileError() {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-6 py-10 text-center flex flex-col items-center gap-4">
+    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl px-6 py-10 text-center flex flex-col items-center gap-4" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
       <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
         <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />

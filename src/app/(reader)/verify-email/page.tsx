@@ -130,7 +130,10 @@ function Shell({ children }: { children: React.ReactNode }) {
             The Granite Post
           </Link>
         </div>
-        <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg p-8 shadow-sm flex flex-col items-center gap-4 text-center">
+        <div
+          className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col items-center gap-4 text-center"
+          style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
+        >
           {children}
         </div>
       </div>

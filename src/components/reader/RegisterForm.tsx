@@ -153,11 +153,18 @@ export default function RegisterForm() {
     return (
       <div className="w-full max-w-sm mx-auto text-center">
         <div className="mb-8">
-          <Link href="/" className="font-serif text-2xl font-bold text-[var(--ink)]">
+          <Link
+            href="/"
+            className="text-2xl font-bold text-[var(--ink)]"
+            style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", letterSpacing: "-0.28px" }}
+          >
             The Granite Post
           </Link>
         </div>
-        <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg p-8 shadow-sm flex flex-col items-center gap-4">
+        <div
+          className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col items-center gap-4"
+          style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
+        >
           <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
             <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -191,17 +198,19 @@ export default function RegisterForm() {
       <div className="mb-8 text-center">
         <Link
           href="/"
-          className="font-serif text-2xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
+          className="text-2xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
+          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", letterSpacing: "-0.28px" }}
         >
           The Granite Post
         </Link>
-        <p className="mt-1 text-sm text-[var(--muted)]">Create your free reader account</p>
+        <p className="mt-1.5 text-sm text-[var(--muted)]">Create your free reader account</p>
       </div>
 
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="bg-[var(--surface)] border border-[var(--line)] rounded-lg p-8 shadow-sm flex flex-col gap-5"
+        className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col gap-5"
+        style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
       >
         {/* Server error */}
         {serverError && (
@@ -266,6 +275,7 @@ export default function RegisterForm() {
             disabled={loading}
             aria-describedby={fieldErrors.password ? "password-error" : "password-strength"}
             className={inputCls(!!fieldErrors.password, loading)}
+            style={{ letterSpacing: "-0.374px" }}
           />
           {/* Strength bar */}
           {fields.password && (
@@ -301,11 +311,12 @@ export default function RegisterForm() {
           required
         />
 
-        {/* Submit */}
+        {/* Submit — Apple pill CTA */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded bg-[var(--accent)] text-white font-bold text-sm tracking-wide hover:bg-[var(--accent-deep)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 mt-1"
+          className="w-full py-3 rounded-full bg-[var(--accent)] text-white font-semibold text-base hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2 mt-1"
+          style={{ letterSpacing: "-0.28px" }}
         >
           {loading && (
             <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
@@ -332,7 +343,7 @@ export default function RegisterForm() {
 
 function inputCls(hasError: boolean, disabled: boolean) {
   return [
-    "w-full px-3 py-2.5 text-sm bg-white border rounded transition",
+    "w-full px-3.5 py-2.5 text-base bg-white border rounded-lg transition",
     "focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent",
     hasError ? "border-red-400" : "border-[var(--line)]",
     disabled ? "opacity-50 cursor-not-allowed" : "",

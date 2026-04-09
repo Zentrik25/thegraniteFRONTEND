@@ -91,7 +91,7 @@ function ActiveSubscription({ sub }: { sub: Subscription }) {
     <div className="flex flex-col gap-5">
 
       {/* Plan card */}
-      <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg overflow-hidden">
+      <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl overflow-hidden" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
 
         {/* Top bar */}
         <div className="px-5 py-4 flex items-center justify-between gap-4 border-b border-[var(--line)]">
@@ -184,7 +184,7 @@ function ActiveSubscription({ sub }: { sub: Subscription }) {
       {(sub.status === "expired" || sub.status === "cancelled") && (
         <Link
           href="/subscribe"
-          className="w-full py-3 rounded bg-[var(--accent)] text-white text-sm font-bold text-center hover:bg-[var(--accent-deep)] transition-colors"
+          className="w-full py-3 rounded-full bg-[var(--accent)] text-white text-sm font-semibold text-center hover:opacity-90 transition-opacity"
         >
           Resubscribe
         </Link>
@@ -205,7 +205,7 @@ function ActiveSubscription({ sub }: { sub: Subscription }) {
 
 function NoSubscription() {
   return (
-    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-lg px-6 py-12 flex flex-col items-center gap-5 text-center">
+    <div className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl px-6 py-12 flex flex-col items-center gap-5 text-center" style={{ boxShadow: "rgba(0,0,0,0.06) 0 2px 12px" }}>
       <div className="w-14 h-14 rounded-full bg-[var(--line)] flex items-center justify-center">
         <svg className="w-7 h-7 text-[var(--muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
@@ -219,7 +219,7 @@ function NoSubscription() {
       </div>
       <Link
         href="/subscribe"
-        className="px-6 py-3 rounded bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-deep)] transition-colors"
+        className="px-6 py-3 rounded-full bg-[var(--accent)] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
       >
         View plans
       </Link>

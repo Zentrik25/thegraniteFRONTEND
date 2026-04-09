@@ -51,26 +51,28 @@ export default function LoginForm() {
       <div className="mb-8 text-center">
         <Link
           href="/"
-          className="font-serif text-2xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
+          className="text-2xl font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-colors"
+          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", letterSpacing: "-0.28px" }}
         >
           The Granite Post
         </Link>
-        <p className="mt-1 text-sm text-[var(--muted)]">Sign in to your reader account</p>
+        <p className="mt-1.5 text-sm text-[var(--muted)]">Sign in to your reader account</p>
       </div>
 
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="bg-[var(--surface)] border border-[var(--line)] rounded-lg p-8 shadow-sm flex flex-col gap-5"
+        className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col gap-5"
+        style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
       >
         {expired && !error && (
-          <div role="status" className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded px-4 py-3 leading-snug">
+          <div role="status" className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-4 py-3 leading-snug">
             Your session has expired. Please sign in again.
           </div>
         )}
 
         {error && (
-          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded px-4 py-3 leading-snug">
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg px-4 py-3 leading-snug">
             {error}
           </div>
         )}
@@ -88,7 +90,8 @@ export default function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
-            className="w-full px-3 py-2.5 text-sm bg-white border border-[var(--line)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="w-full px-3.5 py-2.5 text-base bg-white border border-[var(--line)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition"
+            style={{ letterSpacing: "-0.374px" }}
           />
         </div>
 
@@ -110,15 +113,17 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
-            className="w-full px-3 py-2.5 text-sm bg-white border border-[var(--line)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="w-full px-3.5 py-2.5 text-base bg-white border border-[var(--line)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition"
+            style={{ letterSpacing: "-0.374px" }}
           />
         </div>
 
-        {/* Submit */}
+        {/* Submit — Apple pill CTA */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded bg-[var(--accent)] text-white font-bold text-sm tracking-wide hover:bg-[var(--accent-deep)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-full bg-[var(--accent)] text-white font-semibold text-base hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2 mt-1"
+          style={{ letterSpacing: "-0.28px" }}
         >
           {loading && (
             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
