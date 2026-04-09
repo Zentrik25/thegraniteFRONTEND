@@ -4,6 +4,7 @@
  * Playfair Display headlines, Inter meta.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 
 import type { ArticleSummary } from "@/lib/types";
@@ -43,13 +44,15 @@ export function HomeNewsGrid({
               aria-hidden="true"
             >
               {article.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="gp-news-card-img"
-                  src={mediaProxyPath(article.image_url) ?? ""}
-                  alt={article.image_alt || article.title}
-                  loading="lazy"
-                />
+                <div className="gp-news-card-img relative overflow-hidden">
+                  <Image
+                    src={mediaProxyPath(article.image_url) ?? ""}
+                    alt={article.image_alt || article.title}
+                    fill
+                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <div className="gp-news-card-img-ph" aria-hidden="true" />
               )}

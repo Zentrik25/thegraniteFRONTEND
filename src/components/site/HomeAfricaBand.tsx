@@ -5,6 +5,7 @@
  * Playfair Display headlines on dark.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 
 import type { SectionDetail } from "@/lib/types";
@@ -41,13 +42,15 @@ export function HomeAfricaBand({ section }: HomeAfricaBandProps) {
           {articles.map((article) => (
             <article key={article.slug} className="gp-africa-card">
               {article.image_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="gp-africa-card-img"
-                  src={mediaProxyPath(article.image_url) ?? ""}
-                  alt={article.image_alt || article.title}
-                  loading="lazy"
-                />
+                <div className="gp-africa-card-img relative overflow-hidden">
+                  <Image
+                    src={mediaProxyPath(article.image_url) ?? ""}
+                    alt={article.image_alt || article.title}
+                    fill
+                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 25vw"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="gp-africa-card-body">
                 {article.category && (

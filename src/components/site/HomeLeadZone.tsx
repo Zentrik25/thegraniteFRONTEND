@@ -4,6 +4,7 @@
  * Right: stack of up to 5 secondary stories (thumb + #2997ff category + headline + time).
  */
 
+import Image from "next/image";
 import Link from "next/link";
 
 import type { ArticleSummary } from "@/lib/types";
@@ -24,13 +25,16 @@ export function HomeLeadZone({ lead, secondaries }: HomeLeadZoneProps) {
         {/* ── Big story ── */}
         <article className="gp-lead-main" aria-label="Lead story">
           {lead.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              className="gp-lead-img"
-              src={mediaProxyPath(lead.image_url) ?? ""}
-              alt={lead.image_alt || lead.title}
-              loading="eager"
-            />
+            <div className="gp-lead-img relative overflow-hidden">
+              <Image
+                src={mediaProxyPath(lead.image_url) ?? ""}
+                alt={lead.image_alt || lead.title}
+                fill
+                priority
+                sizes="(max-width: 960px) 100vw, 60vw"
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="gp-lead-img-ph" aria-hidden="true" />
           )}
@@ -66,13 +70,15 @@ export function HomeLeadZone({ lead, secondaries }: HomeLeadZoneProps) {
             {sides.map((article) => (
               <article key={article.slug} className="gp-secondary-item">
                 {article.image_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    className="gp-secondary-thumb"
-                    src={mediaProxyPath(article.image_url) ?? ""}
-                    alt={article.image_alt || article.title}
-                    loading="lazy"
-                  />
+                  <div className="gp-secondary-thumb relative overflow-hidden">
+                    <Image
+                      src={mediaProxyPath(article.image_url) ?? ""}
+                      alt={article.image_alt || article.title}
+                      fill
+                      sizes="(max-width: 960px) 100vw, 60vw"
+                      className="object-cover"
+                    />
+                  </div>
                 )}
 
                 <div className="gp-secondary-body">

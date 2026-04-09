@@ -9,18 +9,14 @@
 
 import Link from "next/link";
 
-import type { TrendingArticle, SectionDetail } from "@/lib/types";
+import type { TrendingArticle } from "@/lib/types";
 import { SidebarNewsletterForm } from "@/components/site/SidebarNewsletterForm";
 
 interface HomeMainSidebarProps {
   trending: TrendingArticle[];
-  africaSection: SectionDetail | null;
 }
 
-export function HomeMainSidebar({
-  trending,
-  africaSection,
-}: HomeMainSidebarProps) {
+export function HomeMainSidebar({ trending }: HomeMainSidebarProps) {
   const topItems = trending.slice(0, 5);
 
   return (
@@ -53,35 +49,6 @@ export function HomeMainSidebar({
         <SidebarNewsletterForm />
       </div>
 
-      {/* Africa Briefs widget */}
-      {africaSection && africaSection.articles.length > 0 && (
-        <div className="gp-sidebar-widget">
-          <p className="gp-sidebar-title">Africa Briefs</p>
-          <div className="gp-sidebar-briefs">
-            {africaSection.articles.slice(0, 4).map((article) => (
-              <div key={article.slug} className="gp-sidebar-brief-item">
-                {article.category && (
-                  <span className="gp-cat-label">
-                    {article.category.name}
-                  </span>
-                )}
-                <Link
-                  href={`/articles/${article.slug}`}
-                  className="gp-sidebar-brief-title"
-                >
-                  {article.title}
-                </Link>
-              </div>
-            ))}
-          </div>
-          <Link
-            href={`/sections/${africaSection.slug}`}
-            className="gp-sidebar-more"
-          >
-            More from Africa →
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

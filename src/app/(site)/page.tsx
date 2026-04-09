@@ -104,19 +104,16 @@ export default async function HomePage() {
   if (lead) seen.add(lead.slug);
 
   // 2. Secondaries — top story slots (up to 5, no repeats from lead)
-  const secondaries = feed.topStories
+  const rawSecondaries = feed.topStories
     .map((s: TopStorySlot) => s.article)
     .filter((a): a is ArticleSummary => a !== null && !seen.has(a.slug))
     .slice(0, 5);
-  secondaries.forEach((a) => seen.add(a.slug));
+  rawSecondaries.forEach((a) => seen.add(a.slug));
 
-  // Pad secondaries to 5 from remaining featured/latest pool
-  if (secondaries.length < 5) {
-    secondaries.push(...pick(restFeatured, 5 - secondaries.length));
-  }
-  if (secondaries.length < 5 && feed.featured.length > 0) {
-    secondaries.push(...pick(feed.latest, 5 - secondaries.length));
-  }
+  // Pad secondaries to 5 from remaining featured/latest pool (immutable)
+  const fromFeatured = pick(restFeatured, 5 - rawSecondaries.length);
+  const fromLatest = pick(feed.latest, 5 - rawSecondaries.length - fromFeatured.length);
+  const secondaries = [...rawSecondaries, ...fromFeatured, ...fromLatest];
 
   // 3. News grid — latest articles (up to 9)
   const gridArticles = pick(feed.latest, 9);
@@ -128,18 +125,14 @@ export default async function HomePage() {
   const technologyArticles = dedupePool(technologyRes.data?.articles ?? []);
   const crimeArticles      = dedupePool(crimeRes.data?.articles      ?? []);
 
-  // 4. Sections (deduplicated)
+  // 5. Sections (deduplicated)
   const sectionDetails = feed.sectionDetails.map(dedupeSection);
 
   const africaSection =
-    sectionDetails.find(
-      (s) => s.slug.includes("africa") || s.name.toLowerCase().includes("africa"),
-    ) ?? null;
+    sectionDetails.find((s) => s.slug === "africa") ?? null;
 
   const opinionSection =
-    sectionDetails.find(
-      (s) => s.slug.includes("opinion") || s.name.toLowerCase().includes("opinion"),
-    ) ?? null;
+    sectionDetails.find((s) => s.slug === "opinion") ?? null;
 
   return (
     <div className="gp-hp-wrap">
@@ -173,7 +166,6 @@ export default async function HomePage() {
           <aside className="gp-two-col-sidebar" aria-label="Sidebar">
             <HomeMainSidebar
               trending={feed.trending}
-              africaSection={africaSection}
             />
           </aside>
         </div>

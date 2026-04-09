@@ -5,6 +5,7 @@
  * published_at, category.name. No read_time, no thumbnail.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 
 import type { ArticleSummary } from "@/lib/types";
@@ -47,13 +48,15 @@ export function CategorySection({ title, slug, articles }: CategorySectionProps)
           <article className="gp-cat-large-card">
             <Link href={`/articles/${lead.slug}`} className="gp-cat-img-link" tabIndex={-1} aria-hidden="true">
               {lead.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="gp-cat-img"
-                  src={mediaProxyPath(lead.image_url) ?? ""}
-                  alt={lead.image_alt || lead.title}
-                  loading="lazy"
-                />
+                <div className="gp-cat-img relative overflow-hidden">
+                  <Image
+                    src={mediaProxyPath(lead.image_url) ?? ""}
+                    alt={lead.image_alt || lead.title}
+                    fill
+                    sizes="(max-width: 960px) 100vw, 60vw"
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <div className="gp-cat-img-ph" aria-hidden="true" />
               )}
@@ -91,13 +94,15 @@ export function CategorySection({ title, slug, articles }: CategorySectionProps)
                 >
                   <Link href={`/articles/${article.slug}`} className="gp-cat-img-link" tabIndex={-1} aria-hidden="true">
                     {article.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        className="gp-cat-img"
-                        src={mediaProxyPath(article.image_url) ?? ""}
-                        alt={article.image_alt || article.title}
-                        loading="lazy"
-                      />
+                      <div className="gp-cat-img relative overflow-hidden">
+                        <Image
+                          src={mediaProxyPath(article.image_url) ?? ""}
+                          alt={article.image_alt || article.title}
+                          fill
+                          sizes="(max-width: 960px) 100vw, 30vw"
+                          className="object-cover"
+                        />
+                      </div>
                     ) : (
                       <div className="gp-cat-img-ph" aria-hidden="true" />
                     )}

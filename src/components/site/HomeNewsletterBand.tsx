@@ -40,12 +40,12 @@ export function HomeNewsletterBand() {
         {/* Copy */}
         <div className="home-newsletter-copy">
           <p className="home-newsletter-eyebrow">Free newsletter</p>
-         <h2 className="home-newsletter-title" id="newsletter-band-label">
+          <h2 className="home-newsletter-title" id="newsletter-band-label">
             Zimbabwe’s most-read daily briefing.
-        </h2>
-        <p className="home-newsletter-desc">
-          The news that matters, explained clearly and delivered to your inbox every morning.
-        </p>
+          </h2>
+          <p className="home-newsletter-desc">
+            The news that matters, explained clearly and delivered to your inbox every morning.
+          </p>
         </div>
 
         {/* Form */}
