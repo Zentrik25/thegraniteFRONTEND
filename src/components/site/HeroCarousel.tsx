@@ -118,16 +118,15 @@ export function HeroCarousel({ articles }: HeroCarouselProps) {
           <div className="gp-hero-overlay" aria-hidden="true" />
         </div>
 
-        {/* Category badge — top left */}
-        {(article.is_breaking || article.category) && (
-          <span className="gp-hero-cat">
-            {article.is_breaking ? "Breaking" : article.category?.name}
-          </span>
-        )}
-
         {/* Text content — bottom */}
         <div className="gp-hero-content">
           <div className="gp-container">
+            {/* Category badge — above headline */}
+            {(article.is_breaking || article.category) && (
+              <span className="gp-hero-cat">
+                {article.is_breaking ? "Breaking" : article.category?.name}
+              </span>
+            )}
             <h2 className="gp-hero-headline">
               <Link href={`/articles/${article.slug}`}>
                 {article.title}

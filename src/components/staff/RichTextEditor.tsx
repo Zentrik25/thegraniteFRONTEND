@@ -199,7 +199,11 @@ export function RichTextEditor({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInput = useCallback(() => {
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    const editor = editorRef.current;
+    if (!editor) return;
+    // Run inline markdown detection after every input (fires AFTER character is inserted)
+    applyInlineMarkdown(editor);
+    onChange(editor.innerHTML);
   }, [onChange]);
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement>) => {
@@ -237,13 +241,6 @@ export function RichTextEditor({
       }
     }
 
-    // Space or Enter: check for inline markdown (**bold**, *italic*, `code`)
-    if (e.key === " " || e.key === "Enter") {
-      if (applyInlineMarkdown(editor)) {
-        handleInput();
-        // Don't preventDefault — let the space/enter insert normally after the formatted node
-      }
-    }
   }, [handleInput]);
 
   function execCmd(cmd: string, value?: string) {

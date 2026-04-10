@@ -2067,12 +2067,8 @@ img + .cat-badge,
   align-items: center;
 }
 
-/* Category / eyebrow — pinned top-left of the slide */
+/* Category / eyebrow — sits above the headline inside .gp-hero-content */
 .gp-hero-cat {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  z-index: 3;
   display: inline-block;
   font-family: var(--gp-font-body);
   font-size: 0.62rem;
@@ -2083,6 +2079,7 @@ img + .cat-badge,
   background: var(--apple-blue, #0071e3);
   padding: 0.2rem 0.55rem;
   border-radius: 2px;
+  margin-bottom: 0.5rem;
 }
 
 /* Headline — large, cinematic */
@@ -2227,8 +2224,8 @@ img + .cat-badge,
 
 /* ── Hero desktop breakpoint ── */
 @media (min-width: 900px) {
-  .gp-hero-zone             { grid-template-columns: minmax(0, 2fr) 280px; align-items: start; }
-  .gp-hero-sidebar-desktop  { display: block; }
+  .gp-hero-zone             { grid-template-columns: minmax(0, 2fr) 280px; align-items: stretch; }
+  .gp-hero-sidebar-desktop  { display: flex; flex-direction: column; }
   .gp-hero-sidebar-mobile   { display: none; }
 }
 
@@ -2504,6 +2501,8 @@ img + .cat-badge,
   box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
   overflow: hidden;
   border-top: 3px solid #e63946;
+  flex: 1;
+  overflow-y: auto;
 }
 .gp-trending-card-head {
   display: flex;
