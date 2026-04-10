@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Editorial Standards",
   description: "The Granite Post's editorial standards: accuracy, fairness, sourcing, conflicts of interest and corrections policy.",
+  alternates: { canonical: "/editorial-standards" },
+  openGraph: { url: "/editorial-standards" },
 };
 
 const H2_STYLE = { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.15rem", fontWeight: 700, color: "#181411", marginBottom: "0.5rem", marginTop: "2rem", borderLeft: "3px solid #981b1e", paddingLeft: "0.75rem" };

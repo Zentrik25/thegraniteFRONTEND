@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description: "Terms of use for The Granite Post website and subscription services.",
+  alternates: { canonical: "/terms" },
+  openGraph: { url: "/terms" },
 };
 
 const H2_STYLE = { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.1rem", fontWeight: 700, color: "#181411", marginBottom: "0.5rem", marginTop: "2rem" };

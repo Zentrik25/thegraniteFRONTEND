@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us",
   description: "Learn about The Granite Post — Zimbabwe's independent news organisation committed to accuracy, fairness and press freedom.",
+  alternates: { canonical: "/about" },
+  openGraph: { url: "/about" },
 };
 
 const SECTION_STYLE = { marginBottom: "2rem" };

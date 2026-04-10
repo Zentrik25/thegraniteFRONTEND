@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Cookie Policy",
   description: "How The Granite Post uses cookies and similar technologies.",
+  alternates: { canonical: "/cookies" },
+  openGraph: { url: "/cookies" },
 };
 
 const H2_STYLE = { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.1rem", fontWeight: 700, color: "#181411", marginBottom: "0.5rem", marginTop: "2rem" };

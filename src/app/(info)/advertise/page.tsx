@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Advertise",
   description: "Reach engaged Zimbabwean readers with The Granite Post advertising options — display, native, newsletters and events.",
+  alternates: { canonical: "/advertise" },
+  openGraph: { url: "/advertise" },
 };
 
 const H2_STYLE = { fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.1rem", fontWeight: 700, color: "#181411", marginBottom: "0.5rem" };

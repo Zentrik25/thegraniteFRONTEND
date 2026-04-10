@@ -70,7 +70,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     article.og_description || article.seo_description || article.excerpt;
   const imageUrl =
     article.resolved_og_image || article.og_image_url || article.image_url;
-  const canonical = article.canonical_url || `${SITE_URL}/articles/${slug}`;
+
+  // Only accept a backend-supplied canonical if it looks like a real article URL.
+  // Guard against backend returning image_url in this field (known DB data issue).
+  const rawCanonical = article.canonical_url;
+  const isValidCanonical =
+    rawCanonical &&
+    !rawCanonical.match(/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i) &&
+    !rawCanonical.includes("/media/") &&
+    !rawCanonical.includes("api.");
+  const canonical = (isValidCanonical ? rawCanonical : null) ?? `${SITE_URL}/articles/${slug}`;
 
   return {
     title,
@@ -88,6 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
+      site: "@GranitePost",
       title,
       description: description ?? undefined,
       images: imageUrl ? [imageUrl] : [],
@@ -126,7 +136,13 @@ export default async function ArticlePage({ params }: Props) {
   // ── Structured data (@graph combines NewsArticle + BreadcrumbList) ──────────
   const structuredData = article
     ? (() => {
-        const articleUrl = article.canonical_url || `${SITE_URL}/articles/${slug}`;
+        const rawUrl = article.canonical_url;
+        const validUrl =
+          rawUrl &&
+          !rawUrl.match(/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i) &&
+          !rawUrl.includes("/media/") &&
+          !rawUrl.includes("api.");
+        const articleUrl = (validUrl ? rawUrl : null) ?? `${SITE_URL}/articles/${slug}`;
 
         // Build breadcrumb: Home [> Category] > Article
         const crumbs: {
@@ -169,6 +185,12 @@ export default async function ArticlePage({ params }: Props) {
                 "@type": "Organization",
                 name: "The Granite Post",
                 url: SITE_URL,
+                logo: {
+                  "@type": "ImageObject",
+                  url: `${SITE_URL}/logo.png`,
+                  width: 600,
+                  height: 60,
+                },
               },
               url: articleUrl,
             },

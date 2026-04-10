@@ -45,7 +45,6 @@ export const metadata: Metadata = {
     images: [siteConfig.ogImage],
   },
   alternates: {
-    canonical: siteConfig.url,
     types: {
       "application/rss+xml": `${siteConfig.url}/feed.xml`,
     },
