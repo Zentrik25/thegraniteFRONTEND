@@ -63,12 +63,14 @@
     box-sizing: border-box;
   }
 
-  /* Prevent horizontal scroll at root */
+  /* Prevent horizontal scroll at root.
+     clip (not hidden) avoids creating a scroll container which would break
+     position:sticky on children and clip absolutely-positioned dropdowns. */
   html {
-    overflow-x: hidden;
+    overflow-x: clip;
   }
   body {
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100%;
     background: #fff;
   }
@@ -1806,7 +1808,27 @@ img + .cat-badge,
   transition: color 0.15s;
 }
 .gp-nav-search-icon:hover { color: #fff; }
-/* Desktop links */
+/* Subscribe pill — desktop nav, after search */
+.gp-nav-subscribe {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.88rem;
+  margin-left: 0.65rem;
+  background: var(--apple-blue);
+  color: #fff;
+  font-family: var(--gp-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--gp-radius-pill);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.gp-nav-subscribe:hover { background: #0077ed; }
+/* Desktop links.
+   overflow-x: clip (not auto/hidden) keeps overflow-y:visible so dropdowns
+   that extend below the bar are not clipped. */
 .gp-nav-links {
   display: flex;
   align-items: center;
@@ -1814,7 +1836,7 @@ img + .cat-badge,
   padding: 0;
   margin: 0;
   flex: 1;
-  overflow-x: auto;
+  overflow-x: clip;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -2902,6 +2924,7 @@ img + .cat-badge,
   }
   .gp-nav-links         { display: none !important; }
   .gp-nav-search-form   { display: none !important; }
+  .gp-nav-subscribe     { display: none !important; }
   /* Search icon pushed to the far-right edge */
   .gp-nav-search-icon {
     display: flex !important;

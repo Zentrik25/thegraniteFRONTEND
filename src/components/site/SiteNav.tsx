@@ -123,6 +123,11 @@ export function SiteNav({ sections }: SiteNavProps) {
           />
         </form>
 
+        {/* Desktop subscribe — hidden on mobile via CSS */}
+        <Link href="/subscribe" className="gp-nav-subscribe">
+          Subscribe
+        </Link>
+
         {/* Mobile search icon */}
         <Link href="/search" className="gp-nav-search-icon" aria-label="Search">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
