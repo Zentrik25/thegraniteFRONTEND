@@ -1,10 +1,8 @@
 /**
- * HomeNewsGrid — Apple-style 3-column news card grid.
- * Cards have 8px radius + shadow on hover.
- * Playfair Display headlines, Inter meta.
+ * HomeNewsGrid — "Latest News" list with small thumbnails.
+ * Two-column list on tablet+; single column on mobile.
  */
 
-import Image from "next/image";
 import Link from "next/link";
 
 import type { ArticleSummary } from "@/lib/types";
@@ -34,43 +32,30 @@ export function HomeNewsGrid({
         </Link>
       </div>
 
-      <div className="gp-news-grid">
+      <div className="gp-news-list">
         {items.map((article) => (
-          <article key={article.slug} className="gp-news-card">
-            <Link
-              href={`/articles/${article.slug}`}
-              className="gp-news-card-img-link"
-              tabIndex={-1}
-              aria-hidden="true"
-            >
-              {article.image_url ? (
-                <div className="gp-news-card-img relative overflow-hidden">
-                  <Image
-                    src={mediaProxyPath(article.image_url) ?? ""}
-                    alt={article.image_alt || article.title}
-                    fill
-                    sizes="(max-width: 600px) 100vw, (max-width: 960px) 50vw, 33vw"
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="gp-news-card-img-ph" aria-hidden="true" />
-              )}
-            </Link>
+          <article key={article.slug} className="gp-news-list-item">
+            {article.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="gp-news-list-thumb"
+                src={mediaProxyPath(article.image_url) ?? ""}
+                alt={article.image_alt || article.title}
+                loading="lazy"
+              />
+            ) : (
+              <div className="gp-news-list-thumb-ph" aria-hidden="true" />
+            )}
 
-            <div className="gp-news-card-body">
+            <div className="gp-news-list-body">
               {(article.is_breaking || article.category) && (
                 <span className="gp-cat-label">
                   {article.is_breaking ? "Breaking" : article.category?.name}
                 </span>
               )}
-
-              <h3 className="gp-news-card-title">
-                <Link href={`/articles/${article.slug}`}>
-                  {article.title}
-                </Link>
+              <h3 className="gp-news-list-title">
+                <Link href={`/articles/${article.slug}`}>{article.title}</Link>
               </h3>
-
               <p className="gp-news-card-meta">
                 {article.published_at && formatRelativeTime(article.published_at)}
                 {article.author_name && article.published_at && " · "}
