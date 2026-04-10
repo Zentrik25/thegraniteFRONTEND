@@ -33,7 +33,7 @@ export default function EditorialStandardsPage() {
       <p style={P_STYLE}>We respect the privacy of private individuals. We do not publish private information about individuals unless it is clearly in the public interest. Public figures have a reduced expectation of privacy in their public roles.</p>
 
       <h2 style={H2_STYLE}>7. Corrections & Complaints</h2>
-      <p style={P_STYLE}>If we get something wrong, we correct it as soon as possible, clearly and prominently. Corrections are appended to the original article and noted in our daily newsletter where relevant. To request a correction, email <a href="mailto:corrections@thegranitepost.co.zw" style={{ color: "#981b1e" }}>corrections@thegranitepost.co.zw</a>.</p>
+      <p style={P_STYLE}>If we get something wrong, we correct it as soon as possible, clearly and prominently. Corrections are appended to the original article and noted in our daily newsletter where relevant. To request a correction, email <a href="mailto:corrections@thegranite.co.zw" style={{ color: "#981b1e" }}>corrections@thegranite.co.zw</a>.</p>
       <p style={P_STYLE}>Complaints about our editorial conduct that cannot be resolved directly with editors may be escalated to the Press Council of Zimbabwe.</p>
 
       <h2 style={H2_STYLE}>8. AI & Automation</h2>

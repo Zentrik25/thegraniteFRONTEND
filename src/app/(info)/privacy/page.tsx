@@ -33,7 +33,7 @@ export default function PrivacyPage() {
       <p style={P_STYLE}>We retain account data for as long as your account is active and for up to 24 months after deletion, to comply with legal obligations. Usage logs are retained for 12 months.</p>
 
       <h2 style={H2_STYLE}>5. Your Rights</h2>
-      <p style={P_STYLE}>You have the right to access, correct or delete the personal data we hold about you. To exercise these rights, email <a href="mailto:legal@thegranitepost.co.zw" style={{ color: "#981b1e" }}>legal@thegranitepost.co.zw</a>. We will respond within 30 days.</p>
+      <p style={P_STYLE}>You have the right to access, correct or delete the personal data we hold about you. To exercise these rights, email <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a>. We will respond within 30 days.</p>
 
       <h2 style={H2_STYLE}>6. Security</h2>
       <p style={P_STYLE}>We use industry-standard encryption (TLS) for data in transit and at rest. Access to personal data is restricted to authorised staff only.</p>
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
       <p style={P_STYLE}>We may update this policy periodically. Significant changes will be communicated by email to registered users. Continued use of the site after changes constitutes acceptance.</p>
 
       <h2 style={H2_STYLE}>8. Contact</h2>
-      <p style={P_STYLE}>For privacy enquiries: <a href="mailto:legal@thegranitepost.co.zw" style={{ color: "#981b1e" }}>legal@thegranitepost.co.zw</a></p>
+      <p style={P_STYLE}>For privacy enquiries: <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a></p>
     </>
   );
 }

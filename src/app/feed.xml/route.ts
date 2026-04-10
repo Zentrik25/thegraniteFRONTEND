@@ -109,8 +109,8 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
     <description>${esc(siteConfig.description)}</description>
     <language>en-zw</language>
     <lastBuildDate>${now}</lastBuildDate>
-    <managingEditor>editorial@thegranitepost.co.zw (${esc(siteConfig.name)})</managingEditor>
-    <webMaster>tech@thegranitepost.co.zw (${esc(siteConfig.name)})</webMaster>
+    <managingEditor>editorial@thegranite.co.zw (${esc(siteConfig.name)})</managingEditor>
+    <webMaster>tech@thegranite.co.zw (${esc(siteConfig.name)})</webMaster>
     <ttl>15</ttl>
     <atom:link href="${esc(feedUrl)}" rel="self" type="application/rss+xml" />
     <image>

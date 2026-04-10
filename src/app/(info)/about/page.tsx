@@ -33,7 +33,7 @@ export default function AboutPage() {
 
       <div style={SECTION_STYLE}>
         <h2 style={H2_STYLE}>Contact Us</h2>
-        <p style={P_STYLE}>For editorial enquiries, tips, corrections or partnership proposals, visit our <a href="/contact" style={{ color: "#981b1e" }}>Contact page</a> or email <a href="mailto:editor@thegranitepost.co.zw" style={{ color: "#981b1e" }}>editor@thegranitepost.co.zw</a>.</p>
+        <p style={P_STYLE}>For editorial enquiries, tips, corrections or partnership proposals, visit our <a href="/contact" style={{ color: "#981b1e" }}>Contact page</a> or email <a href="mailto:editor@thegranite.co.zw" style={{ color: "#981b1e" }}>editor@thegranite.co.zw</a>.</p>
       </div>
     </>
   );

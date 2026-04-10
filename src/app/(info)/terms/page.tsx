@@ -41,7 +41,7 @@ export default function TermsPage() {
       <p style={P_STYLE}>We may update these terms at any time. Continued use of the site after changes constitutes acceptance of the revised terms.</p>
 
       <h2 style={H2_STYLE}>9. Contact</h2>
-      <p style={P_STYLE}>Legal enquiries: <a href="mailto:legal@thegranitepost.co.zw" style={{ color: "#981b1e" }}>legal@thegranitepost.co.zw</a></p>
+      <p style={P_STYLE}>Legal enquiries: <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a></p>
     </>
   );
 }

@@ -352,7 +352,7 @@ export default function PaymentStatus({ planSlug }: PaymentStatusProps) {
           Try again
         </Link>
         <a
-          href="mailto:support@thegranitepost.co.zw"
+          href="mailto:support@thegranite.co.zw"
           className="text-sm text-[var(--muted)] hover:text-[var(--ink)] transition-colors"
         >
           Contact support

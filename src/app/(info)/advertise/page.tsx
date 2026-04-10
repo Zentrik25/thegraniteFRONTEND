@@ -34,10 +34,10 @@ export default function AdvertisePage() {
         <h2 style={{ fontFamily: "Georgia, serif", fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.5rem", color: "#fff" }}>Request a Media Kit</h2>
         <p style={{ fontSize: "0.92rem", lineHeight: 1.7, color: "rgba(255,255,255,0.8)", marginBottom: "1rem" }}>Our advertising team will send you audience demographics, rate cards and available inventory within one business day.</p>
         <a
-          href="mailto:advertising@thegranitepost.co.zw"
+          href="mailto:advertising@thegranite.co.zw"
           style={{ display: "inline-block", background: "#981b1e", color: "#fff", padding: "0.6rem 1.25rem", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", letterSpacing: "0.02em" }}
         >
-          Email advertising@thegranitepost.co.zw
+          Email advertising@thegranite.co.zw
         </a>
       </div>
 

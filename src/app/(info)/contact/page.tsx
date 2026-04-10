@@ -13,27 +13,27 @@ const CONTACTS = [
   {
     dept: "Editorial & News Tips",
     desc: "Story tips, press releases, breaking-news alerts and general editorial enquiries.",
-    email: "editor@thegranitepost.co.zw",
+    email: "editor@thegranite.co.zw",
   },
   {
     dept: "Corrections & Complaints",
     desc: "To request a correction or raise a complaint about published content.",
-    email: "corrections@thegranitepost.co.zw",
+    email: "corrections@thegranite.co.zw",
   },
   {
     dept: "Advertising",
     desc: "Digital advertising, sponsored content and partnership enquiries.",
-    email: "advertising@thegranitepost.co.zw",
+    email: "advertising@thegranite.co.zw",
   },
   {
     dept: "Subscriptions & Billing",
     desc: "Help with your subscription, billing or account access.",
-    email: "support@thegranitepost.co.zw",
+    email: "support@thegranite.co.zw",
   },
   {
     dept: "Legal",
     desc: "Legal notices, take-down requests and privacy matters.",
-    email: "legal@thegranitepost.co.zw",
+    email: "legal@thegranite.co.zw",
   },
 ];
 

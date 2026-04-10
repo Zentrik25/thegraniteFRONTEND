@@ -496,7 +496,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
                     value={fields.canonical_url}
                     onChange={(e) => set("canonical_url", e.target.value)}
                     style={inputS}
-                    placeholder="https://thegranitepost.co.zw/articles/…"
+                    placeholder="https://www.thegranite.co.zw/articles/…"
                   />
                 </Field>
               </div>

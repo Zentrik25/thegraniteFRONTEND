@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
       // Django media server (production — update hostname before go-live)
       {
         protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_MEDIA_HOSTNAME ?? "media.thegranitepost.co.zw",
+        hostname: process.env.NEXT_PUBLIC_MEDIA_HOSTNAME ?? "api.thegranite.co.zw",
         pathname: "/media/**",
       },
     ],

@@ -52,5 +52,5 @@ User-agent: Bytespider
 Disallow: /
 
 # ── Sitemaps ──────────────────────────────────────────────────────────────────
-Sitemap: https://thegranitepost.co.zw/sitemap.xml
-Sitemap: https://thegranitepost.co.zw/news-sitemap.xml
+Sitemap: https://www.thegranite.co.zw/sitemap.xml
+Sitemap: https://www.thegranite.co.zw/news-sitemap.xml

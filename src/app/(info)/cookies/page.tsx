@@ -54,7 +54,7 @@ export default function CookiesPage() {
       <p style={P_STYLE}>All major browsers allow you to view, block and delete cookies. Refer to your browser&apos;s help documentation for instructions.</p>
 
       <h2 style={H2_STYLE}>Contact</h2>
-      <p style={P_STYLE}>Cookie or privacy questions: <a href="mailto:legal@thegranitepost.co.zw" style={{ color: "#981b1e" }}>legal@thegranitepost.co.zw</a></p>
+      <p style={P_STYLE}>Cookie or privacy questions: <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a></p>
     </>
   );
 }
