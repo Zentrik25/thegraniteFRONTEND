@@ -2451,72 +2451,97 @@ img + .cat-badge,
 /* ═══════════════════════════════════════════
    TRENDING NOW WIDGET (sidebar + mobile)
    ═══════════════════════════════════════════ */
-.gp-trending-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-.gp-trending-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  padding: 0.65rem 0;
-  border-bottom: 1px solid #e8e8ed;
-}
-.gp-trending-item:first-child { padding-top: 0; }
-.gp-trending-item:last-child { border-bottom: none; padding-bottom: 0; }
-
-/* Thumbnail */
-.gp-trending-thumb-link { flex-shrink: 0; display: block; border-radius: 4px; overflow: hidden; }
-.gp-trending-thumb {
-  width: 64px;
-  height: 48px;
-  border-radius: 4px;
+/* ── Trending Now — high-impact dark card ── */
+.gp-trending-card {
+  background: #111;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
   overflow: hidden;
-  position: relative;
-  flex-shrink: 0;
+  border-top: 3px solid #e63946;
 }
-.gp-trending-thumb-ph {
-  width: 64px;
-  height: 48px;
+.gp-trending-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 1rem 0.65rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.gp-trending-card-flame { font-size: 1rem; line-height: 1; }
+.gp-trending-card-title {
+  font-family: var(--gp-font-body);
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #fff;
+  margin: 0;
+}
+.gp-trending-card-list { list-style: none; padding: 0; margin: 0; }
+.gp-trending-card-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.gp-trending-card-list li:last-child .gp-trending-card-item { border-bottom: none; }
+.gp-trending-card-item:hover { background: rgba(255,255,255,0.06); }
+.gp-trending-card-rank {
+  font-family: var(--gp-font-body);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #e63946;
+  flex-shrink: 0;
+  width: 1.8rem;
+  line-height: 1;
+}
+.gp-trending-card-thumb {
+  flex-shrink: 0;
+  width: 72px;
+  height: 54px;
+  object-fit: cover;
   border-radius: 4px;
-  background: #e8e8ed;
-  flex-shrink: 0;
+  display: block;
 }
-
-/* Text body */
-.gp-trending-body {
+.gp-trending-card-thumb-ph {
+  flex-shrink: 0;
+  width: 72px;
+  height: 54px;
+  background: #2a2a2a;
+  border-radius: 4px;
+}
+.gp-trending-card-body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.18rem;
+  gap: 0.2rem;
 }
-.gp-trending-cat {
+.gp-trending-card-cat {
   font-family: var(--gp-font-body);
   font-size: 0.58rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--apple-blue);
+  color: #e63946;
   white-space: nowrap;
 }
-.gp-trending-title {
+.gp-trending-card-headline {
   font-family: var(--gp-font-body);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  color: var(--apple-black);
-  text-decoration: none;
+  color: #f5f5f7;
   line-height: 1.3;
   text-wrap: pretty;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  transition: color 0.15s ease;
 }
-.gp-trending-title:hover { color: var(--apple-blue); }
+.gp-trending-card-item:hover .gp-trending-card-headline { color: #fff; }
 
 /* ═══════════════════════════════════════════
    AFRICA BAND (full-width dark)

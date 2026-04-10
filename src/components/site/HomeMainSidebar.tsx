@@ -1,9 +1,8 @@
 /**
- * HomeMainSidebar — right-hand sidebar for the homepage two-column zone.
- * Widget: Trending Now — thumbnail + category badge + headline.
+ * HomeMainSidebar — "Trending Now" high-impact card.
+ * Dark card with rank numbers, thumbnails, and strong hover states.
  */
 
-import Image from "next/image";
 import Link from "next/link";
 
 import type { TrendingArticle } from "@/lib/types";
@@ -15,56 +14,56 @@ interface HomeMainSidebarProps {
 
 export function HomeMainSidebar({ trending }: HomeMainSidebarProps) {
   const topItems = trending.slice(0, 6);
-
   if (topItems.length === 0) return null;
 
   return (
     <div className="gp-sidebar">
-      <div className="gp-sidebar-widget">
-        <p className="gp-sidebar-title">Trending Now</p>
-        <ol className="gp-trending-list" aria-label="Trending articles">
-          {topItems.map((item) => {
+      <div className="gp-trending-card">
+        {/* Header */}
+        <div className="gp-trending-card-head">
+          <span className="gp-trending-card-flame" aria-hidden="true">🔥</span>
+          <p className="gp-trending-card-title">Trending Now</p>
+        </div>
+
+        {/* Items */}
+        <ol className="gp-trending-card-list" aria-label="Trending articles">
+          {topItems.map((item, i) => {
             const { article } = item;
             const thumb = mediaProxyPath(article.image_url ?? "");
 
             return (
-              <li key={article.slug} className="gp-trending-item">
-                {/* Thumbnail */}
-                <Link
-                  href={`/articles/${article.slug}`}
-                  className="gp-trending-thumb-link"
-                  tabIndex={-1}
-                  aria-hidden="true"
-                >
-                  {thumb ? (
-                    <div className="gp-trending-thumb relative">
-                      <Image
-                        src={thumb}
-                        alt={article.image_alt || article.title}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="gp-trending-thumb-ph" />
-                  )}
-                </Link>
+              <li key={article.slug}>
+                <Link href={`/articles/${article.slug}`} className="gp-trending-card-item">
+                  {/* Rank */}
+                  <span className="gp-trending-card-rank" aria-label={`#${i + 1}`}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
 
-                {/* Text */}
-                <div className="gp-trending-body">
-                  {article.category && (
-                    <span className="gp-trending-cat">
-                      {article.category.name}
-                    </span>
+                  {/* Thumbnail */}
+                  {thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="gp-trending-card-thumb"
+                      src={thumb}
+                      alt={article.image_alt || article.title}
+                      loading={i < 2 ? "eager" : "lazy"}
+                    />
+                  ) : (
+                    <div className="gp-trending-card-thumb-ph" aria-hidden="true" />
                   )}
-                  <Link
-                    href={`/articles/${article.slug}`}
-                    className="gp-trending-title"
-                  >
-                    {article.title}
-                  </Link>
-                </div>
+
+                  {/* Text */}
+                  <div className="gp-trending-card-body">
+                    {article.category && (
+                      <span className="gp-trending-card-cat">
+                        {article.category.name}
+                      </span>
+                    )}
+                    <span className="gp-trending-card-headline">
+                      {article.title}
+                    </span>
+                  </div>
+                </Link>
               </li>
             );
           })}
