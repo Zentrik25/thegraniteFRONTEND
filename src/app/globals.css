@@ -2021,8 +2021,7 @@ img + .cat-badge,
   left: 0;
   right: 0;
   z-index: 2;
-  /* 2rem bottom clearance keeps text above the dot row (dots sit at 1.1rem from bottom) */
-  padding: 0 0 2rem;
+  padding: 0 0 1rem;
 }
 
 /* Fallback centres its content vertically */
@@ -2032,8 +2031,12 @@ img + .cat-badge,
   align-items: center;
 }
 
-/* Category / eyebrow — filled rectangle badge */
+/* Category / eyebrow — pinned top-left of the slide */
 .gp-hero-cat {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 3;
   display: inline-block;
   font-family: var(--gp-font-body);
   font-size: 0.62rem;
@@ -2044,7 +2047,6 @@ img + .cat-badge,
   background: var(--apple-blue, #0071e3);
   padding: 0.2rem 0.55rem;
   border-radius: 2px;
-  margin-bottom: 0.5rem;
 }
 
 /* Headline — large, cinematic */
@@ -2178,6 +2180,15 @@ img + .cat-badge,
 .gp-hero-sidebar-desktop { display: none; }
 .gp-hero-sidebar-mobile  { display: block; padding: 1.5rem 0 0; }
 
+/* Mobile: trending card bleeds to viewport edges — no container margin */
+@media (max-width: 899px) {
+  .gp-hero-sidebar-mobile .gp-trending-card {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 0;
+  }
+}
+
 /* ── Hero desktop breakpoint ── */
 @media (min-width: 900px) {
   .gp-hero-zone             { grid-template-columns: minmax(0, 2fr) 280px; align-items: start; }
@@ -2192,8 +2203,7 @@ img + .cat-badge,
   .gp-hero-carousel--empty  { height: clamp(340px, 80vw, 480px); }
   .gp-hero-fallback         { height: clamp(340px, 80vw, 480px); }
   .gp-hero-headline         { font-size: clamp(1.25rem, 5.5vw, 1.75rem); }
-  .gp-hero-excerpt          { -webkit-line-clamp: 2; font-size: 0.88rem; }
-  .gp-hero-content          { padding: 0 0 2rem; }
+  .gp-hero-content          { padding: 0 0 1rem; }
   .gp-hero-dots             { bottom: 0.65rem; right: 0.75rem; }
 }
 
