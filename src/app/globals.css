@@ -798,8 +798,8 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
   overflow: hidden;
   font-family: var(--gp-font-body);
 }
-.latest-thumb { flex-shrink: 0; width: 80px; height: 60px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); display: block; }
-.latest-thumb-ph { flex-shrink: 0; width: 80px; height: 60px; border-radius: var(--radius-sm); background: rgba(219,205,189,0.3); }
+.latest-thumb { flex-shrink: 0; width: 80px; height: 60px; object-fit: cover; border-radius: 0; border: 1px solid var(--line); display: block; }
+.latest-thumb-ph { flex-shrink: 0; width: 80px; height: 60px; border-radius: 0; background: rgba(219,205,189,0.3); }
 
 /* ── Article cards ── */
 .article-card {
@@ -1982,7 +1982,7 @@ img + .cat-badge,
   overflow: hidden;
   background: #000;
   height: clamp(480px, 62vh, 720px);
-  border-radius: 12px;
+  border-radius: 0;
 }
 
 /* Live slide: fills the shell */
@@ -2231,7 +2231,7 @@ img + .cat-badge,
 
 /* ── Hero mobile ── */
 @media (max-width: 640px) {
-  .gp-hero-carousel         { height: clamp(340px, 80vw, 480px); border-radius: 8px; }
+  .gp-hero-carousel         { height: clamp(340px, 80vw, 480px); border-radius: 0; }
   .gp-hero-slide            { height: clamp(340px, 80vw, 480px); }
   .gp-hero-carousel--empty  { height: clamp(340px, 80vw, 480px); }
   .gp-hero-fallback         { height: clamp(340px, 80vw, 480px); }
@@ -2380,8 +2380,8 @@ img + .cat-badge,
 .gp-news-list { display: grid; grid-template-columns: 1fr; gap: 0; }
 .gp-news-list-item { display: flex; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e8e8ed; align-items: flex-start; }
 .gp-news-list-item:last-child { border-bottom: none; }
-.gp-news-list-thumb { flex-shrink: 0; width: 80px; height: 60px; object-fit: cover; border-radius: 2px; display: block; }
-.gp-news-list-thumb-ph { flex-shrink: 0; width: 80px; height: 60px; background: #e8e8ed; border-radius: 2px; }
+.gp-news-list-thumb { flex-shrink: 0; width: 80px; height: 60px; object-fit: cover; border-radius: 0; display: block; }
+.gp-news-list-thumb-ph { flex-shrink: 0; width: 80px; height: 60px; background: #e8e8ed; border-radius: 0; }
 .gp-news-list-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
 .gp-news-list-title { font-family: var(--gp-font-body); font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: var(--apple-black); margin: 0; text-wrap: pretty; overflow-wrap: break-word; word-break: keep-all; }
 .gp-news-list-title a { color: inherit; text-decoration: none; }
@@ -2497,7 +2497,7 @@ img + .cat-badge,
 /* ── Trending Now — high-impact dark card ── */
 .gp-trending-card {
   background: linear-gradient(135deg, #1a2744 0%, #243356 35%, #2e4070 60%, #1e3a5f 100%);
-  border-radius: 10px;
+  border-radius: 0;
   box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
   overflow: hidden;
   border-top: 3px solid #e63946;
@@ -2547,7 +2547,7 @@ img + .cat-badge,
   width: 72px;
   height: 54px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 0;
   display: block;
 }
 .gp-trending-card-thumb-ph {
@@ -2555,7 +2555,7 @@ img + .cat-badge,
   width: 72px;
   height: 54px;
   background: #2a2a2a;
-  border-radius: 4px;
+  border-radius: 0;
 }
 .gp-trending-card-body {
   flex: 1;
