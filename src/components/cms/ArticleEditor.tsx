@@ -261,10 +261,11 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       setFields((p) => ({ ...p, status: savedStatus }));
       setSaved(true);
 
+      // For new articles, navigate to the edit URL.
+      // Do NOT call router.refresh() on existing articles — it resets the
+      // save guard before the navigation completes, causing a double-save window.
       if (!isEdit && data.slug) {
         router.replace(`/cms/articles/${data.slug}/edit`);
-      } else {
-        router.refresh();
       }
     } catch {
       setError("Network error. Please try again.");
