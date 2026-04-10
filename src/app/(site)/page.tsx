@@ -23,13 +23,28 @@ export const revalidate = 60;
 const TITLE = "The Granite Post — Zimbabwe's Journal of Record";
 const DESCRIPTION =
   "Authoritative news and analysis from Zimbabwe. Breaking news, politics, business, technology and sport.";
+const OG_IMAGE = "https://www.thegranite.co.zw/og-default.jpg";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: { title: TITLE, description: DESCRIPTION, type: "website" },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  alternates: { canonical: "https://www.thegranite.co.zw" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    type: "website",
+    url: "https://www.thegranite.co.zw",
+    siteName: "The Granite Post",
+    locale: "en_ZW",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "The Granite Post" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@GranitePost",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
+  },
 };
 
 export default async function HomePage() {
@@ -126,8 +141,54 @@ export default async function HomePage() {
   const opinionSection =
     sectionDetails.find((s) => s.slug === "opinion") ?? null;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://www.thegranite.co.zw/#website",
+        "url": "https://www.thegranite.co.zw",
+        "name": "The Granite Post",
+        "description": DESCRIPTION,
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.thegranite.co.zw/search?q={search_term_string}",
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://www.thegranite.co.zw/#organization",
+        "name": "The Granite Post",
+        "url": "https://www.thegranite.co.zw",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.thegranite.co.zw/logo.png",
+          "width": 600,
+          "height": 60,
+        },
+        "sameAs": [
+          "https://twitter.com/GranitePost",
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "editor@thegranite.co.zw",
+          "contactType": "editorial",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="gp-hp-wrap">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <h1 className="sr-only">The Granite Post — Zimbabwe News</h1>
 
       {/* Maintenance banner */}
       {feed.apiUnavailable && (

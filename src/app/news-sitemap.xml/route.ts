@@ -53,6 +53,16 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
       const pubDate = new Date(a.published_at!).toISOString();
       const title = escapeXml(a.title);
 
+      // Build keywords from category + tags (max 10 per Google News spec)
+      const keywordParts: string[] = [];
+      if (a.category?.name) keywordParts.push(a.category.name);
+      if (a.tags?.length) {
+        keywordParts.push(...a.tags.slice(0, 9).map((t) => t.name));
+      }
+      const keywordsXml = keywordParts.length
+        ? `\n      <news:keywords>${escapeXml(keywordParts.join(", "))}</news:keywords>`
+        : "";
+
       return `  <url>
     <loc>${escapeXml(loc)}</loc>
     <news:news>
@@ -61,7 +71,7 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
         <news:language>${PUBLICATION_LANGUAGE}</news:language>
       </news:publication>
       <news:publication_date>${pubDate}</news:publication_date>
-      <news:title>${title}</news:title>
+      <news:title>${title}</news:title>${keywordsXml}
     </news:news>
   </url>`;
     })

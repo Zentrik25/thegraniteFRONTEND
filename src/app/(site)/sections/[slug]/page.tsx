@@ -21,14 +21,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const canonical = `${SITE_URL}/sections/${slug}`;
 
+  const description =
+    section.description ||
+    `Latest ${section.name} news and analysis from Zimbabwe — The Granite Post`;
+
   return {
     title: section.name,
-    description: section.description,
+    description,
     alternates: { canonical },
     openGraph: {
-      title: `${section.name} | The Granite Post`,
+      title: `${section.name} — The Granite Post`,
+      description,
       url: canonical,
-      images: section.og_image_url ? [section.og_image_url] : [],
+      siteName: "The Granite Post",
+      locale: "en_ZW",
+      images: section.og_image_url
+        ? [{ url: section.og_image_url, width: 1200, height: 630 }]
+        : [{ url: "https://www.thegranite.co.zw/og-default.jpg", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      site: "@GranitePost",
+      title: `${section.name} — The Granite Post`,
+      description,
     },
   };
 }

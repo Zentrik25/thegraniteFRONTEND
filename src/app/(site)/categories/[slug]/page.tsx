@@ -28,14 +28,29 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
       ? `${SITE_URL}/categories/${slug}`
       : `${SITE_URL}/categories/${slug}?page=${page}`;
 
+  const description =
+    data.category.description ||
+    `Latest ${data.category.name} news from Zimbabwe — The Granite Post`;
+
   return {
     title: data.category.name,
-    description: data.category.description,
+    description,
     alternates: { canonical },
     openGraph: {
-      title: `${data.category.name} | The Granite Post`,
+      title: `${data.category.name} — The Granite Post`,
+      description,
       url: canonical,
-      images: data.category.og_image_url ? [data.category.og_image_url] : [],
+      siteName: "The Granite Post",
+      locale: "en_ZW",
+      images: data.category.og_image_url
+        ? [{ url: data.category.og_image_url, width: 1200, height: 630 }]
+        : [{ url: "https://www.thegranite.co.zw/og-default.jpg", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      site: "@GranitePost",
+      title: `${data.category.name} — The Granite Post`,
+      description,
     },
   };
 }
