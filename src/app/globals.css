@@ -1325,8 +1325,8 @@ img + .cat-badge,
 .hp-latest-item { display: flex; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e6e6e6; align-items: flex-start; }
 .hp-latest-item:first-child { padding-top: 0; }
 .hp-latest-item:last-child { border-bottom: none; }
-.hp-latest-thumb { flex-shrink: 0; width: 130px; height: 90px; object-fit: cover; display: block; }
-.hp-latest-thumb-ph { flex-shrink: 0; width: 130px; height: 90px; background: #e0e0e0; display: block; }
+.hp-latest-thumb { flex-shrink: 0; width: 80px; height: 60px; object-fit: cover; display: block; }
+.hp-latest-thumb-ph { flex-shrink: 0; width: 80px; height: 60px; background: #e0e0e0; display: block; }
 .hp-latest-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .hp-latest-category { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); display: block; margin-bottom: 0.2rem; font-family: var(--gp-font-body); }
 /* FIX: added text-wrap: pretty + word-break: keep-all */
@@ -1490,8 +1490,9 @@ img + .cat-badge,
 .hp-top-stories-block { padding: 1.5rem 0; border-bottom: 1px solid #d2d2d7; }
 .hp-top-stories-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
 .hp-top-lead-card { display: flex; flex-direction: column; margin-bottom: 1rem; padding-bottom: 1.25rem; border-bottom: 2px solid var(--line); }
-.hp-top-lead-img { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; }
-.hp-top-lead-img-ph { width: 100%; aspect-ratio: 16/9; background: #e0e0e0; display: block; }
+.hp-top-lead-img { position: relative; width: 100%; padding-top: 56.25%; /* 16:9 */ overflow: hidden; }
+.hp-top-lead-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hp-top-lead-img-ph { width: 100%; padding-top: 56.25%; background: #e0e0e0; display: block; }
 .hp-top-lead-body { display: flex; flex-direction: column; gap: 0.35rem; padding-top: 0.6rem; }
 /* FIX: added text-wrap: pretty + word-break: keep-all */
 .hp-top-lead-title { font-size: clamp(1.2rem, 2.4vw, 1.6rem); font-weight: 700; line-height: 1.2; color: #141414; margin: 0; font-family: var(--gp-font-body); text-wrap: pretty; overflow-wrap: break-word; word-break: keep-all; width: 100%; }
