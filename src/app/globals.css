@@ -1959,7 +1959,7 @@ img + .cat-badge,
   width: 100%;
   overflow: hidden;
   background: #000;
-  height: clamp(480px, 62vh, 720px);
+  aspect-ratio: 16 / 9;
   border-radius: 0;
 }
 
@@ -1967,12 +1967,11 @@ img + .cat-badge,
 .gp-hero-slide {
   position: relative;
   width: 100%;
-  height: clamp(480px, 62vh, 720px);
+  height: 100%;
 }
 
 /* Empty-state shell: dark editorial gradient, content centred */
 .gp-hero-carousel--empty {
-  height: clamp(480px, 62vh, 720px);
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 60%, #111 100%);
   display: flex;
   align-items: center;
@@ -1981,7 +1980,7 @@ img + .cat-badge,
 .gp-hero-fallback {
   position: relative;
   width: 100%;
-  height: clamp(480px, 62vh, 720px);
+  height: 100%;
   display: flex;
   align-items: center;
 }
@@ -2191,19 +2190,11 @@ img + .cat-badge,
 .gp-hero-sidebar-desktop { display: none; }
 .gp-hero-sidebar-mobile  { display: block; padding: 1.5rem 0 0; }
 
-/* Mobile: trending card bleeds full viewport width */
-@media (max-width: 899px) {
-  .gp-hero-sidebar-mobile .gp-trending-card {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    border-radius: 0;
-  }
-}
 
 /* ── Hero desktop breakpoint ── */
 @media (min-width: 900px) {
-  .gp-hero-zone             { grid-template-columns: minmax(0, 2fr) 280px; align-items: stretch; }
-  .gp-hero-sidebar-desktop  { display: flex; flex-direction: column; }
+  .gp-hero-zone             { grid-template-columns: 1fr 320px; gap: 24px; align-items: stretch; }
+  .gp-hero-sidebar-desktop  { display: flex; flex-direction: column; height: 100%; }
   .gp-hero-sidebar-mobile   { display: none; }
 }
 
@@ -2470,101 +2461,105 @@ img + .cat-badge,
 .gp-sidebar-more:hover { text-decoration: underline; }
 
 /* ═══════════════════════════════════════════
-   TRENDING NOW WIDGET (sidebar + mobile)
+   TRENDING NOW WIDGET (hero sidebar)
    ═══════════════════════════════════════════ */
-/* ── Trending Now — high-impact dark card ── */
-.gp-trending-card {
-  background: linear-gradient(135deg, #1a2744 0%, #243356 35%, #2e4070 60%, #1e3a5f 100%);
-  border-radius: 0;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
+.gp-hero-trending {
+  background: var(--apple-gray);
+  border: 1px solid #d2d2d7;
+  border-radius: var(--gp-radius-large);
   overflow: hidden;
-  border-top: 3px solid #e63946;
-  flex: 1;
-  overflow-y: auto;
-}
-.gp-trending-card-head {
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.9rem 1rem 0.65rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-direction: column;
+  height: 100%;
 }
-.gp-trending-card-flame { font-size: 1rem; line-height: 1; }
-.gp-trending-card-title {
+/* Dark header bar */
+.gp-hero-trending-head {
+  background: var(--apple-black);
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+}
+.gp-hero-trending-label {
   font-family: var(--gp-font-body);
   font-size: 0.62rem;
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: #fff;
   margin: 0;
 }
-.gp-trending-card-list { list-style: none; padding: 0; margin: 0; }
-.gp-trending-card-item {
+/* List fills remaining height evenly */
+.gp-hero-trending-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.gp-hero-trending-item {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  border-bottom: 1px solid #e8e8ed;
+}
+.gp-hero-trending-item:last-child { border-bottom: none; }
+.gp-hero-trending-link {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  gap: 0.85rem;
+  padding: 0.6rem 1rem;
+  flex: 1;
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: background 0.12s;
+  min-height: 0;
 }
-.gp-trending-card-list li:last-child .gp-trending-card-item { border-bottom: none; }
-.gp-trending-card-item:hover { background: rgba(255,255,255,0.06); }
-.gp-trending-card-rank {
-  font-family: var(--gp-font-body);
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #e63946;
-  flex-shrink: 0;
-  width: 1.8rem;
+.gp-hero-trending-link:hover { background: #ebebef; }
+/* Bold rank number */
+.gp-hero-trending-num {
+  font-family: var(--gp-font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #d2d2d7;
   line-height: 1;
-}
-.gp-trending-card-thumb {
+  min-width: 2ch;
   flex-shrink: 0;
-  width: 72px;
-  height: 54px;
-  object-fit: cover;
-  border-radius: 0;
-  display: block;
+  text-align: center;
 }
-.gp-trending-card-thumb-ph {
-  flex-shrink: 0;
-  width: 72px;
-  height: 54px;
-  background: #2a2a2a;
-  border-radius: 0;
-}
-.gp-trending-card-body {
+.gp-hero-trending-body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.18rem;
+  justify-content: center;
 }
-.gp-trending-card-cat {
+/* Category label */
+.gp-hero-trending-cat {
   font-family: var(--gp-font-body);
   font-size: 0.58rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #e63946;
+  color: var(--apple-blue);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.gp-trending-card-headline {
+/* Article title */
+.gp-hero-trending-title {
   font-family: var(--gp-font-body);
   font-size: 0.82rem;
   font-weight: 600;
-  color: #f5f5f7;
+  color: var(--apple-black);
   line-height: 1.3;
   text-wrap: pretty;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  transition: color 0.15s ease;
 }
-.gp-trending-card-item:hover .gp-trending-card-headline { color: #fff; }
+.gp-hero-trending-link:hover .gp-hero-trending-title { color: var(--apple-blue); }
 
 /* ═══════════════════════════════════════════
    AFRICA BAND (full-width dark)
