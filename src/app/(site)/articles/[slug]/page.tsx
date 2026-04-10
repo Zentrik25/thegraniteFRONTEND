@@ -16,11 +16,6 @@ import { mediaProxyPath } from "@/lib/utils/media";
 
 export const revalidate = 60;
 
-function formatViewCount(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toLocaleString();
-}
 
 function articleKey(article: {
   id?: number | string | null;
@@ -212,7 +207,6 @@ export default async function ArticlePage({ params }: Props) {
         />
       )}
 
-      {article && <ArticleViewTracker slug={slug} />}
       {article && <HistoryTracker articleSlug={slug} />}
 
       {!article ? (
@@ -356,38 +350,7 @@ export default async function ArticlePage({ params }: Props) {
                       </span>
                     </>
                   )}
-                  {article.view_count != null && article.view_count > 0 && (
-                    <>
-                      <span className="article-detail-meta-sep" aria-hidden="true">
-                        ·
-                      </span>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                          fontFamily: "var(--font-ui)",
-                        }}
-                        aria-label={`${article.view_count.toLocaleString()} views`}
-                      >
-                        <svg
-                          width="13"
-                          height="13"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                        {formatViewCount(article.view_count)}
-                      </span>
-                    </>
-                  )}
+                  <ArticleViewTracker slug={slug} initialCount={article.view_count} />
                 </div>
                 <BookmarkButton articleSlug={slug} compact />
               </div>
