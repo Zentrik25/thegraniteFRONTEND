@@ -218,7 +218,6 @@ export function SiteNav({ sections }: SiteNavProps) {
         </div>
 
         <div className="gp-nav-drawer-footer">
-          <Link href="/login" className="gp-nav-drawer-link" onClick={close}>Sign In</Link>
           <Link href="/subscribe" className="gp-nav-drawer-link" onClick={close}>Subscribe</Link>
         </div>
       </div>

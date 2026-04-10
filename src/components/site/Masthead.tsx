@@ -23,14 +23,9 @@ export function Masthead() {
             </p>
           </div>
 
-          <nav className="gp-masthead-actions" aria-label="Account actions">
-            <Link href="/login" className="gp-btn-signin">
-              Sign In
-            </Link>
-            <Link href="/subscribe" className="gp-btn-subscribe">
-              Subscribe
-            </Link>
-          </nav>
+          <Link href="/subscribe" className="gp-btn-subscribe gp-masthead-subscribe">
+            Subscribe
+          </Link>
         </div>
       </div>
     </div>
