@@ -49,6 +49,7 @@ function authorLabel(a: StaffMember): string {
 
 type Fields = {
   title: string;
+  slug: string;
   excerpt: string;
   body: string;
   status: string;
@@ -74,6 +75,7 @@ type Fields = {
 function initFields(article?: ArticleDetail): Fields {
   return {
     title:          article?.title          ?? "",
+    slug:           article?.slug           ?? "",
     excerpt:        article?.excerpt        ?? "",
     body:           article?.body           ?? "",
     // Backend may return display value "Published" — always normalize to lowercase
@@ -210,6 +212,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
     const status = (overrideStatus ?? fields.status).toLowerCase();
     return {
       title:          fields.title,
+      slug:           fields.slug || slugify(fields.title),
       excerpt:        fields.excerpt,
       body:           fields.body,
       status,
@@ -261,10 +264,8 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       setFields((p) => ({ ...p, status: savedStatus }));
       setSaved(true);
 
-      // For new articles, navigate to the edit URL.
-      // Do NOT call router.refresh() on existing articles — it resets the
-      // save guard before the navigation completes, causing a double-save window.
-      if (!isEdit && data.slug) {
+      // Navigate to the edit URL when slug changes (new article, or slug was edited)
+      if (data.slug && data.slug !== article?.slug) {
         router.replace(`/cms/articles/${data.slug}/edit`);
       }
     } catch {
@@ -383,13 +384,32 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
                   type="text"
                   required
                   value={fields.title}
-                  onChange={(e) => set("title", e.target.value)}
+                  onChange={(e) => {
+                    const title = e.target.value;
+                    setFields((p) => ({
+                      ...p,
+                      title,
+                      // Auto-generate slug from title only while slug hasn't been manually edited
+                      slug: !isEdit && !p.slug ? slugify(title) : p.slug,
+                    }));
+                    setSaved(false);
+                  }}
                   style={{ ...inputS, fontSize: "1rem", padding: "0.55rem 0.75rem", fontWeight: 600 }}
                   placeholder="Article headline"
                 />
-                {!isEdit && fields.title && (
-                  <span style={hintS}>Slug: {slugify(fields.title)}</span>
-                )}
+              </Field>
+
+              <Field label="Slug" hint={isEdit ? "Changing the slug on a published article will break existing links." : "URL identifier — auto-generated from title, or set manually."}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ fontSize: "0.78rem", color: "#999", whiteSpace: "nowrap" }}>/articles/</span>
+                  <input
+                    type="text"
+                    value={fields.slug}
+                    onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, ""))}
+                    style={{ ...inputS, flex: 1, fontFamily: "monospace", fontSize: "0.82rem" }}
+                    placeholder={slugify(fields.title) || "article-slug"}
+                  />
+                </div>
               </Field>
 
               <Field label="Excerpt" hint="Short summary shown in listings and social previews.">
@@ -539,12 +559,6 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
             </div>
           </FormSection>
 
-          {/* Slug display */}
-          {isEdit && article?.slug && (
-            <div style={{ fontSize: "0.72rem", color: "#aaa", padding: "0.25rem 0" }}>
-              Slug: <code style={{ color: "#666" }}>{article.slug}</code>
-            </div>
-          )}
         </div>
 
         {/* ══ RIGHT — sidebar ══════════════════════════════════════════════ */}
