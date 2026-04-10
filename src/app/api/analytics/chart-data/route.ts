@@ -1,16 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { API_BASE_URL } from "@/lib/env";
 import { STAFF_ACCESS_COOKIE } from "@/lib/auth/staff-session";
-import type { TrendingArticle } from "@/lib/types";
 
 export const runtime = "nodejs";
-
-interface ChartDataResponse {
-  topArticles: {
-    labels: string[];
-    data: number[];
-  };
-}
 
 export async function GET(request: NextRequest) {
   const session = request.cookies.get(STAFF_ACCESS_COOKIE)?.value;
@@ -24,7 +16,7 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/analytics/trending/?period=${period}&limit=10`,
-      { headers: { Authorization: `Bearer ${session}` } },
+      { headers: { Authorization: `Bearer ${session}` }, cache: "no-store" },
     );
 
     if (!res.ok) {
@@ -32,23 +24,19 @@ export async function GET(request: NextRequest) {
     }
 
     const raw = await res.json().catch(() => null);
-    const items: TrendingArticle[] = Array.isArray(raw)
-      ? raw
-      : (raw as { results?: TrendingArticle[] } | null)?.results ?? [];
+    const items: Array<{ view_count?: number; article?: { title?: string; slug?: string } }> =
+      Array.isArray(raw) ? raw : (raw?.results ?? []);
 
-    const truncate = (s: string, max = 30) =>
-      s.length > max ? `${s.slice(0, max)}…` : s;
+    const shorten = (s: string, max = 28) => (s.length > max ? `${s.slice(0, max)}…` : s);
 
-    const chartData: ChartDataResponse = {
+    return NextResponse.json({
       topArticles: {
-        labels: items.map((item) => truncate(item.article.title ?? item.article.slug)),
-        data: items.map((item) => item.view_count),
+        labels: items.map((it) => shorten(it.article?.title ?? it.article?.slug ?? "—")),
+        data: items.map((it) => Number(it.view_count) || 0),
       },
-    };
-
-    return NextResponse.json(chartData);
-  } catch (error) {
-    console.error("Chart data fetch error:", error);
+    });
+  } catch (err) {
+    console.error("Chart data fetch error:", err);
     return NextResponse.json({ error: "Failed to fetch chart data" }, { status: 500 });
   }
 }
