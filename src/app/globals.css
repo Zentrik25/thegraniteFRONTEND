@@ -1573,6 +1573,8 @@ img + .cat-badge,
   flex-direction: column;
   background: #fff;
   font-family: var(--gp-font-body);
+  /* Offset for fixed nav (48px height) */
+  padding-top: 48px;
 
   /* Remap legacy design tokens to Apple-BBC values for all descendants */
   --accent:      var(--apple-blue);
@@ -1768,8 +1770,10 @@ img + .cat-badge,
    FROSTED GLASS STICKY NAV
    ═══════════════════════════════════════════ */
 .gp-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 200;
   background: var(--apple-nav-bg);
   backdrop-filter: blur(20px);
@@ -1921,6 +1925,38 @@ img + .cat-badge,
 }
 .gp-nav-drawer-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
 .gp-nav-drawer-footer { border-top: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem; }
+
+/* ── Nav section dropdown ── */
+.gp-nav-item { position: relative; list-style: none; }
+.gp-nav-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background: rgba(20,20,25,0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: 2px solid var(--apple-blue);
+  border-radius: 0 0 8px 8px;
+  padding: 0.4rem 0;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  z-index: 300;
+}
+.gp-nav-item:hover .gp-nav-dropdown { display: block; }
+.gp-nav-dropdown-link {
+  display: block;
+  padding: 0.55rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  font-family: var(--gp-font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+}
+.gp-nav-dropdown-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
 /* ═══════════════════════════════════════════
    HOMEPAGE WRAPPER
@@ -2180,11 +2216,11 @@ img + .cat-badge,
 .gp-hero-sidebar-desktop { display: none; }
 .gp-hero-sidebar-mobile  { display: block; padding: 1.5rem 0 0; }
 
-/* Mobile: trending card bleeds to viewport edges — no container margin */
+/* Mobile: trending card bleeds full viewport width */
 @media (max-width: 899px) {
   .gp-hero-sidebar-mobile .gp-trending-card {
-    margin-left: -1rem;
-    margin-right: -1rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
     border-radius: 0;
   }
 }
@@ -2463,7 +2499,7 @@ img + .cat-badge,
    ═══════════════════════════════════════════ */
 /* ── Trending Now — high-impact dark card ── */
 .gp-trending-card {
-  background: #111;
+  background: linear-gradient(135deg, #1a2744 0%, #243356 35%, #2e4070 60%, #1e3a5f 100%);
   border-radius: 10px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.18);
   overflow: hidden;
