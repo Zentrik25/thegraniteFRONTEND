@@ -61,19 +61,19 @@ export default async function HomePage() {
     getHomepageFeed(),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/politics/?page_size=3",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 30, tags: ["articles", "category-politics"] } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/business/?page_size=3",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 30, tags: ["articles", "category-business"] } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/technology/?page_size=3",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 30, tags: ["articles", "category-technology"] } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/crime-courts/?page_size=3",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 30, tags: ["articles", "category-crime-courts"] } },
     ),
   ]);
 
@@ -139,7 +139,7 @@ export default async function HomePage() {
     sectionDetails.find((s) => s.slug === "africa") ?? null;
 
   const opinionSection =
-    sectionDetails.find((s) => s.slug === "opinion") ?? null;
+    sectionDetails.find((s) => s.slug === "opinion-analysis") ?? null;
 
   const jsonLd = {
     "@context": "https://schema.org",

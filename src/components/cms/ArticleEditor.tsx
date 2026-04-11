@@ -401,14 +401,21 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
 
       // Purge ISR cache whenever article is published or unpublished so the
       // homepage and section pages reflect the change immediately.
+      // Await the revalidation so we know it completed before marking as saved.
       if (savedStatus === "published" || overrideStatus === "draft" || overrideStatus === "archived") {
         const cat = categories.find((c) => String(c.id) === fields.category);
-        revalidateAfterPublish({
-          articleSlug: backendSlug ?? currentSlugRef.current ?? null,
-          categorySlug: cat?.slug ?? null,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          sectionSlug: typeof data.section_slug === "string" ? data.section_slug : null,
-        }).catch(() => {});
+        try {
+          await revalidateAfterPublish({
+            articleSlug: backendSlug ?? currentSlugRef.current ?? null,
+            categorySlug: cat?.slug ?? null,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            sectionSlug: typeof data.section_slug === "string" ? data.section_slug : null,
+          });
+        } catch {
+          // Revalidation failure doesn't block the save — article IS saved on the backend.
+          // Log visibly so it can be diagnosed without blocking the editor.
+          console.warn("[revalidate] Cache purge failed — public site may show stale content for up to 30s.");
+        }
       }
 
       // Navigate to the new edit URL when slug changes (new article, or backend confirmed slug edit).

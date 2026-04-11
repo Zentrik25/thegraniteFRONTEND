@@ -49,30 +49,42 @@ export async function POST(request: NextRequest) {
 
   const revalidated: string[] = [];
 
+  // ── Tag-based invalidation (Data Cache) ──────────────────────────────────
+  // Bust all article-related fetch caches regardless of which page is affected.
+  revalidateTag("articles");
+  revalidateTag("featured");
+  revalidateTag("top-stories");
+  revalidateTag("breaking");
+
+  if (typeof article_slug === "string" && article_slug) {
+    revalidateTag(`article-${article_slug}`);
+  }
+  if (typeof category_slug === "string" && category_slug) {
+    revalidateTag(`category-${category_slug}`);
+  }
+  if (typeof section_slug === "string" && section_slug) {
+    revalidateTag(`section-${section_slug}`);
+  }
+
+  // ── Path-based invalidation (Full Route Cache + Vercel Edge Cache) ────────
   function purge(path: string) {
     revalidatePath(path);
     revalidated.push(path);
   }
 
-  // Always revalidate the homepage
   purge("/");
+  purge("/search");
 
-  // Article detail page
   if (typeof article_slug === "string" && article_slug) {
     purge(`/articles/${article_slug}`);
   }
-
-  // Category page
   if (typeof category_slug === "string" && category_slug) {
     purge(`/categories/${category_slug}`);
   }
-
-  // Section page
   if (typeof section_slug === "string" && section_slug) {
     purge(`/sections/${section_slug}`);
   }
 
-  // Any extra paths the caller wants to purge
   if (Array.isArray(paths)) {
     for (const p of paths) {
       if (typeof p === "string" && p) purge(p);

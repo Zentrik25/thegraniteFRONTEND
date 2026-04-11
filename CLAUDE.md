@@ -1,111 +1,71 @@
-# CLAUDE.md — The Granite Post (Next.js Frontend)
+# CLAUDE.md — TGP Frontend
+
+## Response rules
+- Short sentences. No filler. No preamble.
+- Run tools first, show result, stop. Don't narrate.
+- Drop articles. "Fix bug" not "I will fix the bug".
 
 ## Role
-You are a Staff Engineer building the Next.js 15+ frontend for The Granite Post, a production-grade news platform. The Django REST API backend is **complete** — do not modify backend code.
+Staff Engineer. Next.js 15+ frontend. Backend is complete — don't touch it.
 
-## Stack (LOCKED)
+## Stack
+Next.js 15+ · TypeScript · Tailwind v4 · React Hook Form + Zod · SWR · date-fns · Vercel
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15+ (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Auth (server) | `httpOnly` cookies via Route Handlers |
-| Forms | React Hook Form + Zod |
-| Data fetching | Native fetch (Server Components) + SWR (Client Components) |
-| Date formatting | `date-fns` |
-| Notifications | Web Push API (browser-native) |
-| Deployment | Vercel |
-
-## Backend Connection
-
+## API
 ```
-Backend base URL (local): http://127.0.0.1:8000
-Frontend base URL (local): http://localhost:3000
-API prefix:                 /api/v1/
-Live Swagger docs:          http://127.0.0.1:8000/api/docs/
-OpenAPI JSON:               http://127.0.0.1:8000/api/schema/
+Backend:  http://api.thegranite.co.zw
+Frontend: http://www.thegranite.co.zw
+Prefix:   /api/v1/
+Swagger:  http://api.thegranite.co.zw/api/docs/
+Schema:   http://api.thegranite.co.zw/api/schema/
+```
+Truth order: Swagger → OpenAPI → Postman → docs → serializers
+
+## Env vars
+```
+API_BASE_URL          # server only
+READER_SESSION_SECRET # server only
+STAFF_SESSION_SECRET  # server only
+NEXT_PUBLIC_SITE_URL
+NEXT_PUBLIC_API_BASE_URL
 ```
 
-**Source of truth order** when API behavior is unclear:
-1. `http://127.0.0.1:8000/api/docs/` — Swagger (live)
-2. `http://127.0.0.1:8000/api/schema/` — OpenAPI JSON
-3. `postman/TheGraniteAPI.postman_collection.json`
-4. `docs/NEXTJS_FRONTEND_GUIDE.md`
-5. `docs/ADVERTISING_FRONTEND_GUIDE.md`
-6. Backend serializer + view files
-
-## Environment Variables
-
-```bash
-# Server-side only (never expose to browser)
-API_BASE_URL=http://127.0.0.1:8000
-READER_SESSION_SECRET=<32-byte hex>
-STAFF_SESSION_SECRET=<32-byte hex>
-
-# Browser-safe (analytics, auth refresh, ad tracking only)
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
-```
-
-Rules:
-- Use `API_BASE_URL` (no `NEXT_PUBLIC_`) for all Server Component fetches.
-- Use `NEXT_PUBLIC_API_BASE_URL` only for browser-side calls.
-- Never expose session secrets to the client.
-
-## Non-Negotiables
-
-- **OG/Twitter cards** — `generateMetadata` on every public page; WhatsApp previews require server-rendered OG tags.
-- **SEO** — canonical URLs + JSON-LD `NewsArticle` on article detail pages.
-- **Auth cookies** — `httpOnly`, `secure` in production, set only via Route Handlers.
-- **Middleware guard** — `/cms/*` (except `/cms/login`) requires `granite_staff_session` cookie; `/account/*` requires `granite_reader_session` cookie.
-- **No service secrets in client code** — `API_BASE_URL` and session secrets are server-only.
-- **OG images ≥ 1200×630px** — enforce in CMS upload form.
-- **ISR** — use `revalidate` on homepage and article pages; staff CMS pages use `cache: "no-store"`.
-
-## Route Groups
-
-```
-src/app/
-  (site)/      Public-facing news site
-  (reader)/    Reader login, register, account area
-  (staff)/     Staff CMS (protected by middleware)
-  api/         Next.js Route Handlers (server-side proxy only)
-```
-
-## Two Auth Systems
-
+## Auth
 | | Staff | Reader |
 |---|---|---|
-| Backend login | `POST /api/v1/auth/token/` | `POST /api/v1/accounts/login/` |
-| Cookie name | `granite_staff_session` | `granite_reader_session` |
-| Refresh cookie | `granite_staff_refresh` | `granite_reader_refresh` |
-| Access expiry | 60 min | 60 min |
-| Refresh expiry | 7 days | 7 days |
+| Endpoint | `POST /api/v1/auth/token/` | `POST /api/v1/accounts/login/` |
+| Cookie | `granite_staff_session` | `granite_reader_session` |
+| Refresh | `granite_staff_refresh` | `granite_reader_refresh` |
+| Expiry | 60min access / 7d refresh | same |
 
-## Coding Discipline
+## Routes
+```
+(site)/    public news site
+(reader)/  login, register, account
+(staff)/   CMS — middleware protected
+api/       Route Handlers only
+```
 
-- No fake/demo data — all data comes from the API.
-- When adding a feature: update types in `src/lib/api/types.ts` first.
-- Prefer Server Components; use `"use client"` only when necessary (forms, SWR, browser APIs).
-- `getPublic()` for unauthenticated fetches, `getReader()` / `getStaff()` for authenticated.
-- Error handling: use `GraniteApiError` and surface `retry_after_seconds` in UI.
-- Rate-limit awareness: catch 429 responses and show retry countdown.
+## Rules
+- No fake data. API only.
+- Types first → `src/lib/api/types.ts`
+- Server Components by default. `"use client"` only for forms/SWR/browser APIs.
+- `getPublic()` / `getReader()` / `getStaff()` — correct helper per context.
+- httpOnly cookies, set via Route Handlers only. Never expose secrets client-side.
+- `generateMetadata` + JSON-LD `NewsArticle` on every article page.
+- Canonical URLs on all public pages.
+- ISR on homepage + articles. `cache:"no-store"` on CMS pages.
+- Catch 429 → show `retry_after_seconds` countdown.
+- OG images ≥ 1200×630px.
 
-## Build Order (Phases)
+## Build phases
+1. Foundation — scaffold, env, API client, types, layout
+2. Public site — homepage, article, categories, search, newsletter
+3. Reader auth — register, login, profile, bookmarks, history
+4. Subscriptions — plans, Paynow poll loop, history
+5. Ads — `<AdSlot>`, impressions, click tracking
+6. Staff CMS — dashboard, articles, media, comments, ads, revenue
+7. Polish — push notifications, ISR tuning, a11y, CWV
 
-1. **Foundation** — scaffold, env, API client layer, TypeScript types, site layout
-2. **Public Site** — homepage, article detail, categories, tags, sections, authors, search, newsletter
-3. **Reader Auth & Account** — register, verify-email, login, profile, bookmarks, history
-4. **Subscriptions** — plan listing, subscribe form, Paynow poll loop, status, payment history
-5. **Advertising** — `<AdSlot>`, impression tracking, click tracking + redirect
-6. **Staff CMS** — login, dashboard, articles, media, comments, newsletter, ads, revenue, staff mgmt
-7. **Polish** — push notifications, ISR tuning, error boundaries, a11y, Core Web Vitals
-
-## Output Format
-
-When asked to "build X", produce:
-1. File paths to create/change
-2. Implementation steps
-3. Code with minimal placeholders
-4. Security and SEO checks
+## Ignore
+`node_modules/ .next/ .venv/ migrations/ *.pyc dist/`
