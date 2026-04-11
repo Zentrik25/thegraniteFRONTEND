@@ -22,7 +22,6 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     request.headers.get("cf-connecting-ip") ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
-    request.ip ??
     "";
 
   const headers: HeadersInit = { "Content-Type": "application/json" };
