@@ -4,7 +4,15 @@ import { redirect, notFound } from "next/navigation";
 import CmsShell from "@/components/cms/CmsShell";
 import ArticleEditor from "@/components/cms/ArticleEditor";
 import { safeApiFetch, unwrapList } from "@/lib/api/fetcher";
-import type { ApiListResponse, ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
+import { hasMinimumStaffRole } from "@/lib/auth/staff-roles";
+import type {
+  ApiListResponse,
+  ArticleDetail,
+  CategorySummary,
+  TagSummary,
+  StaffMember,
+  StaffProfile,
+} from "@/lib/types";
 
 export const metadata: Metadata = { title: "Edit Article — CMS" };
 export const dynamic = "force-dynamic";
@@ -21,14 +29,19 @@ export default async function EditArticlePage({ params }: PageProps) {
   const { id } = await params;
   const headers = { Authorization: `Bearer ${session.value}` };
 
-  const [articleRes, catsRes, tagsRes, authorsRes] = await Promise.all([
+  const [articleRes, catsRes, tagsRes, authorsRes, profileRes] = await Promise.all([
     safeApiFetch<ArticleDetail>(`/api/v1/articles/${id}/`, { headers, cache: "no-store" }),
     safeApiFetch<ApiListResponse<CategorySummary> | CategorySummary[]>("/api/v1/categories/?page_size=200", { headers }),
     safeApiFetch<ApiListResponse<TagSummary> | TagSummary[]>("/api/v1/tags/?page_size=500", { headers }),
     safeApiFetch<ApiListResponse<StaffMember> | StaffMember[]>("/api/v1/staff/?page_size=100", { headers }),
+    safeApiFetch<StaffProfile>("/api/v1/auth/me/", { headers, cache: "no-store" }),
   ]);
 
   if (!articleRes.data) notFound();
+  const profile = profileRes.data;
+  const canPublish = profile
+    ? Boolean(profile.can_publish ?? hasMinimumStaffRole(profile.role, "editor"))
+    : true;
 
   return (
     <CmsShell title="Edit Article">
@@ -37,6 +50,7 @@ export default async function EditArticlePage({ params }: PageProps) {
         categories={catsRes.data ? unwrapList(catsRes.data) : []}
         tags={tagsRes.data ? unwrapList(tagsRes.data) : []}
         authors={authorsRes.data ? unwrapList(authorsRes.data) : []}
+        canPublish={canPublish}
       />
     </CmsShell>
   );

@@ -1,6 +1,7 @@
 const STATUS: Record<string, { bg: string; color: string; dot: string; label: string }> = {
   published: { bg: "#d4edda", color: "#155724", dot: "#28a745", label: "Published" },
   draft:     { bg: "#e2e3e5", color: "#383d41", dot: "#6c757d", label: "Draft" },
+  review:    { bg: "#fff3cd", color: "#856404", dot: "#e6a817", label: "In Review" },
   archived:  { bg: "#fff3cd", color: "#856404", dot: "#ffc107", label: "Archived" },
 };
 

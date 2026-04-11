@@ -2,7 +2,14 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { ArticleDetail, ArticleSummary, CategorySummary, TagSummary, StaffMember, TopStorySlot } from "@/lib/types";
+import type {
+  ArticleDetail,
+  ArticleSummary,
+  CategorySummary,
+  TagSummary,
+  StaffMember,
+  TopStorySlot,
+} from "@/lib/types";
 import MediaPicker from "@/components/cms/MediaPicker";
 import { RichTextEditor } from "@/components/staff/RichTextEditor";
 import { FormSection } from "@/components/staff/FormSection";
@@ -73,6 +80,7 @@ interface ArticleEditorProps {
   categories: CategorySummary[];
   tags: TagSummary[];
   authors: StaffMember[];
+  canPublish?: boolean;
 }
 
 function toProxyUrl(url: string): string {
@@ -104,6 +112,12 @@ function authorLabel(a: StaffMember): string {
   if (a.display_name) return a.display_name;
   const parts = [a.first_name, a.last_name].filter(Boolean).join(" ");
   return parts || (a.email ?? String(a.id));
+}
+
+function normalizeArticleStatus(status?: string | null): string {
+  if (!status) return "draft";
+  const normalized = status.trim().toLowerCase().replace(/\s+/g, "_");
+  return normalized === "in_review" ? "review" : normalized;
 }
 
 // ─── Field state ───────────────────────────────────────────────────────────
@@ -140,7 +154,7 @@ function initFields(article?: ArticleDetail): Fields {
     excerpt:        article?.excerpt        ?? "",
     body:           article?.body           ?? "",
     // Backend may return display value "Published" — always normalize to lowercase
-    status:         (article?.status ?? "draft").toLowerCase(),
+    status:         normalizeArticleStatus(article?.status),
     author:         article?.author?.id?.toString() ?? "",
     category:       article?.category?.id?.toString() ?? "",
     is_breaking:    article?.is_breaking    ?? false,
@@ -235,7 +249,13 @@ function CheckboxField({
 
 // ─── Main component ────────────────────────────────────────────────────────
 
-export default function ArticleEditor({ article, categories, tags, authors }: ArticleEditorProps) {
+export default function ArticleEditor({
+  article,
+  categories,
+  tags,
+  authors,
+  canPublish = true,
+}: ArticleEditorProps) {
   const router = useRouter();
   const isEdit = Boolean(article?.id);
 
@@ -246,6 +266,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   // Synchronous guard — prevents double-submit when React state update is not yet flushed
   const savingRef = useRef(false);
@@ -320,7 +341,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   }
 
   function buildPayload(overrideStatus?: string) {
-    const status = (overrideStatus ?? fields.status).toLowerCase();
+    const status = normalizeArticleStatus(overrideStatus ?? fields.status);
     // On create (POST): omit slug when empty — let the backend auto-generate a unique one.
     // On update (PATCH): always send slug so the user can intentionally rename it;
     //   fall back to currentSlugRef.current (not slugify(title)) to avoid collisions.
@@ -366,6 +387,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
     savingRef.current = true;
 
     setError(null);
+    setNotice(null);
     setSaving(true);
     setSaved(false);
 
@@ -380,13 +402,18 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload(overrideStatus)),
       });
-      const data = await res.json();
+      const data = (await res.json()) as Partial<ArticleDetail> & {
+        section_slug?: string | null;
+        status?: string | null;
+      };
 
       if (!res.ok) { setError(flattenErrors(data)); return; }
 
       // Sync status AND slug from backend response so the form always reflects
       // what the backend actually saved (backend may normalize or reject the slug).
-      const savedStatus = (overrideStatus ?? fields.status).toLowerCase();
+      const previousStatus = normalizeArticleStatus(fields.status);
+      const requestedStatus = normalizeArticleStatus(overrideStatus ?? fields.status);
+      const savedStatus = normalizeArticleStatus(data.status ?? requestedStatus);
       const backendSlug: string | undefined = typeof data.slug === "string" ? data.slug : undefined;
 
       setFields((p) => ({
@@ -399,17 +426,38 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       // Keep the ref in sync so subsequent saves use the correct URL.
       if (backendSlug) currentSlugRef.current = backendSlug;
 
+      if (requestedStatus === "published" && savedStatus !== "published") {
+        setNotice(
+          savedStatus === "review"
+            ? "Article was submitted for review. It is not live on the public site yet."
+            : `Article was saved as ${savedStatus}. It is not live on the public site yet.`,
+        );
+      } else if (savedStatus === "published") {
+        setNotice("Article is live on the public site.");
+      }
+
       // Purge ISR cache whenever article is published or unpublished so the
       // homepage and section pages reflect the change immediately.
       // Await the revalidation so we know it completed before marking as saved.
-      if (savedStatus === "published" || overrideStatus === "draft" || overrideStatus === "archived") {
-        const cat = categories.find((c) => String(c.id) === fields.category);
+      const categoryId =
+        typeof data.category === "object" && data.category && "id" in data.category
+          ? String(data.category.id)
+          : fields.category;
+      const cat = categories.find((c) => String(c.id) === categoryId);
+      const sectionSlug =
+        typeof data.section_slug === "string" && data.section_slug
+          ? data.section_slug
+          : (cat?.section_slug ?? null);
+      const publicVisibilityChanged =
+        savedStatus === "published" ||
+        (previousStatus === "published" && savedStatus !== "published");
+
+      if (publicVisibilityChanged) {
         try {
           await revalidateAfterPublish({
             articleSlug: backendSlug ?? currentSlugRef.current ?? null,
             categorySlug: cat?.slug ?? null,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            sectionSlug: typeof data.section_slug === "string" ? data.section_slug : null,
+            sectionSlug,
           });
         } catch {
           // Revalidation failure doesn't block the save — article IS saved on the backend.
@@ -432,7 +480,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   }
 
   async function handlePublish() {
-    await save("published");
+    await save(canPublish ? "published" : "review");
   }
 
   async function handleRevertDraft() {
@@ -453,8 +501,10 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   }
 
   const isDraft     = fields.status === "draft";
+  const isReview    = fields.status === "review";
   const isPublished = fields.status === "published";
   const isArchived  = fields.status === "archived";
+  const publishActionLabel = canPublish ? "Publish" : "Submit for review";
 
   return (
     <>
@@ -509,10 +559,10 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
           {saving ? "Saving…" : isEdit ? "Save" : "Save draft"}
         </button>
 
-        {(isDraft || isArchived) && (
+        {(isDraft || isReview || isArchived) && (
           <button type="button" onClick={handlePublish} disabled={saving}
             style={{ background: "#155724", color: "#fff", border: "none", padding: "0.38rem 1rem", borderRadius: "4px", fontWeight: 700, fontSize: "0.8rem", cursor: saving ? "not-allowed" : "pointer" }}>
-            Publish
+            {publishActionLabel}
           </button>
         )}
       </div>
@@ -521,6 +571,22 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       {error && (
         <div role="alert" style={{ background: "#fff0f0", border: "1px solid #f5c6cb", color: "#721c24", padding: "0.7rem 1rem", borderRadius: "4px", fontSize: "0.85rem", marginBottom: "1rem" }}>
           {error}
+        </div>
+      )}
+      {notice && !error && (
+        <div
+          role="status"
+          style={{
+            background: isPublished ? "#edf7ed" : "#fff7e6",
+            border: `1px solid ${isPublished ? "#c8e6c9" : "#f6d28b"}`,
+            color: isPublished ? "#1b5e20" : "#8a5a00",
+            padding: "0.7rem 1rem",
+            borderRadius: "4px",
+            fontSize: "0.85rem",
+            marginBottom: "1rem",
+          }}
+        >
+          {notice}
         </div>
       )}
 
@@ -726,10 +792,16 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
               <Field label="Status">
                 <select value={fields.status} onChange={(e) => set("status", e.target.value)} style={inputS}>
                   <option value="draft">Draft</option>
+                  <option value="review">In review</option>
                   <option value="published">Published</option>
                   <option value="archived">Archived</option>
                 </select>
               </Field>
+              {!canPublish && (
+                <div style={{ ...hintS, marginTop: "-0.35rem" }}>
+                  Your account submits stories for editorial review. An editor must approve them before they appear on the public site.
+                </div>
+              )}
 
               <Field label="Author">
                 <select value={fields.author} onChange={(e) => set("author", e.target.value)} style={inputS}>
