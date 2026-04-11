@@ -276,7 +276,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
           : Array.isArray(featRes?.results) ? featRes.results : [];
         const fSlots: FeaturedSlot[] = Array.from({ length: 5 }, (_, i) => {
           const rank = i + 1;
-          const art = featArr.find((a) => a.featured_rank === rank || a.featured_rank === String(rank)) ?? null;
+          const art = featArr.find((a) => a.featured_rank === rank) ?? null;
           return { rank, article: art };
         });
         setFeaturedSlots(fSlots);
