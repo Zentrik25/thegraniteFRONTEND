@@ -321,9 +321,15 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
 
   function buildPayload(overrideStatus?: string) {
     const status = (overrideStatus ?? fields.status).toLowerCase();
+    // On create (POST): omit slug when empty — let the backend auto-generate a unique one.
+    // On update (PATCH): always send slug so the user can intentionally rename it;
+    //   fall back to currentSlugRef.current (not slugify(title)) to avoid collisions.
+    const slugValue = isEdit
+      ? (fields.slug || currentSlugRef.current)
+      : (fields.slug || undefined);
     return {
       title:          fields.title,
-      slug:           fields.slug || slugify(fields.title),
+      ...(slugValue !== undefined ? { slug: slugValue } : {}),
       excerpt:        fields.excerpt,
       body:           fields.body,
       status,
@@ -400,6 +406,8 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
         revalidateAfterPublish({
           articleSlug: backendSlug ?? currentSlugRef.current ?? null,
           categorySlug: cat?.slug ?? null,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          sectionSlug: typeof data.section_slug === "string" ? data.section_slug : null,
         }).catch(() => {});
       }
 

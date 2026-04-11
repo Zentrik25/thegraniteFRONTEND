@@ -16,11 +16,16 @@ export async function revalidateAfterPublish({
   categorySlug?: string | null;
   sectionSlug?: string | null;
 }) {
-  // Always flush the homepage
+  // Flush homepage and its layout (covers hero, top-stories, latest grid)
   revalidatePath("/");
   revalidatePath("/", "layout");
 
   if (articleSlug) revalidatePath(`/articles/${articleSlug}`);
   if (categorySlug) revalidatePath(`/categories/${categorySlug}`);
   if (sectionSlug) revalidatePath(`/sections/${sectionSlug}`);
+
+  // Also revalidate the search index and tags listing so newly published
+  // articles become discoverable immediately.
+  revalidatePath("/search");
+  revalidatePath("/tags", "layout");
 }
