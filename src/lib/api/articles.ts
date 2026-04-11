@@ -124,7 +124,7 @@ export async function getSectionDetails(primary?: boolean): Promise<SectionDetai
 
 export async function getSectionDetail(slug: string) {
   const result = await safeApiFetch<SectionDetail>(`/api/v1/sections/${slug}/`, {
-    next: { revalidate: 120 },
+    next: { revalidate: 30 },
   });
   return result.data;
 }

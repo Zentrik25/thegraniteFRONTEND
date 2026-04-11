@@ -978,6 +978,84 @@ main.container { padding-top: 1.5rem; padding-bottom: 4rem; }
 }
 .tag-chip:hover { background: var(--accent-soft); color: var(--accent-deep); border-color: var(--accent); }
 
+/* ── Section article list (compact rows) ── */
+.section-article-list { display: flex; flex-direction: column; }
+
+.section-article-row {
+  border-bottom: 1px solid var(--line);
+}
+.section-article-row:last-child { border-bottom: none; }
+
+.section-article-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+.section-article-link:hover { opacity: 0.8; }
+
+.section-article-thumb {
+  flex-shrink: 0;
+  width: 96px;
+  height: 64px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(219,205,189,0.3);
+}
+.section-article-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.section-article-img-ph {
+  width: 100%;
+  height: 100%;
+  background: rgba(219,205,189,0.3);
+}
+
+.section-article-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  justify-content: center;
+}
+.section-article-cat {
+  font-size: 0.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-family: var(--gp-font-body);
+}
+.section-article-title {
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.section-article-time {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-family: var(--gp-font-body);
+  margin-top: 0.1rem;
+}
+
+@media (max-width: 480px) {
+  .section-article-thumb { width: 72px; height: 50px; }
+  .section-article-title { font-size: 0.84rem; }
+}
+
 /* ── Paywall ── */
 .paywall-banner { background: var(--surface-strong); border: 1px solid var(--line); border-radius: var(--radius); padding: 2rem; text-align: center; margin-top: 1.5rem; }
 .paywall-banner h2 { font-family: var(--font); font-size: 1.3rem; font-weight: 800; margin-bottom: 0.6rem; }
