@@ -14,9 +14,10 @@ function formatViewCount(n: number): string {
 }
 
 /**
- * Tracks the view on mount (awaited server-side proxy so it actually records),
- * shows the initial cached count immediately, then updates to the fresh count
- * returned by the POST response.
+ * Tracks the view on mount by calling the backend directly from the browser.
+ * This is critical: the backend uses the request IP (via Cloudflare CF-Connecting-IP)
+ * to deduplicate views. If proxied through Next.js, every reader shares the server IP
+ * and views never increment beyond 1.
  */
 export function ArticleViewTracker({
   slug,
@@ -28,7 +29,11 @@ export function ArticleViewTracker({
   const [count, setCount] = useState<number | null>(initialCount ?? null);
 
   useEffect(() => {
-    fetch(`/api/analytics/articles/${slug}/view`, { method: "POST" })
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    fetch(`${apiBase}/api/v1/analytics/articles/${slug}/view/`, {
+      method: "POST",
+      credentials: "omit",
+    })
       .then((r) => r.json())
       .then((d: unknown) => {
         if (d && typeof d === "object" && "view_count" in d) {
@@ -37,7 +42,7 @@ export function ArticleViewTracker({
         }
       })
       .catch(() => {
-        // analytics is best-effort
+        // analytics is best-effort — never block the page
       });
   }, [slug]);
 

@@ -10,47 +10,40 @@ interface RouteContext {
 /**
  * POST /api/analytics/articles/[slug]/view
  *
- * Server-side proxy for the view-tracking endpoint. Awaits the backend POST so
- * it completes before the serverless function returns (fire-and-forget was being
- * killed before the backend received the request). Returns fresh view_count so
- * the client can update the display without a separate fetch.
+ * Fallback server-side proxy for view tracking. The primary path is a direct
+ * browser→backend call (see ArticleViewTracker). This proxy exists as a
+ * fallback and forwards the client's real IP via X-Forwarded-For so the
+ * backend can still deduplicate correctly.
  */
 export async function POST(request: NextRequest, { params }: RouteContext) {
   const { slug } = await params;
 
-  const session =
-    request.cookies.get("granite_reader_session")?.value ??
-    request.cookies.get("granite_staff_session")?.value;
+  // Forward the real client IP so the backend can deduplicate by visitor
+  const clientIp =
+    request.headers.get("cf-connecting-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "";
 
   const headers: HeadersInit = { "Content-Type": "application/json" };
-  if (session) headers["Authorization"] = `Bearer ${session}`;
+  if (clientIp) headers["X-Forwarded-For"] = clientIp;
 
-  // Await the POST so the view is recorded before this function returns
-  try {
-    await fetch(`${API_BASE_URL}/api/v1/analytics/articles/${slug}/view/`, {
-      method: "POST",
-      headers,
-    });
-  } catch {
-    // analytics is best-effort — never block the reader
-  }
-
-  // Fetch fresh view_count so the client display is accurate
   let view_count: number | null = null;
+
   try {
-    const artRes = await fetch(
-      `${API_BASE_URL}/api/v1/articles/${slug}/`,
-      { cache: "no-store" }
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/analytics/articles/${slug}/view/`,
+      { method: "POST", headers },
     );
-    if (artRes.ok) {
-      const art: unknown = await artRes.json();
-      if (art && typeof art === "object" && "view_count" in art) {
-        const v = (art as Record<string, unknown>).view_count;
+    if (res.ok) {
+      const body: unknown = await res.json();
+      if (body && typeof body === "object" && "view_count" in body) {
+        const v = (body as Record<string, unknown>).view_count;
         if (typeof v === "number") view_count = v;
       }
     }
   } catch {
-    // best-effort
+    // analytics is best-effort — never block the reader
   }
 
   return NextResponse.json({ ok: true, view_count });
