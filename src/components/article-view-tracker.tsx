@@ -29,10 +29,8 @@ export function ArticleViewTracker({
   const [count, setCount] = useState<number | null>(initialCount ?? null);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-    fetch(`${apiBase}/api/v1/analytics/articles/${slug}/view/`, {
+    fetch(`/api/analytics/articles/${slug}/view`, {
       method: "POST",
-      credentials: "omit",
     })
       .then((r) => r.json())
       .then((d: unknown) => {

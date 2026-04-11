@@ -10,23 +10,27 @@ interface RouteContext {
 /**
  * POST /api/analytics/articles/[slug]/view
  *
- * Fallback server-side proxy for view tracking. The primary path is a direct
- * browser→backend call (see ArticleViewTracker). This proxy exists as a
- * fallback and forwards the client's real IP via X-Forwarded-For so the
- * backend can still deduplicate correctly.
+ * Server-side proxy for view tracking. Forwards the visitor's real IP
+ * via CF-Connecting-IP, X-Forwarded-For, and X-Real-IP so the Django
+ * backend can deduplicate by visitor regardless of which header it reads.
  */
 export async function POST(request: NextRequest, { params }: RouteContext) {
   const { slug } = await params;
 
-  // Forward the real client IP so the backend can deduplicate by visitor
+  // Extract the real client IP from Vercel/Cloudflare headers
   const clientIp =
     request.headers.get("cf-connecting-ip") ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
+    request.ip ??
     "";
 
   const headers: HeadersInit = { "Content-Type": "application/json" };
-  if (clientIp) headers["X-Forwarded-For"] = clientIp;
+  if (clientIp) {
+    headers["X-Forwarded-For"] = clientIp;
+    headers["X-Real-IP"] = clientIp;
+    headers["CF-Connecting-IP"] = clientIp;
+  }
 
   let view_count: number | null = null;
 
