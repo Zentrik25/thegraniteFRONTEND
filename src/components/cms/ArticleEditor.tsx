@@ -1,12 +1,72 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import type { ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/lib/types";
+import type { ArticleDetail, ArticleSummary, CategorySummary, TagSummary, StaffMember, TopStorySlot } from "@/lib/types";
 import MediaPicker from "@/components/cms/MediaPicker";
 import { RichTextEditor } from "@/components/staff/RichTextEditor";
 import { FormSection } from "@/components/staff/FormSection";
 import { revalidateAfterPublish } from "@/lib/actions/revalidate";
+
+// ─── Slot picker helpers ────────────────────────────────────────────────────
+
+type FeaturedSlot = { rank: number; article: ArticleSummary | null };
+
+function SlotGrid({
+  slots,
+  selectedRank,
+  onSelect,
+  currentSlug,
+}: {
+  slots: { rank: number; article: ArticleSummary | null }[];
+  selectedRank: string;
+  onSelect: (rank: string) => void;
+  currentSlug?: string;
+}) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.4rem", marginTop: "0.5rem" }}>
+      {slots.map(({ rank, article }) => {
+        const isMine = article?.slug === currentSlug;
+        const isTaken = Boolean(article) && !isMine;
+        const isSelected = selectedRank === String(rank);
+        return (
+          <button
+            key={rank}
+            type="button"
+            onClick={() => onSelect(isSelected ? "" : String(rank))}
+            title={article ? article.title : `Slot ${rank} — empty`}
+            style={{
+              padding: "0.45rem 0.3rem",
+              borderRadius: "6px",
+              border: `2px solid ${isSelected ? "#981b1e" : isMine ? "#2563eb" : isTaken ? "#e5a000" : "#d1d5db"}`,
+              background: isSelected ? "#981b1e" : isMine ? "#eff6ff" : isTaken ? "#fffbeb" : "#f9fafb",
+              color: isSelected ? "#fff" : isMine ? "#1d4ed8" : isTaken ? "#92400e" : "#374151",
+              fontWeight: 700,
+              fontSize: "0.75rem",
+              cursor: "pointer",
+              textAlign: "center",
+              lineHeight: 1.2,
+              transition: "all 0.12s",
+            }}
+          >
+            <div style={{ fontSize: "1rem", marginBottom: "0.15rem" }}>#{rank}</div>
+            <div style={{
+              fontSize: "0.6rem",
+              fontWeight: 500,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "100%",
+              opacity: 0.85,
+            }}>
+              {isMine ? "this" : isTaken ? "taken" : "empty"}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 interface ArticleEditorProps {
   article?: ArticleDetail;
@@ -192,6 +252,54 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   // Track the current slug used in the PATCH URL — updates when backend confirms a slug change
   const currentSlugRef = useRef<string>(article?.slug ?? "");
 
+  // Live slot data fetched from backend on mount
+  const [featuredSlots, setFeaturedSlots] = useState<FeaturedSlot[]>(
+    Array.from({ length: 5 }, (_, i) => ({ rank: i + 1, article: null }))
+  );
+  const [topStorySlots, setTopStorySlots] = useState<TopStorySlot[]>(
+    Array.from({ length: 5 }, (_, i) => ({ rank: i + 1, article: null }))
+  );
+  const [slotsLoading, setSlotsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSlots() {
+      setSlotsLoading(true);
+      try {
+        const [featRes, topRes] = await Promise.all([
+          fetch("/api/staff/articles/featured/").then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch("/api/staff/articles/top-stories/").then(r => r.ok ? r.json() : null).catch(() => null),
+        ]);
+
+        // Build 5 featured slots
+        const featArr: ArticleSummary[] = Array.isArray(featRes)
+          ? featRes
+          : Array.isArray(featRes?.results) ? featRes.results : [];
+        const fSlots: FeaturedSlot[] = Array.from({ length: 5 }, (_, i) => {
+          const rank = i + 1;
+          const art = featArr.find((a) => a.featured_rank === rank || a.featured_rank === String(rank)) ?? null;
+          return { rank, article: art };
+        });
+        setFeaturedSlots(fSlots);
+
+        // Build 5 top story slots
+        const topArr: TopStorySlot[] = Array.isArray(topRes)
+          ? topRes
+          : Array.isArray(topRes?.results) ? topRes.results : [];
+        const tSlots: TopStorySlot[] = Array.from({ length: 5 }, (_, i) => {
+          const rank = i + 1;
+          const found = topArr.find((s) => s.rank === rank);
+          return { rank, article: found?.article ?? null };
+        });
+        setTopStorySlots(tSlots);
+      } catch {
+        // best-effort — slots stay empty
+      } finally {
+        setSlotsLoading(false);
+      }
+    }
+    void loadSlots();
+  }, []);
+
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((p) => ({ ...p, [key]: value }));
     setSaved(false);
@@ -225,8 +333,14 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       is_breaking:    fields.is_breaking,
       is_top_story:   fields.is_top_story,
       is_featured:    fields.is_featured,
-      top_story_rank: fields.top_story_rank !== "" ? Number(fields.top_story_rank) : null,
-      featured_rank:  fields.featured_rank  !== "" ? Number(fields.featured_rank)  : null,
+      // If featured/top-story is enabled but user hasn't picked a slot,
+      // default to rank 1 so the backend flag actually sticks.
+      top_story_rank: fields.is_top_story
+        ? (fields.top_story_rank !== "" ? Number(fields.top_story_rank) : 1)
+        : null,
+      featured_rank:  fields.is_featured
+        ? (fields.featured_rank !== "" ? Number(fields.featured_rank) : 1)
+        : null,
       image_url:      fields.image_url || null,
       image_alt:      fields.image_alt,
       image_caption:  fields.image_caption,
@@ -701,7 +815,7 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
 
           {/* Flags & Rankings */}
           <FormSection title="Flags & Rankings">
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
 
               <CheckboxField
                 label="Breaking news"
@@ -710,47 +824,84 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
                 accent
               />
 
-              <CheckboxField
-                label="Top story"
-                checked={fields.is_top_story}
-                onChange={(v) => set("is_top_story", v)}
-              />
-
-              <CheckboxField
-                label="Featured (hero zone)"
-                checked={fields.is_featured}
-                onChange={(v) => set("is_featured", v)}
-              />
-
-              <Field
-                label="Top story rank"
-                hint="1–10 positions article in the Top Stories block."
-              >
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={fields.top_story_rank}
-                  onChange={(e) => set("top_story_rank", e.target.value)}
-                  style={{ ...inputS, width: "80px" }}
-                  placeholder="—"
+              {/* ── Featured (hero carousel) ── */}
+              <div>
+                <CheckboxField
+                  label="Featured in hero carousel (max 5)"
+                  checked={fields.is_featured}
+                  onChange={(v) => {
+                    set("is_featured", v);
+                    if (!v) set("featured_rank", "");
+                  }}
                 />
-              </Field>
+                {fields.is_featured && (
+                  <div style={{ marginTop: "0.6rem", paddingLeft: "0.25rem" }}>
+                    <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "0.25rem", fontWeight: 600 }}>
+                      {slotsLoading ? "Loading slots…" : "Pick a slot (click to select, click again to deselect):"}
+                    </div>
+                    <SlotGrid
+                      slots={featuredSlots}
+                      selectedRank={fields.featured_rank}
+                      onSelect={(r) => set("featured_rank", r)}
+                      currentSlug={article?.slug}
+                    />
+                    {fields.featured_rank && (
+                      <div style={{ fontSize: "0.72rem", color: "#981b1e", marginTop: "0.4rem", fontWeight: 600 }}>
+                        Slot #{fields.featured_rank} selected
+                        {featuredSlots[Number(fields.featured_rank) - 1]?.article &&
+                         featuredSlots[Number(fields.featured_rank) - 1]?.article?.slug !== article?.slug
+                          ? ` — will replace "${featuredSlots[Number(fields.featured_rank) - 1]!.article!.title}"`
+                          : ""}
+                      </div>
+                    )}
+                    {!fields.featured_rank && (
+                      <div style={{ fontSize: "0.72rem", color: "#b45309", marginTop: "0.4rem" }}>
+                        Select a slot above — required when Featured is on.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
-              <Field
-                label="Featured rank"
-                hint="1–10 positions article in the Hero zone."
-              >
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={fields.featured_rank}
-                  onChange={(e) => set("featured_rank", e.target.value)}
-                  style={{ ...inputS, width: "80px" }}
-                  placeholder="—"
+              {/* ── Top story ── */}
+              <div>
+                <CheckboxField
+                  label="Top story"
+                  checked={fields.is_top_story}
+                  onChange={(v) => {
+                    set("is_top_story", v);
+                    if (!v) set("top_story_rank", "");
+                  }}
                 />
-              </Field>
+                {fields.is_top_story && (
+                  <div style={{ marginTop: "0.6rem", paddingLeft: "0.25rem" }}>
+                    <div style={{ fontSize: "0.75rem", color: "#555", marginBottom: "0.25rem", fontWeight: 600 }}>
+                      {slotsLoading ? "Loading slots…" : "Pick a top story slot:"}
+                    </div>
+                    <SlotGrid
+                      slots={topStorySlots}
+                      selectedRank={fields.top_story_rank}
+                      onSelect={(r) => set("top_story_rank", r)}
+                      currentSlug={article?.slug}
+                    />
+                    {fields.top_story_rank && (
+                      <div style={{ fontSize: "0.72rem", color: "#981b1e", marginTop: "0.4rem", fontWeight: 600 }}>
+                        Slot #{fields.top_story_rank} selected
+                        {topStorySlots[Number(fields.top_story_rank) - 1]?.article &&
+                         topStorySlots[Number(fields.top_story_rank) - 1]?.article?.slug !== article?.slug
+                          ? ` — will replace "${topStorySlots[Number(fields.top_story_rank) - 1]!.article!.title}"`
+                          : ""}
+                      </div>
+                    )}
+                    {!fields.top_story_rank && (
+                      <div style={{ fontSize: "0.72rem", color: "#b45309", marginTop: "0.4rem" }}>
+                        Select a slot above — required when Top Story is on.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
             </div>
           </FormSection>
         </div>
