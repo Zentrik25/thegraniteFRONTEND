@@ -61,19 +61,19 @@ export default async function HomePage() {
     getHomepageFeed(),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/politics/?page_size=3",
-      { next: { revalidate: 30, tags: ["articles", "category-politics"] } },
+      { cache: "no-store" },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/business/?page_size=3",
-      { next: { revalidate: 30, tags: ["articles", "category-business"] } },
+      { cache: "no-store" },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/technology/?page_size=3",
-      { next: { revalidate: 30, tags: ["articles", "category-technology"] } },
+      { cache: "no-store" },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/crime-courts/?page_size=3",
-      { next: { revalidate: 30, tags: ["articles", "category-crime-courts"] } },
+      { cache: "no-store" },
     ),
   ]);
 

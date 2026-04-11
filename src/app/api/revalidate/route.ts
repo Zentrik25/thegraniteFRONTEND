@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -49,26 +49,9 @@ export async function POST(request: NextRequest) {
 
   const revalidated: string[] = [];
 
-  // ── Tag-based invalidation (Data Cache) ──────────────────────────────────
-  // Bust all article-related fetch caches regardless of which page is affected.
-  // Next.js 16: revalidateTag requires a second profile argument.
-  const now = { expire: 0 };
-  revalidateTag("articles", now);
-  revalidateTag("featured", now);
-  revalidateTag("top-stories", now);
-  revalidateTag("breaking", now);
-
-  if (typeof article_slug === "string" && article_slug) {
-    revalidateTag(`article-${article_slug}`, now);
-  }
-  if (typeof category_slug === "string" && category_slug) {
-    revalidateTag(`category-${category_slug}`, now);
-  }
-  if (typeof section_slug === "string" && section_slug) {
-    revalidateTag(`section-${section_slug}`, now);
-  }
-
   // ── Path-based invalidation (Full Route Cache + Vercel Edge Cache) ────────
+  // Key article list fetches use cache: "no-store" so the next page render
+  // always hits the API fresh — no tag-based data cache busting needed.
   function purge(path: string) {
     revalidatePath(path);
     revalidated.push(path);

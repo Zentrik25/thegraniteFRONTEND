@@ -18,26 +18,28 @@ import type {
 
 export async function getHomepageFeed() {
   const [latest, topStories, featured, breaking, sections, trending] = await Promise.all([
+    // cache: "no-store" on volatile list endpoints — when the page re-renders
+    // (triggered by revalidatePath after publish), these always return fresh data.
     safeApiFetch<ApiListResponse<ArticleSummary>>("/api/v1/articles/", {
-      next: { revalidate: 30, tags: ["articles", "articles-list"] },
+      cache: "no-store",
     }),
     safeApiFetch<TopStorySlot[]>("/api/v1/articles/top-stories/", {
-      next: { revalidate: 20, tags: ["articles", "top-stories"] },
+      cache: "no-store",
     }),
     safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
       "/api/v1/articles/featured/",
-      { next: { revalidate: 20, tags: ["articles", "featured"] } },
+      { cache: "no-store" },
     ),
     safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
       "/api/v1/articles/breaking/",
-      { next: { revalidate: 20, tags: ["articles", "breaking"] } },
+      { cache: "no-store" },
     ),
     safeApiFetch<{ status: string; count: number; results: SectionSummary[] }>(
       "/api/v1/sections/?primary=true",
-      { next: { revalidate: 300, tags: ["sections"] } },
+      { next: { revalidate: 300 } },
     ),
     safeApiFetch<TrendingArticle[]>("/api/v1/analytics/trending/?period=day", {
-      next: { revalidate: 300, tags: ["trending"] },
+      next: { revalidate: 300 },
     }),
   ]);
 
@@ -53,7 +55,7 @@ export async function getHomepageFeed() {
   const sectionDetailResults = await Promise.all(
     primarySections.map((s) =>
       safeApiFetch<SectionDetail>(`/api/v1/sections/${s.slug}/`, {
-        next: { revalidate: 120, tags: ["sections", `section-${s.slug}`] },
+        cache: "no-store",
       }),
     ),
   );
@@ -75,7 +77,7 @@ export async function getHomepageFeed() {
 
 export async function getArticleBySlug(slug: string) {
   const result = await safeApiFetch<ArticleDetail>(`/api/v1/articles/${slug}/`, {
-    next: { revalidate: 30, tags: ["articles", `article-${slug}`] },
+    cache: "no-store",
   });
   return {
     article: result.data,
@@ -96,7 +98,7 @@ export async function getCategoryDetail(slug: string, page = 1) {
   const params = page > 1 ? `?page=${page}` : "";
   const result = await safeApiFetch<CategoryDetailResponse>(
     `/api/v1/categories/${slug}/${params}`,
-    { next: { revalidate: 120, tags: ["articles", `category-${slug}`] } },
+    { cache: "no-store" },
   );
   return result.data;
 }

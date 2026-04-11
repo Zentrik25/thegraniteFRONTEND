@@ -1,15 +1,15 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 /**
- * Server Action — purges ISR cache for the homepage, article page,
- * category page, and section page immediately after publish/unpublish.
+ * Server Action — purges the Full Route Cache and Vercel Edge Cache for pages
+ * affected by a publish/unpublish event.
  *
- * Uses BOTH revalidateTag (busts the fetch Data Cache entries directly)
- * AND revalidatePath (busts the Full Route Cache / rendered HTML).
- * revalidateTag alone is sufficient for data freshness but revalidatePath
- * ensures Vercel's Edge Cache is cleared too.
+ * Key article list fetches (homepage, featured, breaking, top-stories) use
+ * cache: "no-store" so they always hit the API when the page renders — meaning
+ * revalidatePath alone is sufficient: once the page is marked stale here, the
+ * next render automatically fetches fresh data.
  */
 export async function revalidateAfterPublish({
   articleSlug,
@@ -20,22 +20,7 @@ export async function revalidateAfterPublish({
   categorySlug?: string | null;
   sectionSlug?: string | null;
 }) {
-  // ── Tag-based invalidation (Data Cache) ─────────────────────────────────────
-  // "articles" tag is shared by all article-related fetches — busts list +
-  // detail + category + section endpoints in one call.
-  // Next.js 16: revalidateTag requires a second profile argument.
-  // { expire: 0 } means "expire immediately" — equivalent to unconditional purge.
-  const now = { expire: 0 };
-  revalidateTag("articles", now);
-  revalidateTag("featured", now);
-  revalidateTag("top-stories", now);
-  revalidateTag("breaking", now);
-
-  if (articleSlug) revalidateTag(`article-${articleSlug}`, now);
-  if (categorySlug) revalidateTag(`category-${categorySlug}`, now);
-  if (sectionSlug) revalidateTag(`section-${sectionSlug}`, now);
-
-  // ── Path-based invalidation (Full Route Cache + Vercel Edge Cache) ──────────
+  // Homepage — always flush (covers hero, top-stories, latest grid)
   revalidatePath("/");
   revalidatePath("/", "layout");
 
@@ -43,5 +28,6 @@ export async function revalidateAfterPublish({
   if (categorySlug) revalidatePath(`/categories/${categorySlug}`);
   if (sectionSlug) revalidatePath(`/sections/${sectionSlug}`);
 
+  // Search results pick up newly published articles
   revalidatePath("/search");
 }
