@@ -18,7 +18,7 @@ export function HomeNewsGrid({
   articles,
   title = "Latest News",
 }: HomeNewsGridProps) {
-  const items = articles.slice(0, 9);
+  const items = articles.slice(0, 6);
   if (items.length === 0) return null;
 
   return (

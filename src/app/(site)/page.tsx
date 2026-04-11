@@ -122,8 +122,8 @@ export default async function HomePage() {
     if (s.article) seen.add(s.article.slug);
   }
 
-  // 3. News grid — latest articles (up to 9, after dedup)
-  const gridArticles = pick(feed.latest, 9);
+  // 3. News grid — latest articles (up to 6, after dedup)
+  const gridArticles = pick(feed.latest, 6);
 
   // 4. Category sections — deduplicated AFTER lead/secondaries/grid are registered
   //    Runs in declaration order so Politics gets first pick, then Business, etc.
