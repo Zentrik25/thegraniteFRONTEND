@@ -23,14 +23,17 @@ export async function revalidateAfterPublish({
   // ── Tag-based invalidation (Data Cache) ─────────────────────────────────────
   // "articles" tag is shared by all article-related fetches — busts list +
   // detail + category + section endpoints in one call.
-  revalidateTag("articles");
-  revalidateTag("featured");
-  revalidateTag("top-stories");
-  revalidateTag("breaking");
+  // Next.js 16: revalidateTag requires a second profile argument.
+  // { expire: 0 } means "expire immediately" — equivalent to unconditional purge.
+  const now = { expire: 0 };
+  revalidateTag("articles", now);
+  revalidateTag("featured", now);
+  revalidateTag("top-stories", now);
+  revalidateTag("breaking", now);
 
-  if (articleSlug) revalidateTag(`article-${articleSlug}`);
-  if (categorySlug) revalidateTag(`category-${categorySlug}`);
-  if (sectionSlug) revalidateTag(`section-${sectionSlug}`);
+  if (articleSlug) revalidateTag(`article-${articleSlug}`, now);
+  if (categorySlug) revalidateTag(`category-${categorySlug}`, now);
+  if (sectionSlug) revalidateTag(`section-${sectionSlug}`, now);
 
   // ── Path-based invalidation (Full Route Cache + Vercel Edge Cache) ──────────
   revalidatePath("/");

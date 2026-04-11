@@ -51,19 +51,21 @@ export async function POST(request: NextRequest) {
 
   // ── Tag-based invalidation (Data Cache) ──────────────────────────────────
   // Bust all article-related fetch caches regardless of which page is affected.
-  revalidateTag("articles");
-  revalidateTag("featured");
-  revalidateTag("top-stories");
-  revalidateTag("breaking");
+  // Next.js 16: revalidateTag requires a second profile argument.
+  const now = { expire: 0 };
+  revalidateTag("articles", now);
+  revalidateTag("featured", now);
+  revalidateTag("top-stories", now);
+  revalidateTag("breaking", now);
 
   if (typeof article_slug === "string" && article_slug) {
-    revalidateTag(`article-${article_slug}`);
+    revalidateTag(`article-${article_slug}`, now);
   }
   if (typeof category_slug === "string" && category_slug) {
-    revalidateTag(`category-${category_slug}`);
+    revalidateTag(`category-${category_slug}`, now);
   }
   if (typeof section_slug === "string" && section_slug) {
-    revalidateTag(`section-${section_slug}`);
+    revalidateTag(`section-${section_slug}`, now);
   }
 
   // ── Path-based invalidation (Full Route Cache + Vercel Edge Cache) ────────
