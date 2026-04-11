@@ -18,7 +18,7 @@ import { HomeOpinionRow } from "@/components/site/HomeOpinionRow";
 import { HomeNewsletterBand } from "@/components/site/HomeNewsletterBand";
 import { HomeMobileNewsletterStrip } from "@/components/site/HomeMobileNewsletterStrip";
 
-export const revalidate = 60;
+export const revalidate = 30;
 
 const TITLE = "The Granite Post — Zimbabwe's Journal of Record";
 const DESCRIPTION =
@@ -61,19 +61,19 @@ export default async function HomePage() {
     getHomepageFeed(),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/politics/?page_size=3",
-      { next: { revalidate: 120 } },
+      { next: { revalidate: 30 } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/business/?page_size=3",
-      { next: { revalidate: 120 } },
+      { next: { revalidate: 30 } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/technology/?page_size=3",
-      { next: { revalidate: 120 } },
+      { next: { revalidate: 30 } },
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/crime-courts/?page_size=3",
-      { next: { revalidate: 120 } },
+      { next: { revalidate: 30 } },
     ),
   ]);
 

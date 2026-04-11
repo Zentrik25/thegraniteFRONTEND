@@ -6,6 +6,7 @@ import type { ArticleDetail, CategorySummary, TagSummary, StaffMember } from "@/
 import MediaPicker from "@/components/cms/MediaPicker";
 import { RichTextEditor } from "@/components/staff/RichTextEditor";
 import { FormSection } from "@/components/staff/FormSection";
+import { revalidateAfterPublish } from "@/lib/actions/revalidate";
 
 interface ArticleEditorProps {
   article?: ArticleDetail;
@@ -188,6 +189,8 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
   const [saved, setSaved] = useState(false);
   // Synchronous guard — prevents double-submit when React state update is not yet flushed
   const savingRef = useRef(false);
+  // Track the current slug used in the PATCH URL — updates when backend confirms a slug change
+  const currentSlugRef = useRef<string>(article?.slug ?? "");
 
   function set<K extends keyof Fields>(key: K, value: Fields[K]) {
     setFields((p) => ({ ...p, [key]: value }));
@@ -246,7 +249,9 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
     setSaving(true);
     setSaved(false);
 
-    const url    = isEdit ? `/api/staff/articles/${article!.slug}/` : "/api/staff/articles/";
+    // Use the ref so PATCH always targets the slug the backend currently knows about,
+    // even if the user has already changed the slug field locally.
+    const url    = isEdit ? `/api/staff/articles/${currentSlugRef.current}/` : "/api/staff/articles/";
     const method = isEdit ? "PATCH" : "POST";
 
     try {
@@ -259,29 +264,35 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
 
       if (!res.ok) { setError(flattenErrors(data)); return; }
 
-      // Sync local status to what was actually saved
+      // Sync status AND slug from backend response so the form always reflects
+      // what the backend actually saved (backend may normalize or reject the slug).
       const savedStatus = (overrideStatus ?? fields.status).toLowerCase();
-      setFields((p) => ({ ...p, status: savedStatus }));
+      const backendSlug: string | undefined = typeof data.slug === "string" ? data.slug : undefined;
+
+      setFields((p) => ({
+        ...p,
+        status: savedStatus,
+        ...(backendSlug ? { slug: backendSlug } : {}),
+      }));
       setSaved(true);
+
+      // Keep the ref in sync so subsequent saves use the correct URL.
+      if (backendSlug) currentSlugRef.current = backendSlug;
 
       // Purge ISR cache whenever article is published or unpublished so the
       // homepage and section pages reflect the change immediately.
       if (savedStatus === "published" || overrideStatus === "draft" || overrideStatus === "archived") {
-        const slug = data.slug ?? article?.slug;
         const cat = categories.find((c) => String(c.id) === fields.category);
-        fetch("/api/revalidate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            article_slug: slug,
-            category_slug: cat?.slug,
-          }),
+        revalidateAfterPublish({
+          articleSlug: backendSlug ?? currentSlugRef.current ?? null,
+          categorySlug: cat?.slug ?? null,
         }).catch(() => {});
       }
 
-      // Navigate to the edit URL when slug changes (new article, or slug was edited)
-      if (data.slug && data.slug !== article?.slug) {
-        router.replace(`/cms/articles/${data.slug}/edit`);
+      // Navigate to the new edit URL when slug changes (new article, or backend confirmed slug edit).
+      const prevSlug = article?.slug ?? "";
+      if (backendSlug && backendSlug !== prevSlug) {
+        router.replace(`/cms/articles/${backendSlug}/edit`);
       }
     } catch {
       setError("Network error. Please try again.");

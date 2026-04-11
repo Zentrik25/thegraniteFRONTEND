@@ -19,18 +19,18 @@ import type {
 export async function getHomepageFeed() {
   const [latest, topStories, featured, breaking, sections, trending] = await Promise.all([
     safeApiFetch<ApiListResponse<ArticleSummary>>("/api/v1/articles/", {
-      next: { revalidate: 60 },
+      next: { revalidate: 30 },
     }),
     safeApiFetch<TopStorySlot[]>("/api/v1/articles/top-stories/", {
-      next: { revalidate: 30 },
+      next: { revalidate: 20 },
     }),
     safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
       "/api/v1/articles/featured/",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 20 } },
     ),
     safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
       "/api/v1/articles/breaking/",
-      { next: { revalidate: 30 } },
+      { next: { revalidate: 20 } },
     ),
     safeApiFetch<{ status: string; count: number; results: SectionSummary[] }>(
       "/api/v1/sections/?primary=true",
