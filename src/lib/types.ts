@@ -76,6 +76,7 @@ export type SectionArticlesResponse = ApiListResponse<ArticleSummary> & {
 
 export type SectionWritePayload = {
   name: string;
+  slug?: string;
   description?: string;
   og_image_url?: string;
   display_order?: number;

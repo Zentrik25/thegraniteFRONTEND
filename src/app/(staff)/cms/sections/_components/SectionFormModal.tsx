@@ -31,6 +31,7 @@ interface ArticleOption {
 
 const emptyFields = {
   name: "",
+  slug: "",
   description: "",
   og_image_url: "",
   display_order: "0",
@@ -55,6 +56,7 @@ export default function SectionFormModal({
   const [fields, setFields] = useState(() => ({
     ...emptyFields,
     name: section?.name ?? "",
+    slug: "",
     description: section?.description ?? "",
     og_image_url: section?.og_image_url ?? "",
     display_order: String(section?.display_order ?? 0),
@@ -178,12 +180,23 @@ export default function SectionFormModal({
       return;
     }
 
+    const knownFields = new Set<string>(["name", "slug", "description", "og_image_url", "display_order", "is_active", "is_primary", "featured_article", "form"]);
     const nextErrors: FieldErrors = {};
+    const overflow: string[] = [];
+
     for (const [key, value] of Object.entries(payload as Record<string, unknown>)) {
-      const message = Array.isArray(value) ? value[0] : value;
-      if (typeof message === "string") {
+      const message = Array.isArray(value) ? String(value[0]) : typeof value === "string" ? value : null;
+      if (!message) continue;
+      if (knownFields.has(key)) {
         nextErrors[key as keyof FieldErrors] = message;
+      } else {
+        // Unknown field error (e.g. slug conflict) — surface in the form banner
+        overflow.push(`${key}: ${message}`);
       }
+    }
+
+    if (overflow.length > 0) {
+      nextErrors.form = (nextErrors.form ? nextErrors.form + " " : "") + overflow.join(" | ");
     }
 
     if (Object.keys(nextErrors).length === 0) {
@@ -206,6 +219,11 @@ export default function SectionFormModal({
       is_active: fields.is_active,
       is_primary: fields.is_primary,
     };
+
+    // Only send slug on create, and only when the user has typed one
+    if (!isEdit && fields.slug.trim()) {
+      payload.slug = fields.slug.trim();
+    }
 
     if (!isEdit || featuredDirty) {
       payload.featured_article = featuredArticle ? Number(featuredArticle.id) : null;
@@ -273,14 +291,26 @@ export default function SectionFormModal({
 
           {isEdit ? (
             <div style={{ gridColumn: "1 / -1" }}>
-              <Field
-                label="Slug"
-                hint="Slug is auto-generated and cannot be changed"
-              >
+              <Field label="Slug" hint="Slug is auto-generated and cannot be changed">
                 <InlineBadge tone="muted">{section?.slug}</InlineBadge>
               </Field>
             </div>
-          ) : null}
+          ) : (
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Field
+                label="Slug (optional)"
+                hint="Leave blank to auto-generate from name. Set manually if the auto-generated slug is already taken (e.g. from a previously deleted section)."
+                error={fieldErrors.slug}
+              >
+                <input
+                  style={inputStyle}
+                  value={fields.slug}
+                  onChange={(e) => setField("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))}
+                  placeholder="e.g. opinion"
+                />
+              </Field>
+            </div>
+          )}
 
           <div style={{ gridColumn: "1 / -1" }}>
             <Field label="Description" error={fieldErrors.description}>
