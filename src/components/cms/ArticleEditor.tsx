@@ -264,6 +264,21 @@ export default function ArticleEditor({ article, categories, tags, authors }: Ar
       setFields((p) => ({ ...p, status: savedStatus }));
       setSaved(true);
 
+      // Purge ISR cache whenever article is published or unpublished so the
+      // homepage and section pages reflect the change immediately.
+      if (savedStatus === "published" || overrideStatus === "draft" || overrideStatus === "archived") {
+        const slug = data.slug ?? article?.slug;
+        const cat = categories.find((c) => String(c.id) === fields.category);
+        fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            article_slug: slug,
+            category_slug: cat?.slug,
+          }),
+        }).catch(() => {});
+      }
+
       // Navigate to the edit URL when slug changes (new article, or slug was edited)
       if (data.slug && data.slug !== article?.slug) {
         router.replace(`/cms/articles/${data.slug}/edit`);
