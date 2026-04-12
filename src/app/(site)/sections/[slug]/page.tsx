@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { EmptyState } from "@/components/site/EmptyState";
-import { safeApiFetch, unwrapList } from "@/lib/api/fetcher";
+import { safeApiFetch } from "@/lib/api/fetcher";
 import type { ApiListResponse, ArticleSummary, SectionDetail } from "@/lib/types";
 import { SITE_URL } from "@/lib/env";
 import { mediaProxyPath } from "@/lib/utils/media";
 import { formatDistanceToNow } from "date-fns";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -67,42 +67,62 @@ export default async function SectionPage({ params, searchParams }: Props) {
   const page = Math.max(1, Number(pageParam ?? 1));
   const pageSize = 20;
 
-  // Fetch section info and published articles in parallel.
-  // Articles are fetched directly with section + status filters so only
-  // published articles appear — preventing 401s from draft articles slipping
-  // through the section's article list.
-  const [sectionRes, articlesRes] = await Promise.all([
-    safeApiFetch<SectionDetail>(`/api/v1/sections/${slug}/`, {
-      next: { revalidate: 30 },
-    }),
-    safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
-      `/api/v1/articles/?section=${slug}&status=published&page=${page}&page_size=${pageSize}&ordering=-published_at`,
-      { next: { revalidate: 30 } },
-    ),
-  ]);
+  // Fetch section info first to get the list of categories.
+  const sectionRes = await safeApiFetch<SectionDetail>(`/api/v1/sections/${slug}/`, {
+    cache: "no-store",
+  });
 
   if (!sectionRes.data) notFound();
 
   const section = sectionRes.data;
 
-  // Prefer the paginated published-only list; fall back to SectionDetail.articles
-  // filtered to published status if the query param isn't supported by the backend.
+  // Fetch articles per category in the section — this uses the same endpoint
+  // that works when clicking a category directly. Merge, deduplicate, and sort.
   let articles: ArticleSummary[] = [];
-  let totalPages = 1;
   let totalCount = 0;
+  let totalPages = 1;
 
-  if (articlesRes.data) {
-    const raw = articlesRes.data;
-    if (Array.isArray(raw)) {
-      articles = raw.filter((a) => !a.status || a.status === "published");
-    } else {
-      articles = (raw.results ?? []).filter((a) => !a.status || a.status === "published");
-      totalCount = raw.count ?? 0;
-      totalPages = Math.ceil(totalCount / pageSize) || 1;
+  if (section.categories.length > 0) {
+    const categoryResults = await Promise.all(
+      section.categories.map((cat) =>
+        safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
+          `/api/v1/articles/?category=${cat.slug}&status=published&page=${page}&page_size=${pageSize}&ordering=-published_at`,
+          { cache: "no-store" },
+        )
+      )
+    );
+
+    const seen = new Set<string>();
+    const merged: ArticleSummary[] = [];
+
+    for (const res of categoryResults) {
+      if (!res.data) continue;
+      const list = Array.isArray(res.data) ? res.data : (res.data.results ?? []);
+      for (const a of list) {
+        if (!seen.has(a.slug)) {
+          seen.add(a.slug);
+          merged.push(a);
+        }
+      }
+      // Sum up counts for display
+      if (!Array.isArray(res.data) && res.data.count) {
+        totalCount += res.data.count;
+      }
     }
+
+    // Sort merged list by published_at descending
+    merged.sort((a, b) => {
+      const da = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const db = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return db - da;
+    });
+
+    articles = merged;
+    totalPages = Math.ceil(totalCount / pageSize) || 1;
   } else {
-    // Fallback: use articles embedded in section detail, published only
+    // No categories on section — fall back to articles embedded in the section detail
     articles = section.articles.filter((a) => !a.status || a.status === "published");
+    totalCount = articles.length;
   }
 
   const hasCategories = section.categories.length > 0;

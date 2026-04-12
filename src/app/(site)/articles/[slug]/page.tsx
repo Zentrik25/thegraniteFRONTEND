@@ -252,11 +252,6 @@ export default async function ArticlePage({ params }: Props) {
 
             {/* Article header */}
             <header className="article-detail-header">
-              {article.category && (
-                <span className="article-detail-category-kicker">
-                  {article.category.name}
-                </span>
-              )}
               {article.is_breaking && (
                 <p className="article-detail-kicker">Breaking</p>
               )}
@@ -291,6 +286,7 @@ export default async function ArticlePage({ params }: Props) {
                 >
                   {article.author_name && (
                     <span className="article-detail-author">
+                      By{" "}
                       {article.author_slug ? (
                         <Link href={`/authors/${article.author_slug}`}>
                           {article.author_name}
