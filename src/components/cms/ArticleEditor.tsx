@@ -266,8 +266,8 @@ export default function ArticleEditor({
   const isEdit = Boolean(article?.id);
 
   const [fields, setFields] = useState<Fields>(() => initFields(article));
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(
-    () => new Set((article?.tags ?? []).map((t) => String(t.id))),
+  const [tagInput, setTagInput] = useState<string>(
+    () => (article?.tags ?? []).map((t) => t.name).join(", "),
   );
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -337,16 +337,33 @@ export default function ArticleEditor({
     setSaved(false);
   }, []);
 
-  function toggleTag(id: string) {
-    setSelectedTags((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-    setSaved(false);
+  /** Resolve a list of tag names to IDs, creating any that don't exist yet. */
+  async function resolveTagIds(names: string[]): Promise<number[]> {
+    const ids: number[] = [];
+    for (const name of names) {
+      const existing = tags.find((t) => t.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        ids.push(Number(existing.id));
+      } else {
+        // Create the tag on the fly
+        const res = await fetch("/api/staff/tags/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (res.ok) {
+          const created = await res.json() as { id: number; name: string };
+          // Add to local tags list so subsequent saves don't re-create
+          tags.push({ id: created.id, name: created.name, slug: "" });
+          ids.push(created.id);
+        }
+        // If creation fails, skip rather than blocking the save
+      }
+    }
+    return ids;
   }
 
-  function buildPayload(overrideStatus?: string) {
+  function buildPayload(overrideStatus?: string, resolvedTagIds?: number[]) {
     const status = normalizeArticleStatus(overrideStatus ?? fields.status);
     // On create (POST): omit slug when empty — let the backend auto-generate a unique one.
     // On update (PATCH): always send slug so the user can intentionally rename it;
@@ -362,7 +379,7 @@ export default function ArticleEditor({
       status,
       author:         fields.author ? Number(fields.author) : null,
       category:       fields.category ? Number(fields.category) : null,
-      tags:           Array.from(selectedTags).map(Number),
+      tags:           resolvedTagIds ?? [],
       is_breaking:    fields.is_breaking,
       is_top_story:   fields.is_top_story,
       is_featured:    fields.is_featured,
@@ -403,6 +420,13 @@ export default function ArticleEditor({
     const method = isEdit ? "PATCH" : "POST";
 
     try {
+      // ── Resolve tag names → IDs (create new tags on the fly) ─────────────
+      const tagNames = tagInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const resolvedTagIds = await resolveTagIds(tagNames);
+
       // ── Evict conflicting top-story slot ───────────────────────────────────
       // The backend enforces a unique constraint on top_story_rank. If the
       // selected slot is occupied by a *different* article, patch it out first.
@@ -444,7 +468,7 @@ export default function ArticleEditor({
       const res  = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildPayload(overrideStatus)),
+        body: JSON.stringify(buildPayload(overrideStatus, resolvedTagIds)),
       });
       const data = (await res.json()) as Partial<ArticleDetail> & {
         section_slug?: string | null;
@@ -700,42 +724,20 @@ export default function ArticleEditor({
           </FormSection>
 
           {/* Tags */}
-          {tags.length > 0 && (
-            <FormSection title="Tags">
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", maxHeight: "160px", overflowY: "auto" }}>
-                {tags.map((t) => {
-                  const on = selectedTags.has(String(t.id));
-                  return (
-                    <label
-                      key={t.id}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.25rem",
-                        padding: "0.2rem 0.55rem",
-                        borderRadius: "999px",
-                        border: `1px solid ${on ? "#981b1e" : "#ddd"}`,
-                        background: on ? "#fff0f0" : "#fafafa",
-                        fontSize: "0.78rem",
-                        cursor: "pointer",
-                        userSelect: "none",
-                        color: on ? "#981b1e" : "#555",
-                        fontWeight: on ? 600 : 400,
-                      }}
-                    >
-                      <input type="checkbox" checked={on} onChange={() => toggleTag(String(t.id))} style={{ display: "none" }} />
-                      {t.name}
-                    </label>
-                  );
-                })}
-              </div>
-              {selectedTags.size > 0 && (
-                <div style={{ ...hintS, marginTop: "0.4rem" }}>
-                  {selectedTags.size} tag{selectedTags.size !== 1 ? "s" : ""} selected
-                </div>
-              )}
-            </FormSection>
-          )}
+          <FormSection title="Tags">
+            <Field
+              label="Tags"
+              hint="Comma-separated. New tags are created automatically on save."
+            >
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => { setTagInput(e.target.value); setSaved(false); }}
+                style={inputS}
+                placeholder="e.g. politics, elections, harare"
+              />
+            </Field>
+          </FormSection>
 
           {/* SEO & Open Graph — in main column for space */}
           <FormSection title="SEO & Open Graph">

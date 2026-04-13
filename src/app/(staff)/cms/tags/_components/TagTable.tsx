@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import CmsToast from "@/components/cms/CmsToast";
 import { InlineBadge, primaryButtonStyle } from "@/components/cms/taxonomy-shared";
 import type { TagSummary } from "@/lib/types";
@@ -20,6 +20,10 @@ export default function TagTable({ initialTags }: TagTableProps) {
   const [deletingTag, setDeletingTag] = useState<TagSummary | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [bulkInput, setBulkInput] = useState("");
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const bulkInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTags(initialTags);
@@ -48,6 +52,62 @@ export default function TagTable({ initialTags }: TagTableProps) {
     setToast(message);
   }
 
+  async function handleBulkCreate(e: FormEvent) {
+    e.preventDefault();
+    const names = bulkInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (names.length === 0) return;
+
+    setBulkSaving(true);
+    setBulkError(null);
+
+    const created: TagSummary[] = [];
+    const skipped: string[] = [];
+    const failed: string[] = [];
+
+    await Promise.all(
+      names.map(async (name) => {
+        try {
+          const res = await fetch("/api/staff/tags/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+          });
+          const body = (await res.json().catch(() => ({}))) as TagSummary & { detail?: string };
+          if (res.ok) {
+            created.push({ ...body, article_count: 0 });
+          } else if (res.status === 400) {
+            // Likely a duplicate — treat as skipped
+            skipped.push(name);
+          } else {
+            failed.push(name);
+          }
+        } catch {
+          failed.push(name);
+        }
+      }),
+    );
+
+    if (created.length > 0) {
+      setTags((prev) => sortTags([...prev, ...created]));
+    }
+
+    setBulkSaving(false);
+    setBulkInput("");
+    bulkInputRef.current?.focus();
+
+    const parts: string[] = [];
+    if (created.length) parts.push(`${created.length} tag${created.length !== 1 ? "s" : ""} created`);
+    if (skipped.length) parts.push(`${skipped.length} already existed`);
+    if (failed.length) {
+      setBulkError(`Failed to create: ${failed.join(", ")}`);
+    } else {
+      setToast(parts.join(", ") + ".");
+    }
+  }
+
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -59,27 +119,46 @@ export default function TagTable({ initialTags }: TagTableProps) {
             padding: "1.1rem 1.15rem",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "1rem",
-              alignItems: "center",
-              marginBottom: "0.9rem",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <h2 style={{ margin: 0, fontSize: "0.88rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "#77584b" }}>
-                Tag Cloud
-              </h2>
-              <p style={{ margin: "0.35rem 0 0", color: "#8c6b5d", fontSize: "0.82rem" }}>
-                Click any tag to inspect its article feed.
-              </p>
-            </div>
-            <button type="button" onClick={() => setShowCreate(true)} style={primaryButtonStyle}>
-              Create tag
-            </button>
+          <div style={{ marginBottom: "0.9rem" }}>
+            <h2 style={{ margin: 0, fontSize: "0.88rem", fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "#77584b" }}>
+              Tag Cloud
+            </h2>
+            <p style={{ margin: "0.35rem 0 0.75rem", color: "#8c6b5d", fontSize: "0.82rem" }}>
+              Click any tag to inspect its article feed.
+            </p>
+            {/* Bulk create */}
+            <form onSubmit={handleBulkCreate} style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                ref={bulkInputRef}
+                type="text"
+                value={bulkInput}
+                onChange={(e) => { setBulkInput(e.target.value); setBulkError(null); }}
+                placeholder="e.g. elections, harare, economy"
+                style={{
+                  flex: "1 1 200px",
+                  padding: "0.4rem 0.65rem",
+                  border: "1px solid #d4b9ad",
+                  borderRadius: "6px",
+                  fontSize: "0.84rem",
+                  background: "#fff",
+                  color: "#222",
+                  minWidth: 0,
+                }}
+              />
+              <button
+                type="submit"
+                disabled={bulkSaving || bulkInput.trim() === ""}
+                style={{ ...primaryButtonStyle, opacity: bulkSaving ? 0.7 : 1, whiteSpace: "nowrap" }}
+              >
+                {bulkSaving ? "Adding…" : "Add tags"}
+              </button>
+            </form>
+            {bulkError && (
+              <p style={{ margin: "0.4rem 0 0", fontSize: "0.8rem", color: "#8e1e20" }}>{bulkError}</p>
+            )}
+            <p style={{ margin: "0.3rem 0 0", fontSize: "0.73rem", color: "#9b7260" }}>
+              Separate multiple tags with commas. Duplicates are skipped automatically.
+            </p>
           </div>
           <TagCloud tags={tags} />
         </section>
