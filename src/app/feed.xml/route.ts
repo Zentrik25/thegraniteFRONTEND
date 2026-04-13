@@ -47,8 +47,8 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
 
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/articles/?page_size=20&ordering=-published_at`,
-      { next: { revalidate: 900 } } // 15-minute server cache
+      `${API_BASE_URL}/api/v1/articles/?page_size=50&ordering=-published_at`,
+      { cache: "no-store" }
     );
     if (res.ok) {
       const body: ApiListResponse<ArticleSummary> | ArticleSummary[] = await res.json();
@@ -90,7 +90,7 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
       }
 
       if (a.image_url) {
-        lines.push(`      <media:content url="${esc(a.image_url)}" medium="image" />`);
+        lines.push(`      <media:content url="${esc(a.image_url)}" medium="image" width="1200" height="630" />`);
       }
 
       lines.push(`    </item>`);

@@ -59,6 +59,9 @@ export async function POST(request: NextRequest) {
 
   purge("/");
   purge("/search");
+  purge("/feed.xml");
+  purge("/sitemap.xml");
+  purge("/news-sitemap.xml");
 
   if (typeof article_slug === "string" && article_slug) {
     purge(`/articles/${article_slug}`);

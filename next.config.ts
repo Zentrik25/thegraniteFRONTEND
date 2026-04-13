@@ -47,6 +47,15 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Feed alias redirects — most readers use /feed or /rss by default
+  async redirects() {
+    return [
+      { source: "/feed",    destination: "/feed.xml", permanent: true },
+      { source: "/rss",     destination: "/feed.xml", permanent: true },
+      { source: "/rss.xml", destination: "/feed.xml", permanent: true },
+    ];
+  },
+
   // Silence the noisy x-powered-by header
   poweredByHeader: false,
 };

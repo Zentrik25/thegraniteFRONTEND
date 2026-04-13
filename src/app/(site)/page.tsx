@@ -26,7 +26,7 @@ const DESCRIPTION =
 const OG_IMAGE = "https://www.thegranite.co.zw/og-default.jpg";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "https://www.thegranite.co.zw" },
   openGraph: {

@@ -188,6 +188,15 @@ export default async function ArticlePage({ params }: Props) {
                 },
               },
               url: articleUrl,
+              mainEntityOfPage: {
+                "@type": "WebPage",
+                "@id": articleUrl,
+              },
+              ...(article.category?.name && { articleSection: article.category.name }),
+              ...(article.tags?.length && {
+                keywords: article.tags.map((t) => t.name).join(", "),
+              }),
+              isAccessibleForFree: !article.is_premium,
             },
             {
               "@type": "BreadcrumbList",
