@@ -41,12 +41,18 @@ function SlotGrid({
             key={rank}
             type="button"
             onClick={() => onSelect(isSelected ? "" : String(rank))}
-            title={article ? article.title : `Slot ${rank} — empty`}
+            title={
+              isTaken && !isSelected
+                ? `${article!.title} — click to replace`
+                : article
+                ? article.title
+                : `Slot ${rank} — empty`
+            }
             style={{
               padding: "0.45rem 0.3rem",
               borderRadius: "6px",
-              border: `2px solid ${isSelected ? "#981b1e" : isMine ? "#2563eb" : isTaken ? "#e5a000" : "#d1d5db"}`,
-              background: isSelected ? "#981b1e" : isMine ? "#eff6ff" : isTaken ? "#fffbeb" : "#f9fafb",
+              border: `2px solid ${isSelected && isTaken ? "#c0392b" : isSelected ? "#981b1e" : isMine ? "#2563eb" : isTaken ? "#e5a000" : "#d1d5db"}`,
+              background: isSelected && isTaken ? "#c0392b" : isSelected ? "#981b1e" : isMine ? "#eff6ff" : isTaken ? "#fffbeb" : "#f9fafb",
               color: isSelected ? "#fff" : isMine ? "#1d4ed8" : isTaken ? "#92400e" : "#374151",
               fontWeight: 700,
               fontSize: "0.75rem",
@@ -66,7 +72,7 @@ function SlotGrid({
               maxWidth: "100%",
               opacity: 0.85,
             }}>
-              {isMine ? "this" : isTaken ? "taken" : "empty"}
+              {isMine ? "this" : isSelected && isTaken ? "replace" : isTaken ? "taken" : "empty"}
             </div>
           </button>
         );
@@ -397,6 +403,44 @@ export default function ArticleEditor({
     const method = isEdit ? "PATCH" : "POST";
 
     try {
+      // ── Evict conflicting top-story slot ───────────────────────────────────
+      // The backend enforces a unique constraint on top_story_rank. If the
+      // selected slot is occupied by a *different* article, patch it out first.
+      if (fields.is_top_story && fields.top_story_rank !== "") {
+        const rank = Number(fields.top_story_rank) || 1;
+        const occupant = topStorySlots.find((s) => s.rank === rank)?.article;
+        if (occupant && occupant.slug !== currentSlugRef.current) {
+          const evictRes = await fetch(`/api/staff/articles/${occupant.slug}/`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_top_story: false, top_story_rank: null }),
+          });
+          if (!evictRes.ok) {
+            const evictData = await evictRes.json().catch(() => ({}));
+            setError(`Could not clear slot ${rank}: ${flattenErrors(evictData)}`);
+            return;
+          }
+        }
+      }
+
+      // ── Evict conflicting featured slot ────────────────────────────────────
+      if (fields.is_featured && fields.featured_rank !== "") {
+        const rank = Number(fields.featured_rank) || 1;
+        const occupant = featuredSlots.find((s) => s.rank === rank)?.article;
+        if (occupant && occupant.slug !== currentSlugRef.current) {
+          const evictRes = await fetch(`/api/staff/articles/${occupant.slug}/`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_featured: false, featured_rank: null }),
+          });
+          if (!evictRes.ok) {
+            const evictData = await evictRes.json().catch(() => ({}));
+            setError(`Could not clear featured slot ${rank}: ${flattenErrors(evictData)}`);
+            return;
+          }
+        }
+      }
+
       const res  = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },

@@ -3117,7 +3117,7 @@ a, button {
 .gp-cat-section {
   background: #fff;
   border-top: 1px solid #d2d2d7;
-  padding: 2.5rem 0;
+  padding: 1.25rem 0;
 }
 
 /* Section head */
@@ -3233,17 +3233,37 @@ a, button {
 }
 .gp-cat-meta-sep { opacity: 0.5; }
 
-/* Small card stack */
+/* Small card stack — thumbnail row */
 .gp-cat-small-stack { display: flex; flex-direction: column; gap: 0; }
-.gp-cat-small-card { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 1rem; }
+.gp-cat-small-card {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding-bottom: 0.85rem;
+}
 .gp-cat-small-card--divider {
-  padding-top: 1rem;
+  padding-top: 0.85rem;
   border-top: 1px solid #d2d2d7;
 }
-.gp-cat-small-body { display: flex; flex-direction: column; gap: 0.25rem; }
+
+/* Thumbnail */
+.gp-cat-thumb-link { flex-shrink: 0; display: block; }
+.gp-cat-thumb {
+  position: relative;
+  width: 96px;
+  height: 64px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.gp-cat-thumb-ph {
+  background: #e8e8ed;
+}
+
+.gp-cat-small-body { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 0; }
 .gp-cat-small-headline {
   font-family: var(--gp-font-body);
-  font-size: 0.875rem;   /* 14px */
+  font-size: 0.8125rem;  /* 13px */
   font-weight: 600;
   line-height: 1.38;
   color: #1d1d1f;

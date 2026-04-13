@@ -67,7 +67,7 @@ export default async function SectionPage({ params, searchParams }: Props) {
   const page = Math.max(1, Number(pageParam ?? 1));
   const pageSize = 20;
 
-  // Fetch section info first to get the list of categories.
+  // Fetch section info first to get the section ID needed for article filtering.
   const sectionRes = await safeApiFetch<SectionDetail>(`/api/v1/sections/${slug}/`, {
     cache: "no-store",
   });
@@ -76,51 +76,32 @@ export default async function SectionPage({ params, searchParams }: Props) {
 
   const section = sectionRes.data;
 
-  // Fetch articles per category in the section — this uses the same endpoint
-  // that works when clicking a category directly. Merge, deduplicate, and sort.
+  // Filter articles by section ID — Django filters FKs by PK, so ?section=<id>
+  // returns only articles whose section FK matches this section.
+  const articlesRes = await safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
+    `/api/v1/articles/?section=${section.id}&status=published&page=${page}&page_size=${pageSize}&ordering=-published_at`,
+    { cache: "no-store" },
+  );
+
   let articles: ArticleSummary[] = [];
   let totalCount = 0;
   let totalPages = 1;
 
-  if (section.categories.length > 0) {
-    const categoryResults = await Promise.all(
-      section.categories.map((cat) =>
-        safeApiFetch<ApiListResponse<ArticleSummary> | ArticleSummary[]>(
-          `/api/v1/articles/?category=${cat.slug}&status=published&page=${page}&page_size=${pageSize}&ordering=-published_at`,
-          { cache: "no-store" },
-        )
-      )
-    );
-
-    const seen = new Set<string>();
-    const merged: ArticleSummary[] = [];
-
-    for (const res of categoryResults) {
-      if (!res.data) continue;
-      const list = Array.isArray(res.data) ? res.data : (res.data.results ?? []);
-      for (const a of list) {
-        if (!seen.has(a.slug)) {
-          seen.add(a.slug);
-          merged.push(a);
-        }
-      }
-      // Sum up counts for display
-      if (!Array.isArray(res.data) && res.data.count) {
-        totalCount += res.data.count;
-      }
+  if (articlesRes.data) {
+    const raw = articlesRes.data;
+    if (Array.isArray(raw)) {
+      articles = raw;
+      totalCount = raw.length;
+    } else {
+      articles = raw.results ?? [];
+      totalCount = raw.count ?? 0;
+      totalPages = Math.ceil(totalCount / pageSize) || 1;
     }
+  }
 
-    // Sort merged list by published_at descending
-    merged.sort((a, b) => {
-      const da = a.published_at ? new Date(a.published_at).getTime() : 0;
-      const db = b.published_at ? new Date(b.published_at).getTime() : 0;
-      return db - da;
-    });
-
-    articles = merged;
-    totalPages = Math.ceil(totalCount / pageSize) || 1;
-  } else {
-    // No categories on section — fall back to articles embedded in the section detail
+  // Fallback: if the section filter returned nothing, use the articles embedded
+  // in the SectionDetail response (backend always includes these).
+  if (articles.length === 0 && section.articles.length > 0) {
     articles = section.articles.filter((a) => !a.status || a.status === "published");
     totalCount = articles.length;
   }

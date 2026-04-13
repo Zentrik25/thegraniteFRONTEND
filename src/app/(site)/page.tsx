@@ -57,6 +57,7 @@ export default async function HomePage() {
     businessRes,
     technologyRes,
     crimeRes,
+    worldRes,
   ] = await Promise.all([
     getHomepageFeed(),
     safeApiFetch<CategoryDetailResponse>(
@@ -73,6 +74,10 @@ export default async function HomePage() {
     ),
     safeApiFetch<CategoryDetailResponse>(
       "/api/v1/categories/crime-courts/?page_size=3",
+      { cache: "no-store" },
+    ),
+    safeApiFetch<CategoryDetailResponse>(
+      "/api/v1/categories/world/?page_size=3",
       { cache: "no-store" },
     ),
   ]);
@@ -131,6 +136,7 @@ export default async function HomePage() {
   const businessArticles   = dedupePool(businessRes.data?.articles   ?? []);
   const technologyArticles = dedupePool(technologyRes.data?.articles ?? []);
   const crimeArticles      = dedupePool(crimeRes.data?.articles      ?? []);
+  const worldArticles      = dedupePool(worldRes.data?.articles      ?? []);
 
   // 5. Sections (deduplicated)
   const sectionDetails = feed.sectionDetails.map(dedupeSection);
@@ -254,6 +260,13 @@ export default async function HomePage() {
         title="Crime & Courts"
         slug="crime-courts"
         articles={crimeArticles}
+      />
+
+      {/* ── 8. World ── */}
+      <CategorySection
+        title="World"
+        slug="world"
+        articles={worldArticles}
       />
 
       {/* ── Mobile sidebar — Most Read, after categories ── */}

@@ -81,7 +81,7 @@ export function CategorySection({ title, slug, articles }: CategorySectionProps)
             </div>
           </article>
 
-          {/* Small cards (right) */}
+          {/* Small cards (right) — thumbnail row layout */}
           {smalls.length > 0 && (
             <div className="gp-cat-small-stack">
               {smalls.map((article, i) => (
@@ -89,26 +89,24 @@ export function CategorySection({ title, slug, articles }: CategorySectionProps)
                   key={article.slug}
                   className={`gp-cat-small-card${i > 0 ? " gp-cat-small-card--divider" : ""}`}
                 >
-                  <Link href={`/articles/${article.slug}`} className="gp-cat-img-link" tabIndex={-1} aria-hidden="true">
+                  {/* Small thumbnail */}
+                  <Link href={`/articles/${article.slug}`} className="gp-cat-thumb-link" tabIndex={-1} aria-hidden="true">
                     {article.image_url ? (
-                      <div className="gp-cat-img relative overflow-hidden">
+                      <div className="gp-cat-thumb relative overflow-hidden">
                         <Image
                           src={mediaProxyPath(article.image_url) ?? ""}
                           alt={article.image_alt || article.title}
                           fill
-                          sizes="(max-width: 960px) 100vw, 30vw"
+                          sizes="120px"
                           className="object-cover"
                         />
                       </div>
                     ) : (
-                      <div className="gp-cat-img-ph" aria-hidden="true" />
+                      <div className="gp-cat-thumb gp-cat-thumb-ph" aria-hidden="true" />
                     )}
                   </Link>
 
                   <div className="gp-cat-small-body">
-                    {article.category && (
-                      <span className="gp-cat-label-sm">{article.category.name}</span>
-                    )}
                     <h3 className="gp-cat-small-headline">
                       <Link href={`/articles/${article.slug}`}>{article.title}</Link>
                     </h3>

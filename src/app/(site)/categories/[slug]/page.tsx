@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
-import { ArticleCard } from "@/components/site/ArticleCard";
 import { EmptyState } from "@/components/site/EmptyState";
 import { Pagination } from "@/components/site/Pagination";
 import { getCategoryDetail } from "@/lib/api/articles";
 import { SITE_URL } from "@/lib/env";
+import { mediaProxyPath } from "@/lib/utils/media";
+import { formatDistanceToNow } from "date-fns";
 
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
+
+function timeAgo(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  try {
+    return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
+  } catch {
+    return "";
+  }
+}
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -84,11 +95,36 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         />
       ) : (
         <>
-          <div className="article-grid-3">
-            {articles.map((article) => (
-              <ArticleCard key={article.slug} article={article} />
-            ))}
-          </div>
+          <ol className="section-article-list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {articles.map((article) => {
+              const imgSrc = article.image_url ? mediaProxyPath(article.image_url) : null;
+              const ago = timeAgo(article.published_at);
+              return (
+                <li key={article.slug} className="section-article-row">
+                  <Link href={`/articles/${article.slug}`} className="section-article-link">
+                    <div className="section-article-thumb">
+                      {imgSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={imgSrc}
+                          alt={article.image_alt || article.title}
+                          className="section-article-img"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="section-article-img-ph" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div className="section-article-body">
+                      <h2 className="section-article-title">{article.title}</h2>
+                      {ago && <span className="section-article-time">{ago}</span>}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ol>
           <Pagination
             currentPage={current_page}
             totalPages={total_pages}
