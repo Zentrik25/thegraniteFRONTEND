@@ -5,6 +5,12 @@ import { useEffect, useRef } from "react";
 import { siteConfig } from "@/config/site";
 import type { AdZone } from "@/lib/types";
 
+declare global {
+  interface Window {
+    adsbygoogle: { push: (args: Record<string, unknown>) => void }[];
+  }
+}
+
 interface AdSlotProps {
   zone: AdZone | null | undefined;
   className?: string;
