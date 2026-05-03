@@ -26,24 +26,29 @@ export default function PrivacyPage() {
 
       <h2 style={H2_STYLE}>2. How We Use Your Data</h2>
       <p style={P_STYLE}>We use your data to: provide access to your account and subscription; send the newsletters you have requested; improve site performance and content; comply with legal obligations.</p>
-      <p style={P_STYLE}>We do not sell your personal data to third parties. We do not use your data for targeted advertising.</p>
+      <p style={P_STYLE}>We do not sell your personal data to third parties.</p>
 
-      <h2 style={H2_STYLE}>3. Data Sharing</h2>
+      <h2 style={H2_STYLE}>3. Advertising & Third-Party Cookies</h2>
+      <p style={P_STYLE}>We display advertisements on our website. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to our site and other websites. Google&apos;s use of advertising cookies enables it and its partners to serve ads based on your visit to our site and/or other sites on the internet.</p>
+      <p style={P_STYLE}>Users may opt out of personalised advertising by visiting <a href="https://adssettings.google.com" rel="noopener noreferrer" target="_blank" style={{ color: "#981b1e" }}>Google Ads Settings</a> or <a href="https://www.aboutads.info" rel="noopener noreferrer" target="_blank" style={{ color: "#981b1e" }}>www.aboutads.info</a>.</p>
+      <p style={P_STYLE}>For more details on cookies, see our <a href="/cookies" style={{ color: "#981b1e" }}>Cookie Policy</a>.</p>
+
+      <h2 style={H2_STYLE}>4. Data Sharing</h2>
       <p style={P_STYLE}>We share data only with service providers necessary to operate the site — including cloud hosting, email delivery and payment processing — all under data processing agreements that require them to protect your data.</p>
 
-      <h2 style={H2_STYLE}>4. Data Retention</h2>
+      <h2 style={H2_STYLE}>5. Data Retention</h2>
       <p style={P_STYLE}>We retain account data for as long as your account is active and for up to 24 months after deletion, to comply with legal obligations. Usage logs are retained for 12 months.</p>
 
-      <h2 style={H2_STYLE}>5. Your Rights</h2>
+      <h2 style={H2_STYLE}>6. Your Rights</h2>
       <p style={P_STYLE}>You have the right to access, correct or delete the personal data we hold about you. To exercise these rights, email <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a>. We will respond within 30 days.</p>
 
-      <h2 style={H2_STYLE}>6. Security</h2>
+      <h2 style={H2_STYLE}>7. Security</h2>
       <p style={P_STYLE}>We use industry-standard encryption (TLS) for data in transit and at rest. Access to personal data is restricted to authorised staff only.</p>
 
-      <h2 style={H2_STYLE}>7. Changes to This Policy</h2>
+      <h2 style={H2_STYLE}>8. Changes to This Policy</h2>
       <p style={P_STYLE}>We may update this policy periodically. Significant changes will be communicated by email to registered users. Continued use of the site after changes constitutes acceptance.</p>
 
-      <h2 style={H2_STYLE}>8. Contact</h2>
+      <h2 style={H2_STYLE}>9. Contact</h2>
       <p style={P_STYLE}>For privacy enquiries: <a href="mailto:legal@thegranite.co.zw" style={{ color: "#981b1e" }}>legal@thegranite.co.zw</a></p>
     </>
   );

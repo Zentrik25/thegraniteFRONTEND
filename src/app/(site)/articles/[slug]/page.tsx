@@ -27,7 +27,7 @@ function articleKey(article: {
   return null;
 }
 
-function dedupeArticles
+function dedupeArticles<
   T extends { id?: number | string | null; slug?: string | null }
 >(
   articles: T[] | null | undefined,
