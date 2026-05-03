@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 import { ArticleViewTracker } from "@/components/article-view-tracker";
 import { ArticleListSection } from "@/components/site/ArticleListSection";
@@ -9,13 +10,13 @@ import { NewsletterForm } from "@/components/newsletter-form";
 import BookmarkButton from "@/components/reader/BookmarkButton";
 import HistoryTracker from "@/components/reader/HistoryTracker";
 import { ShareRow } from "@/components/site/ShareRow";
+import { AdSlot } from "@/components/site/AdSlot";
 import { getArticleBySlug, getArticleComments } from "@/lib/api/articles";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/env";
 import { mediaProxyPath } from "@/lib/utils/media";
 
 export const revalidate = 60;
-
 
 function articleKey(article: {
   id?: number | string | null;
@@ -26,7 +27,7 @@ function articleKey(article: {
   return null;
 }
 
-function dedupeArticles<
+function dedupeArticles
   T extends { id?: number | string | null; slug?: string | null }
 >(
   articles: T[] | null | undefined,
@@ -42,12 +43,23 @@ function dedupeArticles<
     if (!key) continue;
     if (key === excludeKey) continue;
     if (seen.has(key)) continue;
-
     seen.add(key);
     result.push(article);
   }
 
   return result;
+}
+
+function resolveCanonical(
+  rawCanonical: string | null | undefined,
+  slug: string
+): string {
+  const isValid =
+    rawCanonical &&
+    !rawCanonical.match(/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i) &&
+    !rawCanonical.includes("/media/") &&
+    !rawCanonical.includes("api.");
+  return isValid ? rawCanonical : `${SITE_URL}/articles/${slug}`;
 }
 
 interface Props {
@@ -65,34 +77,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     article.og_description || article.seo_description || article.excerpt;
   const imageUrl =
     article.resolved_og_image || article.og_image_url || article.image_url;
+  const canonical = resolveCanonical(article.canonical_url, slug);
 
-  // Only accept a backend-supplied canonical if it looks like a real article URL.
-  // Guard against backend returning image_url in this field (known DB data issue).
-  const rawCanonical = article.canonical_url;
-  const isValidCanonical =
-    rawCanonical &&
-    !rawCanonical.match(/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i) &&
-    !rawCanonical.includes("/media/") &&
-    !rawCanonical.includes("api.");
-  const canonical = (isValidCanonical ? rawCanonical : null) ?? `${SITE_URL}/articles/${slug}`;
+  // news_keywords: category + up to 9 tags (max 10 per Google News spec)
+  const keywordParts: string[] = [];
+  if (article.category?.name) keywordParts.push(article.category.name);
+  if (article.tags?.length) {
+    keywordParts.push(...article.tags.slice(0, 9).map((t) => t.name));
+  }
 
   return {
     title,
     description,
     alternates: { canonical },
+    ...(keywordParts.length && {
+      other: { news_keywords: keywordParts.join(", ") },
+    }),
     openGraph: {
       title,
       description: description ?? undefined,
       type: "article",
       url: canonical,
-      images: imageUrl ? [{ url: imageUrl, width: 1200, height: 630 }] : [],
+      siteName: "The Granite Post",
+      locale: "en_ZW",
+      images: imageUrl
+        ? [{ url: imageUrl, width: 1200, height: 630, alt: title }]
+        : [],
       publishedTime: article.published_at ?? undefined,
       modifiedTime: article.updated_at ?? undefined,
-      authors: article.author_name ? [article.author_name] : [],
+      authors: article.author_slug
+        ? [`${SITE_URL}/authors/${article.author_slug}`]
+        : article.author_name
+        ? [article.author_name]
+        : [],
+      section: article.category?.name ?? undefined,
+      tags: article.tags?.map((t) => t.name) ?? [],
     },
     twitter: {
       card: "summary_large_image",
       site: "@GranitePost",
+      creator: "@GranitePost",
       title,
       description: description ?? undefined,
       images: imageUrl ? [imageUrl] : [],
@@ -115,37 +139,30 @@ export default async function ArticlePage({ params }: Props) {
     seen,
     currentArticleKey
   );
-
   const latestArticles = dedupeArticles(
     article?.latest_articles,
     seen,
     currentArticleKey
   );
-
   const moreFromAuthor = dedupeArticles(
     article?.more_from_author,
     seen,
     currentArticleKey
   );
 
-  // ── Structured data (@graph combines NewsArticle + BreadcrumbList) ──────────
+  // ── Structured data (@graph: NewsArticle + BreadcrumbList) ─────────────────
   const structuredData = article
     ? (() => {
-        const rawUrl = article.canonical_url;
-        const validUrl =
-          rawUrl &&
-          !rawUrl.match(/\.(jpe?g|png|gif|webp|avif|svg)(\?.*)?$/i) &&
-          !rawUrl.includes("/media/") &&
-          !rawUrl.includes("api.");
-        const articleUrl = (validUrl ? rawUrl : null) ?? `${SITE_URL}/articles/${slug}`;
+        const articleUrl = resolveCanonical(article.canonical_url, slug);
 
-        // Build breadcrumb: Home [> Category] > Article
         const crumbs: {
           "@type": "ListItem";
           position: number;
           name: string;
           item?: string;
-        }[] = [{ "@type": "ListItem", position: 1, name: "Home", item: SITE_URL }];
+        }[] = [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+        ];
 
         if (article.category) {
           crumbs.push({
@@ -169,15 +186,28 @@ export default async function ArticlePage({ params }: Props) {
             {
               "@type": "NewsArticle",
               headline: article.title,
-              description: article.excerpt,
+              description: article.excerpt ?? undefined,
               image: article.image_url ? [article.image_url] : [],
               datePublished: article.published_at,
               dateModified: article.updated_at || article.published_at,
               author: article.author_name
-                ? [{ "@type": "Person", name: article.author_name }]
+                ? [
+                    {
+                      "@type": "Person",
+                      name: article.author_name,
+                      ...(article.author_slug && {
+                        url: `${SITE_URL}/authors/${article.author_slug}`,
+                      }),
+                      worksFor: {
+                        "@type": "NewsMediaOrganization",
+                        name: "The Granite Post",
+                        url: SITE_URL,
+                      },
+                    },
+                  ]
                 : [],
               publisher: {
-                "@type": "Organization",
+                "@type": "NewsMediaOrganization",
                 name: "The Granite Post",
                 url: SITE_URL,
                 logo: {
@@ -192,11 +222,21 @@ export default async function ArticlePage({ params }: Props) {
                 "@type": "WebPage",
                 "@id": articleUrl,
               },
-              ...(article.category?.name && { articleSection: article.category.name }),
+              ...(article.category?.name && {
+                articleSection: article.category.name,
+              }),
               ...(article.tags?.length && {
                 keywords: article.tags.map((t) => t.name).join(", "),
               }),
               isAccessibleForFree: !article.is_premium,
+              inLanguage: "en",
+              copyrightHolder: {
+                "@type": "NewsMediaOrganization",
+                name: "The Granite Post",
+              },
+              copyrightYear: article.published_at
+                ? new Date(article.published_at).getFullYear()
+                : new Date().getFullYear(),
             },
             {
               "@type": "BreadcrumbList",
@@ -306,7 +346,10 @@ export default async function ArticlePage({ params }: Props) {
                     </span>
                   )}
                   {article.author_name && article.published_at && (
-                    <span className="article-detail-meta-sep" aria-hidden="true">
+                    <span
+                      className="article-detail-meta-sep"
+                      aria-hidden="true"
+                    >
                       ·
                     </span>
                   )}
@@ -317,7 +360,8 @@ export default async function ArticlePage({ params }: Props) {
                   )}
                   {article.updated_at &&
                     article.updated_at !== article.published_at &&
-                    article.updated_at.slice(0, 10) !== article.published_at?.slice(0, 10) && (
+                    article.updated_at.slice(0, 10) !==
+                      article.published_at?.slice(0, 10) && (
                       <>
                         <span
                           className="article-detail-meta-sep"
@@ -355,7 +399,10 @@ export default async function ArticlePage({ params }: Props) {
                       </span>
                     </>
                   )}
-                  <ArticleViewTracker slug={slug} initialCount={article.view_count} />
+                  <ArticleViewTracker
+                    slug={slug}
+                    initialCount={article.view_count}
+                  />
                 </div>
                 <BookmarkButton articleSlug={slug} compact />
               </div>
@@ -368,15 +415,18 @@ export default async function ArticlePage({ params }: Props) {
               />
             </header>
 
-            {/* Hero image */}
+            {/* Hero image — next/image for LCP optimisation */}
             {article.image_url && (
               <figure style={{ margin: "0 0 1.5rem" }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   className="article-hero-img"
                   src={mediaProxyPath(article.image_url) ?? ""}
                   alt={article.image_alt || article.title}
-                  fetchPriority="high"
+                  width={1200}
+                  height={675}
+                  priority={true}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                  style={{ width: "100%", height: "auto" }}
                 />
                 {(article.image_caption || article.image_credit) && (
                   <figcaption className="article-img-caption">
@@ -471,6 +521,9 @@ export default async function ArticlePage({ params }: Props) {
           {/* ── Sidebar ── */}
           <aside aria-label="Article sidebar">
             <NewsletterForm source={`article-${slug}`} />
+            <div style={{ marginTop: "1.5rem" }}>
+              <AdSlot zone={null} />
+            </div>
           </aside>
         </div>
       )}

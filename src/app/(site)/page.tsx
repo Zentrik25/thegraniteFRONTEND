@@ -17,6 +17,7 @@ import { HomeAfricaBand } from "@/components/site/HomeAfricaBand";
 import { HomeOpinionRow } from "@/components/site/HomeOpinionRow";
 import { HomeNewsletterBand } from "@/components/site/HomeNewsletterBand";
 import { HomeMobileNewsletterStrip } from "@/components/site/HomeMobileNewsletterStrip";
+import { AdSlot } from "@/components/site/AdSlot";
 
 export const revalidate = 30;
 
@@ -232,6 +233,16 @@ export default async function HomePage() {
       {/* ── 3. Latest news grid ── */}
       <div className="gp-container">
         <HomeNewsGrid articles={gridArticles} />
+      </div>
+
+      {/* ── 3b. Ad slot ── */}
+      <div className="gp-container" style={{ marginBottom: "2rem" }}>
+        <AdSlot zone={null} className="gp-ad-leaderboard" />
+      </div>
+
+      {/* ── Ad slot ── */}
+      <div className="gp-container" style={{ marginBottom: "2rem" }}>
+        <AdSlot zone={null} className="gp-ad-leaderboard" />
       </div>
 
       {/* ── 4. Politics ── */}
