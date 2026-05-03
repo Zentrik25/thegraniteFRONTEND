@@ -7,7 +7,7 @@ import type { AdZone } from "@/lib/types";
 
 declare global {
   interface Window {
-    adsbygoogle: { push: (args: Record<string, unknown>) => void }[];
+    adsbygoogle: Record<string, unknown>[];
   }
 }
 
