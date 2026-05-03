@@ -7,6 +7,7 @@ export const siteConfig = {
   ogImage: "/og-default.jpg",
   twitterHandle: "@GranitePost",
   locale: "en_ZW",
+  adsensePublisherId: "ca-pub-5550288003651205",
 
   // Navigation
   primaryNavItems: [
