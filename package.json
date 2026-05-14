@@ -10,6 +10,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource/playfair-display": "^5.2.8",
     "@types/recharts": "^1.8.29",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
