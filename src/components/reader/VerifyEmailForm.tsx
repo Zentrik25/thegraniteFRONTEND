@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -9,59 +9,32 @@ export default function VerifyEmailForm() {
   const router = useRouter();
   const emailFromQuery = searchParams.get("email") ?? "";
 
-  const [email, setEmail]         = useState(emailFromQuery);
-  const [digits, setDigits]       = useState<string[]>(Array(6).fill(""));
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [success, setSuccess]     = useState(false);
-  const [resendDone, setResendDone] = useState(false);
+  const [email, setEmail]               = useState(emailFromQuery);
+  const [code, setCode]                 = useState("");
+  const [loading, setLoading]           = useState(false);
+  const [error, setError]               = useState<string | null>(null);
+  const [success, setSuccess]           = useState(false);
+  const [resendDone, setResendDone]     = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
-  const inputRefs = useRef<Array<HTMLInputElement | null>>(Array(6).fill(null));
+  const codeRef = useRef<HTMLInputElement>(null);
 
-  // Focus first box on mount
   useEffect(() => {
-    inputRefs.current[0]?.focus();
+    codeRef.current?.focus();
   }, []);
 
-  const code = digits.join("");
-
-  const handleDigitChange = useCallback(
-    (index: number, value: string) => {
-      // Handle pasting a full code into any box
-      if (value.length > 1) {
-        const clean = value.replace(/\D/g, "").slice(0, 6);
-        const next = Array(6).fill("");
-        for (let i = 0; i < clean.length; i++) next[i] = clean[i];
-        setDigits(next);
-        const focusIdx = Math.min(clean.length, 5);
-        inputRefs.current[focusIdx]?.focus();
-        return;
-      }
-
-      const digit = value.replace(/\D/g, "").slice(-1);
-      const next = [...digits];
-      next[index] = digit;
-      setDigits(next);
-      setError(null);
-
-      if (digit && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
-    },
-    [digits]
-  );
-
-  function handleKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  function handleCodeChange(value: string) {
+    // Allow only digits, max 6
+    const clean = value.replace(/\D/g, "").slice(0, 6);
+    setCode(clean);
+    setError(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (code.length < 6) {
       setError("Please enter the full 6-digit code.");
+      codeRef.current?.focus();
       return;
     }
     if (!email) {
@@ -82,9 +55,9 @@ export default function VerifyEmailForm() {
       const data = await res.json() as { ok?: boolean; error?: string };
 
       if (!res.ok) {
-        setError(data.error ?? "Verification failed. Please check the code and try again.");
-        setDigits(Array(6).fill(""));
-        inputRefs.current[0]?.focus();
+        setError(data.error ?? "Invalid code. Please check and try again.");
+        setCode("");
+        codeRef.current?.focus();
         return;
       }
 
@@ -110,8 +83,8 @@ export default function VerifyEmailForm() {
     } finally {
       setResendLoading(false);
       setResendDone(true);
-      setDigits(Array(6).fill(""));
-      inputRefs.current[0]?.focus();
+      setCode("");
+      setTimeout(() => codeRef.current?.focus(), 50);
     }
   }
 
@@ -168,14 +141,14 @@ export default function VerifyEmailForm() {
         className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col gap-6"
         style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
       >
-        {/* Email field — editable in case they came here directly */}
-        {!emailFromQuery && (
+        {/* Email — shown only if not pre-filled from query */}
+        {!emailFromQuery ? (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm font-semibold text-[var(--ink)]">
+            <label htmlFor="ve-email" className="text-sm font-semibold text-[var(--ink)]">
               Email address
             </label>
             <input
-              id="email"
+              id="ve-email"
               type="email"
               autoComplete="email"
               value={email}
@@ -184,43 +157,54 @@ export default function VerifyEmailForm() {
               className="w-full px-3.5 py-2.5 text-base bg-white border border-[var(--line)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent"
             />
           </div>
-        )}
-
-        {emailFromQuery && (
+        ) : (
           <p className="text-sm text-center text-[var(--muted)]">
             Code sent to <strong className="text-[var(--ink)]">{email}</strong>
           </p>
         )}
 
-        {/* 6-digit OTP boxes */}
-        <div className="flex gap-2 justify-center" aria-label="Verification code">
-          {digits.map((d, i) => (
-            <input
-              key={i}
-              ref={(el) => { inputRefs.current[i] = el; }}
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={d}
-              onChange={(e) => handleDigitChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              onFocus={(e) => e.target.select()}
-              disabled={loading}
-              aria-label={`Digit ${i + 1}`}
-              className={[
-                "w-12 h-14 text-center text-2xl font-bold border-2 rounded-lg",
-                "focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]",
-                "transition-colors font-mono",
-                d ? "border-[var(--accent)] bg-[var(--accent-soft)]" : "border-[var(--line)] bg-white",
-                loading ? "opacity-50 cursor-not-allowed" : "",
-              ].filter(Boolean).join(" ")}
-            />
-          ))}
+        {/* Code input */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="ve-code" className="text-sm font-semibold text-[var(--ink)]">
+            Verification code
+          </label>
+          <input
+            id="ve-code"
+            ref={codeRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="000000"
+            maxLength={6}
+            value={code}
+            onChange={(e) => handleCodeChange(e.target.value)}
+            disabled={loading}
+            aria-describedby={error ? "ve-error" : undefined}
+            className={[
+              "w-full px-4 py-4 text-center text-3xl font-bold font-mono tracking-[0.5em] border-2 rounded-xl",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-[var(--accent)]",
+              "placeholder:text-gray-300 placeholder:tracking-[0.5em]",
+              "transition-colors",
+              error ? "border-red-400 bg-red-50" : "border-[var(--line)] bg-white",
+              loading ? "opacity-50 cursor-not-allowed" : "",
+            ].filter(Boolean).join(" ")}
+          />
+          {/* Progress dots */}
+          <div className="flex gap-1.5 justify-center mt-1">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  i < code.length ? "bg-[var(--accent)]" : "bg-[var(--line)]"
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Error */}
         {error && (
-          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded px-4 py-3 leading-snug text-center">
+          <div id="ve-error" role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded px-4 py-3 leading-snug text-center">
             {error}
           </div>
         )}
@@ -244,7 +228,9 @@ export default function VerifyEmailForm() {
         {/* Resend */}
         <p className="text-center text-xs text-[var(--muted)]">
           {resendDone ? (
-            <span className="text-green-600 font-medium">New code sent — check your inbox and spam folder.</span>
+            <span className="text-green-600 font-medium">
+              New code sent — check your inbox and spam folder.
+            </span>
           ) : (
             <>
               Didn&rsquo;t receive a code?{" "}
