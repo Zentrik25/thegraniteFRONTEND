@@ -16,15 +16,16 @@ Disallow: /subscribe/success
 Disallow: /search?
 
 # ── Google News ───────────────────────────────────────────────────────────────
-# Allow the news bot unrestricted access to article content
 User-agent: Googlebot-News
-Allow: /articles/
-Allow: /categories/
-Allow: /tags/
-Allow: /sections/
+Allow: /
 Disallow: /cms/
 Disallow: /account/
 Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /verify-email
+Disallow: /subscribe/checkout
+Disallow: /subscribe/success
 
 # ── AI training crawlers (content protection) ─────────────────────────────────
 User-agent: GPTBot
@@ -40,6 +41,18 @@ User-agent: anthropic-ai
 Disallow: /
 
 User-agent: Claude-Web
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Meta-ExternalAgent
 Disallow: /
 
 User-agent: Omgilibot

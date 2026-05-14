@@ -240,11 +240,6 @@ export default async function HomePage() {
         <AdSlot zone={null} className="gp-ad-leaderboard" />
       </div>
 
-      {/* ── Ad slot ── */}
-      <div className="gp-container" style={{ marginBottom: "2rem" }}>
-        <AdSlot zone={null} className="gp-ad-leaderboard" />
-      </div>
-
       {/* ── 4. Politics ── */}
       <CategorySection
         title="Politics"
