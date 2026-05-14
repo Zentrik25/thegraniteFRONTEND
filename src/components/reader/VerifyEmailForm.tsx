@@ -24,8 +24,8 @@ export default function VerifyEmailForm() {
   }, []);
 
   function handleCodeChange(value: string) {
-    // Allow only digits, max 6
-    const clean = value.replace(/\D/g, "").slice(0, 6);
+    // Allow letters and digits (codes from before migration may contain a-f)
+    const clean = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6).toUpperCase();
     setCode(clean);
     setError(null);
   }
@@ -174,8 +174,9 @@ export default function VerifyEmailForm() {
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            placeholder="000000"
+            placeholder="······"
             maxLength={6}
+            autoCapitalize="characters"
             value={code}
             onChange={(e) => handleCodeChange(e.target.value)}
             disabled={loading}
