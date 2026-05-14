@@ -119,7 +119,14 @@ export default function RegisterForm() {
         }),
       });
 
-      const body = await res.json() as Record<string, unknown>;
+      let body: Record<string, unknown> = {};
+      try {
+        body = await res.json() as Record<string, unknown>;
+      } catch {
+        // Server returned non-JSON (e.g. 500 HTML page)
+        setServerError(res.status >= 500 ? "Server error. Please try again in a moment." : "Registration failed. Please try again.");
+        return;
+      }
 
       if (!res.ok) {
         // Map Django field errors back to our fields
@@ -129,12 +136,20 @@ export default function RegisterForm() {
         for (const key of fieldKeys) {
           const val = body[key];
           if (Array.isArray(val)) mapped[key] = (val as string[]).join(" ");
+          else if (typeof val === "string") mapped[key] = val;
         }
 
         if (Object.keys(mapped).length > 0) {
           setFieldErrors(mapped);
         } else {
-          const detail = typeof body.detail === "string" ? body.detail : "Registration failed. Please try again.";
+          const detail =
+            typeof body.detail === "string"
+              ? body.detail
+              : typeof body.error === "string"
+              ? body.error
+              : res.status >= 500
+              ? "Server error. Please try again in a moment."
+              : "Registration failed. Please try again.";
           setServerError(detail);
         }
         return;
