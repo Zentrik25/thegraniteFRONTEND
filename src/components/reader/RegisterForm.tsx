@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Fields = {
@@ -77,13 +78,11 @@ function passwordStrength(pw: string): { score: number; label: string; color: st
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [fields, setFields] = useState<Fields>(INITIAL);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendDone, setResendDone] = useState(false);
 
   const strength = passwordStrength(fields.password);
 
@@ -141,83 +140,12 @@ export default function RegisterForm() {
         return;
       }
 
-      setSuccess(true);
+      router.push(`/verify-email?email=${encodeURIComponent(fields.email)}`);
     } catch {
       setServerError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
-  }
-
-  async function handleResend() {
-    setResendLoading(true);
-    try {
-      await fetch("/api/reader/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fields.email }),
-      });
-    } catch {
-      // Best-effort
-    } finally {
-      setResendLoading(false);
-      setResendDone(true);
-    }
-  }
-
-  // ── Success state ──────────────────────────────────────────────────────────
-
-  if (success) {
-    return (
-      <div className="w-full max-w-sm mx-auto text-center">
-        <div className="mb-8">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-[var(--ink)]"
-            style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif", letterSpacing: "-0.28px" }}
-          >
-            The Granite Post
-          </Link>
-        </div>
-        <div
-          className="bg-[var(--surface)] border border-[var(--line)] rounded-2xl p-8 flex flex-col items-center gap-4"
-          style={{ boxShadow: "rgba(0,0,0,0.08) 0 2px 16px" }}
-        >
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-            <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
-          </div>
-          <h1 className="font-serif text-2xl font-bold text-[var(--ink)]">Check your email</h1>
-          <p className="text-sm text-[var(--muted)] leading-relaxed">
-            We&rsquo;ve sent a verification link to{" "}
-            <strong className="text-[var(--ink)]">{fields.email}</strong>. Click the link to
-            activate your account.
-          </p>
-          {resendDone ? (
-            <p className="text-xs text-green-600 font-medium">Verification email resent. Check your spam folder too.</p>
-          ) : (
-            <p className="text-xs text-[var(--muted)]">
-              Didn&rsquo;t receive it?{" "}
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={resendLoading}
-                className="text-[var(--accent)] font-semibold hover:underline disabled:opacity-60"
-              >
-                {resendLoading ? "Sending…" : "Resend email"}
-              </button>
-            </p>
-          )}
-          <Link
-            href="/login"
-            className="mt-2 text-sm text-[var(--accent)] font-semibold hover:underline"
-          >
-            Back to sign in
-          </Link>
-        </div>
-      </div>
-    );
   }
 
   // ── Form ───────────────────────────────────────────────────────────────────
