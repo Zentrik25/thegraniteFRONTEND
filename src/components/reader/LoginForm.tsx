@@ -19,6 +19,7 @@ export default function LoginForm() {
   const [unverified, setUnverified] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendDone, setResendDone] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,17 +57,23 @@ export default function LoginForm() {
 
   async function handleSendCode() {
     setResendLoading(true);
+    setResendError(null);
     try {
-      await fetch("/api/reader/resend-verification", {
+      const res = await fetch("/api/reader/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setResendError(data.error ?? "Could not send verification code. Please try again.");
+      } else {
+        setResendDone(true);
+      }
     } catch {
-      // best-effort
+      setResendError("Network error. Please check your connection and try again.");
     } finally {
       setResendLoading(false);
-      setResendDone(true);
     }
   }
 
@@ -114,6 +121,9 @@ export default function LoginForm() {
                     ? " A new code has been sent — check your inbox and spam."
                     : " Send a verification code to activate it."}
                 </p>
+                {resendError && (
+                  <p className="text-xs text-red-700 mt-1 font-medium">{resendError}</p>
+                )}
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">

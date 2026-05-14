@@ -16,6 +16,7 @@ export default function VerifyEmailForm() {
   const [success, setSuccess]           = useState(false);
   const [resendDone, setResendDone]     = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [resendError, setResendError]   = useState<string | null>(null);
 
   const codeRef = useRef<HTMLInputElement>(null);
 
@@ -72,19 +73,25 @@ export default function VerifyEmailForm() {
   async function handleResend() {
     setResendLoading(true);
     setError(null);
+    setResendError(null);
     try {
-      await fetch("/api/reader/resend-verification", {
+      const res = await fetch("/api/reader/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string };
+        setResendError(data.error ?? "Could not resend code. Please try again.");
+      } else {
+        setResendDone(true);
+        setCode("");
+        setTimeout(() => codeRef.current?.focus(), 50);
+      }
     } catch {
-      // best-effort
+      setResendError("Network error. Please check your connection and try again.");
     } finally {
       setResendLoading(false);
-      setResendDone(true);
-      setCode("");
-      setTimeout(() => codeRef.current?.focus(), 50);
     }
   }
 
@@ -227,6 +234,11 @@ export default function VerifyEmailForm() {
         </button>
 
         {/* Resend */}
+        {resendError && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 text-sm rounded px-4 py-3 leading-snug text-center">
+            {resendError}
+          </div>
+        )}
         <p className="text-center text-xs text-[var(--muted)]">
           {resendDone ? (
             <span className="text-green-600 font-medium">
