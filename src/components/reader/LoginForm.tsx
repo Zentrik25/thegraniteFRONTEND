@@ -16,10 +16,15 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendDone, setResendDone] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setUnverified(false);
+    setResendDone(false);
     setLoading(true);
 
     try {
@@ -29,10 +34,14 @@ export default function LoginForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const body = await res.json() as ReaderLoginError & { ok?: boolean };
+      const body = await res.json() as ReaderLoginError & { ok?: boolean; unverified?: boolean };
 
       if (!res.ok) {
-        setError(body.error || "Login failed. Check your email and password.");
+        if (body.unverified) {
+          setUnverified(true);
+        } else {
+          setError(body.error || "Login failed. Check your email and password.");
+        }
         return;
       }
 
@@ -43,6 +52,26 @@ export default function LoginForm() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSendCode() {
+    setResendLoading(true);
+    try {
+      await fetch("/api/reader/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch {
+      // best-effort
+    } finally {
+      setResendLoading(false);
+      setResendDone(true);
+    }
+  }
+
+  function goToVerify() {
+    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
   }
 
   return (
@@ -68,6 +97,55 @@ export default function LoginForm() {
         {expired && !error && (
           <div role="status" className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-4 py-3 leading-snug">
             Your session has expired. Please sign in again.
+          </div>
+        )}
+
+        {unverified && (
+          <div role="alert" className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-4 flex flex-col gap-3">
+            <div className="flex gap-2.5 items-start">
+              <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-amber-800">Email not verified</p>
+                <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                  Your account exists but the email hasn&rsquo;t been verified yet.
+                  {resendDone
+                    ? " A new code has been sent — check your inbox and spam."
+                    : " Send a verification code to activate it."}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {!resendDone ? (
+                <button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={resendLoading}
+                  className="flex-1 py-2 px-3 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 disabled:opacity-60 transition-colors"
+                >
+                  {resendLoading ? "Sending…" : "Send verification code"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={goToVerify}
+                  className="flex-1 py-2 px-3 rounded-lg bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 transition-colors"
+                >
+                  Enter code
+                </button>
+              )}
+              {resendDone && (
+                <button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={resendLoading}
+                  className="py-2 px-3 rounded-lg border border-amber-400 text-amber-800 text-sm font-medium hover:bg-amber-100 disabled:opacity-60 transition-colors"
+                >
+                  Resend
+                </button>
+              )}
+            </div>
           </div>
         )}
 

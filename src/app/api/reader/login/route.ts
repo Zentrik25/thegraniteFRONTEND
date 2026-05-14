@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
         : typeof err.non_field_errors === "object" && Array.isArray(err.non_field_errors)
         ? (err.non_field_errors as string[]).join(" ")
         : "Invalid username or password.";
+
+    // Let the form know this is specifically an unverified-email block so it
+    // can offer to resend the code rather than just showing a generic error.
+    if (upstream.status === 403 && message.toLowerCase().includes("verify")) {
+      return NextResponse.json({ error: message, unverified: true }, { status: 403 });
+    }
+
     return NextResponse.json({ error: message }, { status: upstream.status });
   }
 
