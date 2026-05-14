@@ -82,6 +82,8 @@ export default function RegisterForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendDone, setResendDone] = useState(false);
 
   const strength = passwordStrength(fields.password);
 
@@ -147,6 +149,22 @@ export default function RegisterForm() {
     }
   }
 
+  async function handleResend() {
+    setResendLoading(true);
+    try {
+      await fetch("/api/reader/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: fields.email }),
+      });
+    } catch {
+      // Best-effort
+    } finally {
+      setResendLoading(false);
+      setResendDone(true);
+    }
+  }
+
   // ── Success state ──────────────────────────────────────────────────────────
 
   if (success) {
@@ -176,9 +194,21 @@ export default function RegisterForm() {
             <strong className="text-[var(--ink)]">{fields.email}</strong>. Click the link to
             activate your account.
           </p>
-          <p className="text-xs text-[var(--muted)]">
-            Didn&rsquo;t receive it? Check your spam folder.
-          </p>
+          {resendDone ? (
+            <p className="text-xs text-green-600 font-medium">Verification email resent. Check your spam folder too.</p>
+          ) : (
+            <p className="text-xs text-[var(--muted)]">
+              Didn&rsquo;t receive it?{" "}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="text-[var(--accent)] font-semibold hover:underline disabled:opacity-60"
+              >
+                {resendLoading ? "Sending…" : "Resend email"}
+              </button>
+            </p>
+          )}
           <Link
             href="/login"
             className="mt-2 text-sm text-[var(--accent)] font-semibold hover:underline"
